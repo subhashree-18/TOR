@@ -11,3 +11,8 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+svg text {
+  fill: #f70000 !important;
+  font-weight: bold;
+  font-size: 14px !important;
+}
