@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  # 🧠 MongoDB Database
+  mongo:
+    image: mongo:7.0
+    container_name: torunveil-mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - torunveil-net
+
+  # ⚙️ Backend - FastAPI
+  backend:
+    build: ../backend
+    container_name: torunveil-backend
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mongo
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MONGO_URL=mongodb://torunveil-mongo:27017/torunveil
+    volumes:
+      - ../backend:/app
+    restart: always
+    networks:
+      - torunveil-net
+
+  # 💻 Frontend - React Dashboard
+  frontend:
+    build:
+      context: ../frontend/tor-unveil-dashboard
+    container_name: torunveil-frontend
+    ports:
+      - "3000:3000"
+    stdin_open: true
+    tty: true
+    depends_on:
+      - backend
+    environment:
+      # ✅ Browser (outside Docker) needs to reach backend at localhost:8000
+      - REACT_APP_API_URL=http://127.0.0.1:8000
+    restart: always
+    networks:
+      - torunveil-net
+
+# 🗂️ Persistent Data Volume
+volumes:
+  mongo-data:
+
+# 🌐 Shared Network for all services
+networks:
+  torunveil-net:
+    driver: bridge

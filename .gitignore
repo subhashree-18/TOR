@@ -1,0 +1,78 @@
+# -------------------
+# Python & FastAPI
+# -------------------
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.env
+venv/
+.env.*
+.venv/
+
+# VSCode
+.vscode/
+*.code-workspace
+
+# Reports / generated files
+*.log
+*.sqlite
+*.db
+*.pdf
+
+# Local runtime files
+*.pid
+*.prof
+*.DS_Store
+
+# Byte-compiled / cache
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.coverage
+
+# -------------------
+# React / Node
+# -------------------
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Build output
+frontend/tor-unveil-dashboard/build/
+frontend/tor-unveil-dashboard/.parcel-cache/
+frontend/tor-unveil-dashboard/.cache/
+frontend/tor-unveil-dashboard/.next/
+frontend/tor-unveil-dashboard/.turbo/
+
+# React env
+frontend/tor-unveil-dashboard/.env.local
+frontend/tor-unveil-dashboard/.env.production
+frontend/tor-unveil-dashboard/.env.development
+frontend/tor-unveil-dashboard/.env.test
+
+# -------------------
+# Docker
+# -------------------
+**/.dockerignore
+docker-data/
+docker-volume/
+*.tar
+*.img
+
+# -------------------
+# OS / Editor junk
+# -------------------
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+*.iml
