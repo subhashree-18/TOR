@@ -1,0 +1,57 @@
+/* ReportPage.css */
+
+.report-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.report-banner {
+  background: #1e293b;
+  border: 2px solid #38bdf8;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  font-size: 18px;
+  font-weight: bold;
+  color: #38bdf8;
+}
+
+.report-section {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.report-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.report-field label {
+  font-weight: bold;
+  color: #cbd5e1;
+}
+
+.report-field code {
+  background: #0f172a;
+  padding: 8px;
+  border-radius: 4px;
+  font-family: monospace;
+  color: #38bdf8;
+  word-break: break-all;
+}
+
+.report-disclaimer {
+  background: #7f1d1d;
+  border: 2px solid #fca5a5;
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 20px;
+  font-size: 13px;
+  color: #fef2f2;
+}

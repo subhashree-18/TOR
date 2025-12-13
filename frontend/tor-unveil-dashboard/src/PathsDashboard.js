@@ -1,24 +1,59 @@
 // src/PathsDashboard.js
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useAppContext } from "./AppContext";
+import { Copy, CheckCircle, AlertCircle } from "lucide-react";
 import SankeyChart from "./SankeyChart";
-import Timeline from "./Timeline";
+import ScoreExplainer from "./ScoreExplainer";
+import IndianContextBadge from "./IndianContextBadge";
+import "./PathsDashboard.css";
 
 const API_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
 
+// Helper function to get confidence level
+function getConfidenceLevel(score) {
+  if (score >= 0.8) return { level: "HIGH", color: "#10b981" };
+  if (score >= 0.5) return { level: "MEDIUM", color: "#f59e0b" };
+  return { level: "LOW", color: "#ef4444" };
+}
+
+function CopyButton({ text }) {
+  const [copied, setCopied] = useState(false);
+  const handleCopy = () => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+  return (
+    <button 
+      className="copy-btn"
+      onClick={handleCopy}
+      title="Copy to clipboard"
+      aria-label="Copy fingerprint"
+    >
+      <Copy size={14} />
+      {copied && <span className="copy-badge"><CheckCircle size={14} style={{display: "inline", marginRight: "4px"}} />Copied</span>}
+    </button>
+  );
+}
+
 export default function PathsDashboard() {
+  const { selectPath, selectedPath } = useAppContext();
   const [paths, setPaths] = useState([]);
-  const [selected, setSelected] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [expandedRows, setExpandedRows] = useState(new Set());
+  const [showMethodology, setShowMethodology] = useState(false);
 
   async function loadPaths() {
     try {
       setLoading(true);
-      const res = await axios.get(`${API_URL}/paths/top?limit=50`);
+      setError(null);
+      const res = await axios.get(`${API_URL}/paths/top?limit=100`);
       setPaths(res.data.paths || []);
     } catch (err) {
       console.error(err);
-      alert("Failed to load paths");
+      setError("Failed to load paths from backend");
     } finally {
       setLoading(false);
     }
@@ -28,85 +63,367 @@ export default function PathsDashboard() {
     loadPaths();
   }, []);
 
+  const handleSelectPath = (path) => {
+    selectPath(path);
+  };
+
+  const toggleRowExpand = (id) => {
+    const newExpanded = new Set(expandedRows);
+    if (newExpanded.has(id)) {
+      newExpanded.delete(id);
+    } else {
+      newExpanded.add(id);
+    }
+    setExpandedRows(newExpanded);
+  };
+
   return (
-    <div style={{ padding: 15 }}>
-      <h2>🔀 TOR Path Analysis</h2>
-      <button onClick={loadPaths}>Refresh</button>
-      <p>Total: {paths.length}</p>
+    <div className="paths-dashboard">
+      <div className="explanation-banner">
+        <h2>Probable TOR Paths</h2>
+        <p>
+          <strong>Purpose:</strong> Candidate TOR routes identified through temporal and network correlation. 
+          Scores reflect confidence based on timing alignment, geographical distribution, and network topology.
+        </p>
+      </div>
 
-      {loading && <p>Loading...</p>}
+      {/* Collapsible Methodology Section */}
+      <div className="methodology-section">
+        <button 
+          className="methodology-toggle"
+          onClick={() => setShowMethodology(!showMethodology)}
+        >
+          {showMethodology ? "▼" : "▶"} Scoring Methodology Explanation
+        </button>
+        {showMethodology && (
+          <div className="methodology-details">
+            <div className="methodology-grid">
+              <div className="methodology-item">
+                <h4>Uptime Window</h4>
+                <p><strong>7 days</strong> - Realistic timeframe for TOR relay overlap detection</p>
+              </div>
+              <div className="methodology-item">
+                <h4>AS Penalty</h4>
+                <p><strong>0.70x</strong> - Penalty applied when entry and exit nodes share the same Autonomous System</p>
+              </div>
+              <div className="methodology-item">
+                <h4>Country Penalty</h4>
+                <p><strong>0.60x</strong> - Penalty applied when entry and exit nodes are in the same country</p>
+              </div>
+              <div className="methodology-item">
+                <h4>Maximum Score Cap</h4>
+                <p><strong>85%</strong> - Prevents unrealistically high confidence claims</p>
+              </div>
+              <div className="methodology-item">
+                <h4>Weight Distribution</h4>
+                <p><strong>50%</strong> Uptime | <strong>25%</strong> Bandwidth | <strong>25%</strong> Role Flags</p>
+              </div>
+              <div className="methodology-item">
+                <h4>Confidence Levels</h4>
+                <p><span style={{color: "#10b981"}}>● HIGH</span> ≥80% | <span style={{color: "#f59e0b"}}>● MEDIUM</span> ≥50% | <span style={{color: "#ef4444"}}>● LOW</span> &lt;50%</p>
+              </div>
+            </div>
+            <div className="methodology-warning">
+              <AlertCircle size={18} style={{display: "inline-block", marginRight: "8px", verticalAlign: "middle"}} /><strong>Important:</strong> These scores represent <strong>plausibility estimates only</strong>, not definitive proof. 
+              Results must be validated through independent investigative methods.
+            </div>
+          </div>
+        )}
+      </div>
 
-      <div style={{ display: "flex", gap: 20 }}>
-        {/* TABLE */}
-        <table style={styles.table}>
-          <thead>
-            <tr>
-              <th>Entry</th>
-              <th>Middle</th>
-              <th>Exit</th>
-              <th>Score</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {paths.map((p) => (
-              <tr key={p.id}>
-                <td>{p.entry.fingerprint.slice(0, 8)}</td>
-                <td>{p.middle.fingerprint.slice(0, 8)}</td>
-                <td>{p.exit.fingerprint.slice(0, 8)}</td>
-                <td>{p.score.toFixed(3)}</td>
-                <td>
-                  <button onClick={() => setSelected(p)}>Inspect</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <header className="dashboard-header">
+        <h1>TOR Path Correlation Analysis</h1>
+        <button className="refresh-btn" onClick={loadPaths} disabled={loading}>
+          {loading ? "Loading..." : "Refresh Paths"}
+        </button>
+      </header>
 
-        {/* RIGHT PANE */}
-        <div style={{ flex: 1 }}>
-          <h3>Sankey</h3>
-          <SankeyChart paths={paths.slice(0, 20)} />
+      {error && <div className="error-banner">{error}</div>}
 
-          <h3>Selected Path</h3>
+      {loading && (
+        <div className="loading-state">
+          <div className="spinner"></div>
+          <p>Loading correlated paths...</p>
+        </div>
+      )}
 
-          {selected ? (
-            <>
-              <pre style={styles.json}>
-                {JSON.stringify(selected, null, 2)}
-              </pre>
+      {!loading && paths.length === 0 && (
+        <div className="empty-state">
+          <p>No correlated paths available. Ensure the backend has generated paths.</p>
+        </div>
+      )}
 
-              <h4>Entry Timeline</h4>
-              <Timeline fingerprint={selected.entry.fingerprint} />
+      {!loading && paths.length > 0 && (
+        <div className="paths-content">
+          {/* Paths Table */}
+          <div className="paths-table-section">
+            <h3>Available Paths ({paths.length})</h3>
+            <div className="table-instructions">
+              Select a path to view confidence breakdown and visualization options.
+            </div>
+            
+            <div className="table-responsive">
+              <table className="paths-table">
+                <thead>
+                  <tr>
+                    <th>Entry Node</th>
+                    <th>Middle Relay</th>
+                    <th>Exit Node</th>
+                    <th>Confidence</th>
+                    <th>Score</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paths.map((path, idx) => {
+                    const confidence = getConfidenceLevel(path.score);
+                    const isSelected = selectedPath?.id === path.id;
+                    
+                    return (
+                      <React.Fragment key={path.id || idx}>
+                        <tr className={isSelected ? "selected" : ""}>
+                          <td className="node-name">
+                            {path.entry?.nickname || "Unknown"}
+                            <div className="node-country">{path.entry?.country}</div>
+                          </td>
+                          <td className="node-name">
+                            {path.middle?.nickname || "Unknown"}
+                            <div className="node-country">{path.middle?.country}</div>
+                          </td>
+                          <td className="node-name">
+                            {path.exit?.nickname || "Unknown"}
+                            <div className="node-country">{path.exit?.country}</div>
+                          </td>
+                          <td className="confidence-cell">
+                            <div className="confidence-badge" style={{ borderColor: confidence.color }}>
+                              <span className="confidence-level" style={{ color: confidence.color }}>
+                                {confidence.level}
+                              </span>
+                              <span className="confidence-pct">
+                                {(path.score * 100).toFixed(0)}%
+                              </span>
+                            </div>
+                          </td>
+                          <td className="score-cell">
+                            <code>{path.score.toFixed(3)}</code>
+                          </td>
+                          <td>
+                            <button 
+                              className={`select-btn ${isSelected ? "selected" : ""}`}
+                              onClick={() => handleSelectPath(path)}
+                            >
+                              {isSelected ? <><CheckCircle size={14} style={{display: "inline", marginRight: "4px"}} />Selected</> : "Select"}
+                            </button>
+                          </td>
+                        </tr>
+                        
+                        {/* Expandable Details Row */}
+                        {isSelected && (
+                          <tr className="details-row">
+                            <td colSpan="6">
+                              <div className="path-details">
+                                <div className="details-grid">
+                                  {/* Entry Node */}
+                                  <div className="node-card entry-card">
+                                    <div className="node-header">
+                                      <span className="node-type entry-type">ENTRY</span>
+                                      <span className="node-role">
+                                        {path.entry?.is_guard ? "Guard" : "Non-Guard"}
+                                      </span>
+                                    </div>
+                                    <div className="node-details-content">
+                                      <div className="detail-item">
+                                        <label>Fingerprint</label>
+                                        <div className="fp-display">
+                                          <code>{path.entry?.fingerprint || "Unknown"}</code>
+                                          <CopyButton text={path.entry?.fingerprint || ""} />
+                                        </div>
+                                      </div>
+                                      <div className="detail-item">
+                                        <label>IP Address</label>
+                                        <div>{path.entry?.ip || "Unknown"}</div>
+                                      </div>
+                                      <div className="detail-item">
+                                        <label>Bandwidth</label>
+                                        <div>
+                                          {path.entry?.advertised_bandwidth 
+                                            ? `${(path.entry.advertised_bandwidth / 1_000_000).toFixed(1)} Mbps`
+                                            : "Unknown"}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
 
-              <h4>Exit Timeline</h4>
-              <Timeline fingerprint={selected.exit.fingerprint} />
-            </>
-          ) : (
-            <div>Select a row to inspect</div>
+                                  {/* Middle Relay */}
+                                  <div className="node-card middle-card">
+                                    <div className="node-header">
+                                      <span className="node-type middle-type">MIDDLE</span>
+                                      <span className="node-role">Relay</span>
+                                    </div>
+                                    <div className="node-details-content">
+                                      <div className="detail-item">
+                                        <label>Fingerprint</label>
+                                        <div className="fp-display">
+                                          <code>{path.middle?.fingerprint || "Unknown"}</code>
+                                          <CopyButton text={path.middle?.fingerprint || ""} />
+                                        </div>
+                                      </div>
+                                      <div className="detail-item">
+                                        <label>IP Address</label>
+                                        <div>{path.middle?.ip || "Unknown"}</div>
+                                      </div>
+                                      <div className="detail-item">
+                                        <label>Bandwidth</label>
+                                        <div>
+                                          {path.middle?.advertised_bandwidth 
+                                            ? `${(path.middle.advertised_bandwidth / 1_000_000).toFixed(1)} Mbps`
+                                            : "Unknown"}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* Exit Node */}
+                                  <div className="node-card exit-card">
+                                    <div className="node-header">
+                                      <span className="node-type exit-type">EXIT</span>
+                                      <span className="node-role">
+                                        {path.exit?.is_exit ? "Exit" : "Non-Exit"}
+                                      </span>
+                                    </div>
+                                    <div className="node-details-content">
+                                      <div className="detail-item">
+                                        <label>Fingerprint</label>
+                                        <div className="fp-display">
+                                          <code>{path.exit?.fingerprint || "Unknown"}</code>
+                                          <CopyButton text={path.exit?.fingerprint || ""} />
+                                        </div>
+                                      </div>
+                                      <div className="detail-item">
+                                        <label>IP Address</label>
+                                        <div>{path.exit?.ip || "Unknown"}</div>
+                                      </div>
+                                      <div className="detail-item">
+                                        <label>Bandwidth</label>
+                                        <div>
+                                          {path.exit?.advertised_bandwidth 
+                                            ? `${(path.exit.advertised_bandwidth / 1_000_000).toFixed(1)} Mbps`
+                                            : "Unknown"}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Score Breakdown */}
+                                {path.components && (
+                                  <div className="score-breakdown">
+                                    <h4>Confidence Score Breakdown</h4>
+                                    <div className="components-grid">
+                                      {Object.entries(path.components).map(([key, value]) => (
+                                        <div key={key} className="component-card">
+                                          <div className="component-name">{key}</div>
+                                          <div className="component-value">
+                                            {typeof value === "number" ? value.toFixed(3) : value}
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                    <p className="score-explanation">
+                                      The confidence score is calculated by combining multiple factors: 
+                                      temporal alignment (uptime overlap), geographical diversity (entry/exit countries), 
+                                      network topology (ASN/provider diversity), and relay bandwidth characteristics.
+                                      Score is capped at 100% to account for inherent uncertainty in metadata correlation.
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Right Panel: Selected Path Visualization */}
+          {selectedPath && (
+            <div className="visualization-panel">
+              <h3>Selected Path Visualization</h3>
+              
+              {/* Score Explainer - Shows reasoning */}
+              <ScoreExplainer path={selectedPath} />
+
+              {/* Indian Context Badge - Tamil Nadu Police relevance */}
+              <IndianContextBadge
+                entry={selectedPath.entry}
+                middle={selectedPath.middle}
+                exit={selectedPath.exit}
+              />
+
+              <div className="confidence-summary">
+                <div className="confidence-large">
+                  <div className="confidence-percent">{(selectedPath.score * 100).toFixed(0)}%</div>
+                  <div className="confidence-label">
+                    {getConfidenceLevel(selectedPath.score).level} Confidence
+                  </div>
+                </div>
+                <div className="confidence-explanation">
+                  This path's plausibility is based on temporal and network correlation metrics. 
+                  Higher confidence indicates better alignment with observed metadata patterns.
+                </div>
+              </div>
+
+              <div className="flow-visual">
+                <div className="flow-node entry-node">
+                  <div className="flow-label">ENTRY</div>
+                  <div className="flow-name">{selectedPath.entry?.nickname || "?"}</div>
+                </div>
+                <div className="flow-arrow">→</div>
+                <div className="flow-node middle-node">
+                  <div className="flow-label">MIDDLE</div>
+                  <div className="flow-name">{selectedPath.middle?.nickname || "?"}</div>
+                </div>
+                <div className="flow-arrow">→</div>
+                <div className="flow-node exit-node">
+                  <div className="flow-label">EXIT</div>
+                  <div className="flow-name">{selectedPath.exit?.nickname || "?"}</div>
+                </div>
+              </div>
+
+              <div className="sankey-container">
+                <SankeyChart paths={[selectedPath]} />
+              </div>
+
+              <div className="legend">
+                <div className="legend-item">
+                  <span className="legend-dot entry-dot"></span>
+                  <span>Entry node: Connection enters TOR network</span>
+                </div>
+                <div className="legend-item">
+                  <span className="legend-dot middle-dot"></span>
+                  <span>Middle relay: Intermediate routing node</span>
+                </div>
+                <div className="legend-item">
+                  <span className="legend-dot exit-dot"></span>
+                  <span>Exit node: Connection leaves TOR network</span>
+                </div>
+              </div>
+
+              <div className="legal-note">
+                <p>
+                  <strong>Legal Notice:</strong> This is investigative support only. 
+                  Results are probabilistic and based on metadata correlation. 
+                  No TOR breaking or deanonymization techniques are employed.
+                </p>
+              </div>
+            </div>
           )}
         </div>
-      </div>
+      )}
     </div>
   );
 }
-
-const styles = {
-  table: {
-    borderCollapse: "collapse",
-    width: "50%",
-    fontSize: 12,
-    color: "#fff",
-    background: "#0b1622",
-  },
-  json: {
-  fontSize: 12,
-  background: "#0f172a",
-  color: "#f0f9ff",
-  border: "1px solid #334155",
-  padding: 10,
-  borderRadius: 6,
-  overflowX: "auto",
-},
-
-};

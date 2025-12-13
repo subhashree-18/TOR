@@ -76,3 +76,40 @@ Thumbs.db
 *.swo
 .idea/
 *.iml
+
+# -------------------
+# IDE specific
+# -------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# -------------------
+# Frontend specific
+# -------------------
+frontend/tor-unveil-dashboard/.eslintcache
+frontend/tor-unveil-dashboard/yarn.lock
+frontend/tor-unveil-dashboard/package-lock.json
+
+# -------------------
+# Python specific
+# -------------------
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+*.egg-info
+.pytest_cache/
+
+# -------------------
+# Environment variables (sensitive)
+# -------------------
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
