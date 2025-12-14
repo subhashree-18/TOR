@@ -5,9 +5,11 @@ import { useAppContext } from "./AppContext";
 import { Copy, CheckCircle, AlertCircle } from "lucide-react";
 import SankeyChart from "./SankeyChart";
 import ScoreExplainer from "./ScoreExplainer";
+import ScoreBreakdown from "./ScoreBreakdown";
 import IndianContextBadge from "./IndianContextBadge";
 import CountryLegend from "./CountryLegend";
 import ScoringMethodologyPanel from "./ScoringMethodologyPanel";
+import InfrastructureContextPanel from "./InfrastructureContextPanel";
 import "./PathsDashboard.css";
 
 const API_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
@@ -366,26 +368,21 @@ export default function PathsDashboard() {
                                   </div>
                                 </div>
 
-                                {/* Score Breakdown */}
-                                {path.components && (
-                                  <div className="score-breakdown">
-                                    <h4>Confidence Score Breakdown</h4>
-                                    <div className="components-grid">
-                                      {Object.entries(path.components).map(([key, value]) => (
-                                        <div key={key} className="component-card">
-                                          <div className="component-name">{key}</div>
-                                          <div className="component-value">
-                                            {typeof value === "number" ? value.toFixed(3) : value}
-                                          </div>
-                                        </div>
-                                      ))}
-                                    </div>
-                                    <p className="score-explanation">
-                                      The confidence score is calculated by combining multiple factors: 
-                                      temporal alignment (uptime overlap), geographical diversity (entry/exit countries), 
-                                      network topology (ASN/provider diversity), and relay bandwidth characteristics.
-                                      Score is capped at 100% to account for inherent uncertainty in metadata correlation.
-                                    </p>
+                                {/* Score Breakdown - Enhanced Visualization */}
+                                {path.score !== undefined && (
+                                  <div style={{ marginTop: "16px" }}>
+                                    <ScoreBreakdown 
+                                      score={path.score}
+                                      components={{
+                                        uptime: path.components?.uptime_score || 0.75,
+                                        bandwidth: path.components?.bandwidth_score || 0.80,
+                                        role: path.components?.role_score || 0.70
+                                      }}
+                                      penalties={{
+                                        "AS Diversity": (path.components?.as_penalty || -0.30),
+                                        "Country Diversity": (path.components?.country_penalty || -0.20)
+                                      }}
+                                    />
                                   </div>
                                 )}
                               </div>
@@ -404,6 +401,9 @@ export default function PathsDashboard() {
           {selectedPath && (
             <div className="visualization-panel">
               <h3>Selected Path Visualization</h3>
+              
+              {/* Infrastructure Context - Indian vs Foreign Analysis */}
+              <InfrastructureContextPanel paths={paths} />
               
               {/* Scoring Methodology Panel - Transparent Documentation */}
               <ScoringMethodologyPanel />

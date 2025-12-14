@@ -399,7 +399,7 @@ def build_report_pdf(path_candidate: dict) -> bytes:
     y_position -= 6
     
     # Executive Summary
-    draw_title("EXECUTIVE SUMMARY", 12)
+    draw_title("1. EXECUTIVE SUMMARY", 12)
     draw_text("This report presents a statistical analysis of TOR network metadata correlation,", 10)
     draw_text("identifying a probable path configuration based on timing and topological indicators.", 10)
     draw_text("", 10)
@@ -416,10 +416,10 @@ def build_report_pdf(path_candidate: dict) -> bytes:
     check_page_break()
     
     # ========== TECHNICAL FINDINGS ==========
-    draw_title("TECHNICAL FINDINGS", 12)
+    draw_title("2. TECHNICAL FINDINGS", 12)
     
     # Entry Relay
-    draw_title("Entry Node (Connection Entry Point)", 11)
+    draw_title("2.1 Entry Node (Connection Entry Point)", 11)
     entry = path_candidate.get("entry", {})
     draw_text(f"Nickname: {entry.get('nickname', 'Unknown')}", 10, 10)
     draw_text(f"Fingerprint: {entry.get('fingerprint', 'N/A')[:16]}...", 9, 10)
@@ -430,7 +430,7 @@ def build_report_pdf(path_candidate: dict) -> bytes:
     y_position -= 4
     
     # Middle Relay
-    draw_title("Middle Relay (Intermediate Node)", 11)
+    draw_title("2.2 Middle Relay (Intermediate Node)", 11)
     middle = path_candidate.get("middle", {})
     draw_text(f"Nickname: {middle.get('nickname', 'Unknown')}", 10, 10)
     draw_text(f"Fingerprint: {middle.get('fingerprint', 'N/A')[:16]}...", 9, 10)
@@ -441,7 +441,7 @@ def build_report_pdf(path_candidate: dict) -> bytes:
     y_position -= 4
     
     # Exit Relay
-    draw_title("Exit Node (Connection Exit Point)", 11)
+    draw_title("2.3 Exit Node (Connection Exit Point)", 11)
     exit_node = path_candidate.get("exit", {})
     draw_text(f"Nickname: {exit_node.get('nickname', 'Unknown')}", 10, 10)
     draw_text(f"Fingerprint: {exit_node.get('fingerprint', 'N/A')[:16]}...", 9, 10)
@@ -453,7 +453,7 @@ def build_report_pdf(path_candidate: dict) -> bytes:
     check_page_break()
     
     # ========== SCORE BREAKDOWN ==========
-    draw_title("SCORE COMPONENTS & METHODOLOGY", 12)
+    draw_title("3. SCORE COMPONENTS & METHODOLOGY", 12)
     components = path_candidate.get("components", {})
     draw_text("Uptime Score: Temporal overlap + stability", 10, 10)
     draw_text(f"  Value: {components.get('uptime_score', 0):.3f} (Weight: 30%)", 9, 20)
@@ -476,7 +476,7 @@ def build_report_pdf(path_candidate: dict) -> bytes:
     check_page_break()
     
     # ========== CONFIDENCE & LIMITATIONS ==========
-    draw_title("CONFIDENCE ASSESSMENT & LIMITATIONS", 12)
+    draw_title("4. CONFIDENCE ASSESSMENT & LIMITATIONS", 12)
     draw_text("This analysis provides PLAUSIBILITY estimates based on metadata correlation only:", 10)
     y_position -= 2
     draw_text("• NO packet inspection or traffic analysis performed", 10, 10)
@@ -494,7 +494,7 @@ def build_report_pdf(path_candidate: dict) -> bytes:
     y_position -= 6
     
     # ========== LEGAL & ETHICAL DISCLAIMER ==========
-    draw_title("LEGAL & ETHICAL STATEMENT", 12)
+    draw_title("5. LEGAL & ETHICAL STATEMENT", 12)
     draw_text("AUTHORIZED LAW ENFORCEMENT USE ONLY", 10)
     draw_text("This tool is designed for investigative support in cybercrime cases.", 9)
     y_position -= 4
@@ -504,10 +504,12 @@ def build_report_pdf(path_candidate: dict) -> bytes:
     draw_text("3. These findings are NOT admissible as proof; use for investigative guidance only", 9, 10)
     draw_text("4. Compliance: Indian Penal Code § 43, § 66 (cybercrime), § 120 (investigation)", 9, 10)
     draw_text("5. Court admissibility requires corroboration with non-metadata evidence", 9, 10)
-    y_position -= 6
+    y_position -= 8
     
-    draw_text("Prepared by: TOR Unveil v2.0 — Tamil Nadu Police Cyber Crime Wing", 10)
-    draw_text(f"Date: {datetime.datetime.utcnow().strftime('%Y-%m-%d')}", 10)
+    # Footer with legal notice
+    p.setFont("Helvetica", 8)
+    p.drawString(margin_left, 20, "Metadata-Only Analysis • No Anonymity Breached • For Investigation Support Only")
+    p.drawString(margin_left, 12, f"TOR Unveil v2.0 | Tamil Nadu Police Cyber Crime Wing | {datetime.datetime.utcnow().strftime('%Y-%m-%d')}")
     
     p.showPage()
     p.save()

@@ -1,0 +1,241 @@
+/* InfrastructureContextPanel.css - Indian vs Foreign Analysis */
+
+.infrastructure-context {
+  background: #1a2332;
+  border: 1px solid #2d3e4f;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Header */
+.context-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #2d3e4f;
+}
+
+.header-icon {
+  color: #06b6d4;
+}
+
+.context-header h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #06b6d4;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.stat-card {
+  padding: 12px;
+  border-radius: 6px;
+  text-align: center;
+  border: 1px solid;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-card.indian {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.stat-card.risk {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.stat-card.hybrid {
+  background: rgba(245, 158, 11, 0.08);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.stat-percent {
+  font-size: 11px;
+  color: #cbd5e1;
+  font-weight: 500;
+}
+
+/* Breakdown */
+.breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  background: #0f172a;
+  border: 1px solid #2d3e4f;
+  border-radius: 4px;
+}
+
+.breakdown h4 {
+  font-size: 13px;
+  font-weight: 700;
+  color: #06b6d4;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.breakdown-items {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px;
+}
+
+.breakdown-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  background: #1a2332;
+  border: 1px solid #2d3e4f;
+  border-radius: 4px;
+}
+
+.item-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #cbd5e1;
+}
+
+.item-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.indian-badge {
+  background: rgba(16, 185, 129, 0.2);
+  color: #a7f3d0;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.risk-badge {
+  background: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* Investigation Context */
+.investigation-context {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.context-alert {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 4px;
+  border-left: 3px solid #f59e0b;
+}
+
+.context-alert svg {
+  color: #f59e0b;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.context-alert h5 {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fde68a;
+  margin: 0 0 4px 0;
+}
+
+.context-alert p {
+  font-size: 12px;
+  color: #cbd5e1;
+  margin: 0 0 8px 0;
+  line-height: 1.4;
+}
+
+.crime-tags {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 6px;
+}
+
+.crime-tags li {
+  font-size: 11px;
+  color: #cbd5e1;
+  padding: 6px;
+  background: rgba(6, 182, 212, 0.1);
+  border-left: 2px solid #06b6d4;
+  border-radius: 2px;
+}
+
+.crime-tags strong {
+  color: #fde68a;
+}
+
+/* Legal Notice */
+.context-notice {
+  padding: 10px;
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.08) 0%, rgba(14, 165, 233, 0.08) 100%);
+  border: 1px solid rgba(6, 182, 212, 0.2);
+  border-radius: 4px;
+  border-left: 3px solid #06b6d4;
+}
+
+.context-notice p {
+  font-size: 11px;
+  color: #cbd5e1;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.context-notice strong {
+  color: #06b6d4;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .crime-tags {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-value {
+    font-size: 20px;
+  }
+}

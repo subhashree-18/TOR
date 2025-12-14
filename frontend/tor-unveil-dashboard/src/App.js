@@ -9,6 +9,7 @@ import AnalysisPage from "./AnalysisPage";
 import ReportPage from "./ReportPage";
 import InvestigationPage from "./InvestigationPage";
 import ForensicPage from "./ForensicPage";
+import Breadcrumb from "./Breadcrumb";
 
 // ============================================================================
 // SIDEBAR NAVIGATION COMPONENT
@@ -178,6 +179,7 @@ function AppContent() {
       <SideNavigation />
       <div style={styles.mainContent}>
         <TopBar />
+        <Breadcrumb />
         <div style={styles.pageContainer}>
           <Routes>
             <Route path="/investigation" element={<InvestigationPage />} />

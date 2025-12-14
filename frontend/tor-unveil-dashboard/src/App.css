@@ -88,16 +88,39 @@ code {
   background: #475569;
 }
 
-/* Typography */
+/* Typography - Professional Hierarchy */
 h1, h2, h3, h4, h5, h6 {
   margin: 0;
   font-weight: 700;
+  letter-spacing: 0.5px;
 }
 
-h1 { font-size: 28px; }
-h2 { font-size: 22px; }
-h3 { font-size: 18px; }
-h4 { font-size: 16px; }
+h1 { font-size: 32px; letter-spacing: 0.8px; color: #0ea5e9; }
+h2 { font-size: 24px; letter-spacing: 0.6px; color: #06b6d4; }
+h3 { font-size: 20px; font-weight: 600; color: #e2e8f0; }
+h4 { font-size: 16px; font-weight: 600; color: #cbd5e1; }
+h5 { font-size: 14px; font-weight: 600; color: #cbd5e1; }
+h6 { font-size: 13px; font-weight: 600; color: #94a3b8; }
+
+/* Professional spacing defaults */
+p {
+  margin: 0;
+  line-height: 1.6;
+  color: #cbd5e1;
+}
+
+/* Card & Container Standardization */
+.card, .panel, .section {
+  background: #1a2332;
+  border: 1px solid #2d3e4f;
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.card-compact, .panel-compact {
+  padding: 12px;
+}
 
 /* Utility Classes */
 .text-primary { color: var(--primary-cyan); }

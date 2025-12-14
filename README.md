@@ -15,6 +15,21 @@
 
 ---
 
+## ❌ What This System Does NOT Do
+
+| Claim | Status |
+|-------|--------|
+| Break TOR encryption or anonymity | ❌ NOT PERFORMED |
+| Identify actual TOR users | ❌ NOT PERFORMED |
+| Perform packet inspection or traffic analysis | ❌ NOT PERFORMED |
+| Deanonymize TOR network participants | ❌ NOT PERFORMED |
+| Provide definitive proof of user identity | ❌ NOT PERFORMED |
+| Bypass legal authorization requirements | ❌ NOT PERFORMED |
+
+This tool is **metadata-only analysis**. It uses publicly-available TOR network topology data (Onionoo directory, relay uptime windows, geolocation data) to correlate path plausibility. No user traffic, encryption keys, or private data is processed.
+
+---
+
 ## 🚀 Quick Start (5 minutes)
 
 ### Prerequisites
@@ -48,6 +63,88 @@ docker compose -f infra/docker-compose.yml down
 ### Remove All Data
 ```bash
 docker compose -f infra/docker-compose.yml down -v
+```
+
+---
+
+## 📊 Investigation Flow (5 Steps)
+
+TOR Unveil guides investigators through a structured workflow:
+
+```
+1. CREATE CASE
+   ↓
+   Enter case ID, officer name, and timestamps
+   for the TOR activity you're investigating
+
+2. FETCH TOR DATA
+   ↓
+   System fetches live TOR network metadata
+   from Onionoo directory (public data)
+
+3. CORRELATE PATHS
+   ↓
+   Analyzes which relay combinations were
+   online during your timestamp window
+
+4. SCORE PATHS
+   ↓
+   Rates path plausibility (30-95% range)
+   based on network topology and geography
+
+5. GENERATE REPORT
+   ↓
+   Export professional PDF report with
+   scores, methodology, and legal disclaimers
+```
+
+**Each step includes audit trail logging for legal transparency.**
+
+---
+
+## 🎬 Demo Walkthrough (5 Steps)
+
+After launching the system, here's a quick walkthrough:
+
+### Step 1: Enter Investigation Details
+```
+URL: http://localhost:3000/investigation
+- Enter a Case ID (e.g., "CASE-2025-001234")
+- Enter your Officer Name
+- System auto-records timestamp
+```
+
+### Step 2: View TOR Network Overview
+```
+URL: http://localhost:3000/dashboard
+- See geographic distribution of TOR relays
+- View top countries hosting relays
+- Identify Indian network infrastructure (if applicable)
+```
+
+### Step 3: Explore Probable Paths
+```
+URL: http://localhost:3000/paths
+- View candidate TOR paths with plausibility scores
+- Click path row to expand details (entry/middle/exit relays)
+- See scoring breakdown (uptime, bandwidth, geography)
+```
+
+### Step 4: Analyze with Sankey Visualization
+```
+URL: http://localhost:3000/analysis
+- See merged timeline + flow chart
+- Understand path structure visually
+- Review confidence badges and country context
+```
+
+### Step 5: Generate Professional Report
+```
+URL: http://localhost:3000/report
+- Export as PDF (professionally formatted)
+- Export as JSON (machine-readable)
+- Export as CSV (spreadsheet-compatible)
+- All reports include legal disclaimers & IPC compliance
 ```
 
 ---
