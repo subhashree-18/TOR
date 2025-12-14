@@ -15,22 +15,28 @@ import "./IndianContextBadge.css";
 // Indian ASN ranges and known providers
 const INDIAN_ASNS = {
   "AS4755": "VSNL/Tata Communications",
-  "AS9829": "National Internet Backbone",
+  "AS9829": "National Internet Backbone (NIB)",
   "AS9498": "Bharat Sanchar Nigam (BSNL)",
-  "AS18101": "Reliance Jio",
-  "AS55836": "Airtel",
+  "AS18101": "Reliance Jio (Mukesh Ambani Group)",
+  "AS55836": "Bharti Airtel",
   "AS24560": "Vodafone Idea",
-  "AS133480": "Telemedia",
+  "AS133480": "Telemedia Networks",
+  "AS45839": "MTNL",
+  "AS17638": "Tripadvisor/Indian ISPs",
+  "AS56399": "NET4INDIA",
+  "AS58953": "Data Shack / Indian Hosting",
 };
 
 // Countries with high fraud/threat relevance to Tamil Nadu police
 const HIGH_RISK_COUNTRIES = {
-  BG: "Bulgaria - Credential theft infrastructure",
-  CN: "China - Advanced persistent threats",
-  KP: "North Korea - Sanctions evasion",
-  IR: "Iran - Cyber espionage targeting",
-  RU: "Russia - Financial fraud networks",
-  RO: "Romania - Identity theft operations",
+  BG: "Bulgaria - Known credential theft & phishing infrastructure",
+  CN: "China - APT activity, state-sponsored cyber operations",
+  KP: "North Korea - Cryptocurrency theft, sanctions evasion",
+  IR: "Iran - Cyber espionage, infrastructure targeting",
+  RU: "Russia - Financial fraud networks, ransomware distribution",
+  RO: "Romania - Identity theft operations, card fraud rings",
+  PK: "Pakistan - Regional threat actor coordination",
+  BD: "Bangladesh - Financial fraud targeting South Asia",
 };
 
 // Helper to check if AS is Indian
@@ -60,45 +66,61 @@ function isHighRiskCountry(country) {
 
 export default function IndianContextBadge({ relay, entry, middle, exit }) {
   const badges = [];
+  let hasIndianNode = false;
+  let hasRiskPattern = false;
 
-  // Check entry node
+  // Check entry node for Indian ASN
   if (entry && isIndianASN(entry.as)) {
+    hasIndianNode = true;
     badges.push({
       type: "indian-entry",
-      label: `Indian Entry: ${getIndianASNProvider(entry.as) || entry.as}`,
-      description: "TOR entry node hosted in India",
+      label: `🇮🇳 INDIAN ENTRY NODE`,
+      subtitle: `${getIndianASNProvider(entry.as) || entry.as}`,
+      description: "TOR circuit initiated from Indian network infrastructure",
+      severity: "high",
       icon: "flag",
     });
   }
 
-  // Check middle node
+  // Check middle node for Indian ASN
   if (middle && isIndianASN(middle.as)) {
+    hasIndianNode = true;
     badges.push({
       type: "indian-middle",
-      label: `Indian Relay: ${getIndianASNProvider(middle.as) || middle.as}`,
-      description: "TOR middle relay hosted in India",
+      label: `🇮🇳 INDIAN RELAY NODE`,
+      subtitle: `${getIndianASNProvider(middle.as) || middle.as}`,
+      description: "TOR circuit routed through Indian network infrastructure",
+      severity: "medium",
       icon: "flag",
     });
   }
 
   // Check exit node
-  if (exit && isIndianASN(exit.as)) {
-    badges.push({
-      type: "indian-exit",
-      label: `Indian Exit: ${getIndianASNProvider(exit.as) || exit.as}`,
-      description: "TOR exit node hosted in India",
-      icon: "flag",
-    });
-  } else if (exit && isHighRiskCountry(exit.country)) {
-    badges.push({
-      type: "high-risk-exit",
-      label: `High-Risk Exit: ${exit.country}`,
-      description: HIGH_RISK_COUNTRIES[exit.country.toUpperCase()],
-      icon: "alert",
-    });
+  if (exit) {
+    if (isIndianASN(exit.as)) {
+      hasIndianNode = true;
+      badges.push({
+        type: "indian-exit",
+        label: `🇮🇳 INDIAN EXIT NODE`,
+        subtitle: `${getIndianASNProvider(exit.as) || exit.as}`,
+        description: "TOR circuit exits from Indian network infrastructure",
+        severity: "high",
+        icon: "flag",
+      });
+    } else if (isHighRiskCountry(exit.country)) {
+      hasRiskPattern = true;
+      badges.push({
+        type: "high-risk-exit",
+        label: `⚠️ HIGH-RISK EXIT JURISDICTION`,
+        subtitle: exit.country,
+        description: HIGH_RISK_COUNTRIES[exit.country.toUpperCase()],
+        severity: "critical",
+        icon: "alert",
+      });
+    }
   }
 
-  // Check for India-Foreign-Foreign pattern (suspicious for financial fraud)
+  // Check for India→Foreign→Risk pattern (highly suspicious for financial fraud)
   if (
     entry &&
     entry.country === "IN" &&
@@ -106,11 +128,14 @@ export default function IndianContextBadge({ relay, entry, middle, exit }) {
     exit.country !== "IN" &&
     isHighRiskCountry(exit.country)
   ) {
+    hasRiskPattern = true;
     badges.push({
       type: "india-foreign-fraud",
-      label: "India→Foreign High-Risk Pattern",
+      label: `🚨 INDIA→FOREIGN HIGH-RISK PATTERN`,
+      subtitle: `${exit.country} (Known fraud jurisdiction)`,
       description:
-        "Indian user routing through high-risk country. Common in financial fraud targeting India.",
+        "Indian user routing through high-risk country jurisdiction. STRONG INDICATOR of financial fraud targeting Indian residents (phishing, UPI scams, OTP theft, etc.)",
+      severity: "critical",
       icon: "alert",
     });
   }
@@ -120,39 +145,75 @@ export default function IndianContextBadge({ relay, entry, middle, exit }) {
   }
 
   return (
-    <div className="indian-context-container">
-      {badges.map((badge, idx) => (
-        <div key={idx} className={`context-badge badge-${badge.type}`}>
-          <div className="badge-content">
-            <span className="badge-icon">
-              {badge.icon === "alert" && <AlertTriangle size={16} />}
-              {badge.icon === "flag" && <MapPin size={16} />}
-              {badge.icon === "globe" && <Globe size={16} />}
-            </span>
-            <div className="badge-text">
-              <div className="badge-label">{badge.label}</div>
-              <div className="badge-description">{badge.description}</div>
+    <div className={`indian-context-container ${hasRiskPattern ? "has-risk-pattern" : ""} ${hasIndianNode ? "has-indian-node" : ""}`}>
+      {/* Severity banner at top */}
+      {hasRiskPattern && (
+        <div className="severity-banner critical">
+          ⚠️ INVESTIGATIVE ALERT: Pattern detected relevant to Tamil Nadu Cyber Crime Wing
+        </div>
+      )}
+
+      {/* Main badges */}
+      <div className="badges-grid">
+        {badges.map((badge, idx) => (
+          <div key={idx} className={`context-badge badge-${badge.type} severity-${badge.severity}`}>
+            <div className="badge-header">
+              <span className="badge-icon">
+                {badge.icon === "alert" && <AlertTriangle size={20} />}
+                {badge.icon === "flag" && <MapPin size={20} />}
+                {badge.icon === "globe" && <Globe size={20} />}
+              </span>
+              <div className="badge-header-text">
+                <div className="badge-label">{badge.label}</div>
+                <div className="badge-subtitle">{badge.subtitle}</div>
+              </div>
+            </div>
+            <div className="badge-body">
+              <p className="badge-description">{badge.description}</p>
             </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
 
-      {/* Info panel about Indian context */}
+      {/* Info panel about Indian context and Tamil Nadu Police relevance */}
       <div className="india-context-info">
-        <h4>🇮🇳 Tamil Nadu Police Context</h4>
-        <p>
-          Indian TOR infrastructure is relevant to investigation of:
-          <ul>
-            <li>Online financial fraud targeting Indian residents</li>
-            <li>TOR-based anonymous threats and cyber harassment</li>
-            <li>Cross-border routing patterns in criminal networks</li>
-            <li>Foreign exit nodes used to mask attribution</li>
-          </ul>
-        </p>
-        <p>
-          <strong>Key Pattern:</strong> India→ High-Risk Country routing often
-          indicates financial fraud operations (phishing, scams, etc.)
-        </p>
+        <div className="info-header">
+          <AlertCircle size={18} />
+          <h4>🇮🇳 Tamil Nadu Cyber Crime Wing - Investigation Support</h4>
+        </div>
+        
+        <div className="info-content">
+          <div className="info-section">
+            <strong>Relevance to Investigation:</strong>
+            <ul>
+              <li>🔴 <strong>Financial Fraud:</strong> Online phishing, UPI scams, OTP theft, ATM fraud</li>
+              <li>🔴 <strong>Cybercrime:</strong> Anonymous threats, extortion, ransomware coordination</li>
+              <li>🔴 <strong>Attribution Patterns:</strong> Cross-border routing to mask origin/accountability</li>
+              <li>🔴 <strong>Network Forensics:</strong> Indian node involvement indicates local infrastructure use</li>
+            </ul>
+          </div>
+
+          {hasRiskPattern && (
+            <div className="info-section pattern-alert">
+              <strong>🚨 Critical Pattern Indicators:</strong>
+              <ul>
+                <li>India→High-Risk Country routing = Strong correlation with financial fraud</li>
+                <li>Multiple Indian nodes = Infrastructure reuse or deliberate network routing</li>
+                <li>Foreign exit + high-risk ASN = Evasion of attribution and jurisdiction</li>
+              </ul>
+            </div>
+          )}
+
+          <div className="info-section legal-notice">
+            <strong>⚖️ Legal & Investigative Notice:</strong>
+            <p>
+              This analysis is <strong>metadata-only</strong> (TOR network topology + GeoIP data). 
+              No content inspection, packet analysis, or TOR deanonymization is performed.
+              Findings support investigative leads only; court authorization required for enforcement action.
+              Compliance: Tamil Nadu Police, IPC § 43 (Instrument), § 66 (Computer systems), § 120 (Conspiracy).
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
