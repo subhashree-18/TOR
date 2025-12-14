@@ -4,6 +4,7 @@ import axios from "axios";
 import { useAppContext } from "./AppContext";
 import { AlertCircle } from "lucide-react";
 import SankeyChart from "./SankeyChart";
+import CountryLegend from "./CountryLegend";
 import "./AnalysisPage.css";
 
 const API_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
@@ -271,6 +272,17 @@ export default function AnalysisPage() {
           <div className="sankey-chart-container">
             <SankeyChart paths={[selectedPath]} />
           </div>
+
+          {/* Country Legend */}
+          <CountryLegend
+            countryData={[
+              { country: selectedPath.entry?.country, count: 1 },
+              { country: selectedPath.middle?.country, count: 1 },
+              { country: selectedPath.exit?.country, count: 1 },
+            ].filter((c) => c.country)}
+            isExpanded={false}
+          />
+
           <div className="sankey-legend">
             <div className="legend-item">
               <span className="legend-color entry-color"></span>

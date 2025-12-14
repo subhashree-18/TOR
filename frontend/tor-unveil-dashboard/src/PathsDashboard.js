@@ -6,6 +6,7 @@ import { Copy, CheckCircle, AlertCircle } from "lucide-react";
 import SankeyChart from "./SankeyChart";
 import ScoreExplainer from "./ScoreExplainer";
 import IndianContextBadge from "./IndianContextBadge";
+import CountryLegend from "./CountryLegend";
 import "./PathsDashboard.css";
 
 const API_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
@@ -15,6 +16,21 @@ function getConfidenceLevel(score) {
   if (score >= 0.8) return { level: "HIGH", color: "#10b981" };
   if (score >= 0.5) return { level: "MEDIUM", color: "#f59e0b" };
   return { level: "LOW", color: "#ef4444" };
+}
+
+// Helper to resolve ISO country code to full country name (safe fallback)
+function getCountryFullName(code) {
+  try {
+    if (!code) return "Unknown";
+    // Use Intl.DisplayNames when available to map ISO to full country name
+    if (typeof Intl !== "undefined" && Intl.DisplayNames) {
+      const dn = new Intl.DisplayNames(["en"], { type: "region" });
+      return dn.of(code) || code;
+    }
+    return code;
+  } catch (e) {
+    return code;
+  }
 }
 
 function CopyButton({ text }) {
@@ -76,6 +92,15 @@ export default function PathsDashboard() {
     }
     setExpandedRows(newExpanded);
   };
+
+  // Compute country frequency for legend
+  const countryFrequency = {};
+  paths.forEach((path) => {
+    if (path.entry?.country) countryFrequency[path.entry.country] = (countryFrequency[path.entry.country] || 0) + 1;
+    if (path.middle?.country) countryFrequency[path.middle.country] = (countryFrequency[path.middle.country] || 0) + 1;
+    if (path.exit?.country) countryFrequency[path.exit.country] = (countryFrequency[path.exit.country] || 0) + 1;
+  });
+  const countryLegendData = Object.entries(countryFrequency).map(([country, count]) => ({ country, count }));
 
   return (
     <div className="paths-dashboard">
@@ -183,16 +208,41 @@ export default function PathsDashboard() {
                       <React.Fragment key={path.id || idx}>
                         <tr className={isSelected ? "selected" : ""}>
                           <td className="node-name">
-                            {path.entry?.nickname || "Unknown"}
-                            <div className="node-country">{path.entry?.country}</div>
+                            <div className="node-title">{path.entry?.nickname || "Unknown"}</div>
+                            <div
+                              className="node-country"
+                              title={getCountryFullName(path.entry?.country)}
+                            >
+                              {path.entry?.country || "-"}
+                            </div>
+                            {/* Inline fingerprint preview (wraps) */}
+                            <div className="fp-inline" title={path.entry?.fingerprint || ''}>
+                              <code>{path.entry?.fingerprint || ""}</code>
+                            </div>
                           </td>
                           <td className="node-name">
-                            {path.middle?.nickname || "Unknown"}
-                            <div className="node-country">{path.middle?.country}</div>
+                            <div className="node-title">{path.middle?.nickname || "Unknown"}</div>
+                            <div
+                              className="node-country"
+                              title={getCountryFullName(path.middle?.country)}
+                            >
+                              {path.middle?.country || "-"}
+                            </div>
+                            <div className="fp-inline" title={path.middle?.fingerprint || ''}>
+                              <code>{path.middle?.fingerprint || ""}</code>
+                            </div>
                           </td>
                           <td className="node-name">
-                            {path.exit?.nickname || "Unknown"}
-                            <div className="node-country">{path.exit?.country}</div>
+                            <div className="node-title">{path.exit?.nickname || "Unknown"}</div>
+                            <div
+                              className="node-country"
+                              title={getCountryFullName(path.exit?.country)}
+                            >
+                              {path.exit?.country || "-"}
+                            </div>
+                            <div className="fp-inline" title={path.exit?.fingerprint || ''}>
+                              <code>{path.exit?.fingerprint || ""}</code>
+                            </div>
                           </td>
                           <td className="confidence-cell">
                             <div className="confidence-badge" style={{ borderColor: confidence.color }}>
@@ -397,6 +447,9 @@ export default function PathsDashboard() {
               <div className="sankey-container">
                 <SankeyChart paths={[selectedPath]} />
               </div>
+
+              {/* Country Legend */}
+              <CountryLegend countryData={countryLegendData} isExpanded={false} />
 
               <div className="legend">
                 <div className="legend-item">

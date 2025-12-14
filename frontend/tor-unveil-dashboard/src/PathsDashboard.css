@@ -283,6 +283,31 @@
   margin-top: 2px;
 }
 
+.node-title {
+  font-size: 13px;
+  color: #e2e8f0;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 220px;
+}
+
+.fp-inline {
+  margin-top: 6px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid #334155;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-family: "Courier New", monospace;
+  font-size: 12px;
+  color: #0ea5e9;
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* Confidence Cell */
 .confidence-cell {
   text-align: center;
@@ -670,6 +695,12 @@
   border-radius: 8px;
   padding: 16px;
   min-height: 300px;
+  overflow: auto;
+}
+
+.sankey-container svg, .sankey-container canvas {
+  max-width: 100%;
+  height: auto !important;
 }
 
 /* Legend */
