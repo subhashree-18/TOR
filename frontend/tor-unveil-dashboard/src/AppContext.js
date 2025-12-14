@@ -7,6 +7,7 @@ export function AppProvider({ children }) {
   const [currentTab, setCurrentTab] = useState("dashboard");
   const [selectedRelay, setSelectedRelay] = useState(null);
   const [selectedPath, setSelectedPath] = useState(null);
+  const [viewMode, setViewMode] = useState("officer"); // "officer" or "technical"
 
   // Navigation helpers
   const navigateTo = useCallback((tab) => {
@@ -38,6 +39,8 @@ export function AppProvider({ children }) {
     selectedPath,
     selectPath,
     clearSelection,
+    viewMode,
+    setViewMode,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
