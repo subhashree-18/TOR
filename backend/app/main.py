@@ -400,3 +400,136 @@ def export_report(path_id: str):
             "Content-Disposition": f'attachment; filename="tor_unveil_report_{path_id}.pdf"'
         },
     )
+
+
+# ---------------------------------------------------------
+# NEW: METADATA & PROVENANCE ENDPOINTS
+# ---------------------------------------------------------
+@app.get("/api/metadata")
+def get_metadata():
+    """
+    Returns metadata about data sources and provenance for transparency.
+    All data is metadata-only (no packet inspection, no deanonymization).
+    """
+    return {
+        "platform": "TOR Unveil - Police Cybercrime Investigation Assistant",
+        "version": "2.0",
+        "legal_status": "Investigative Support Tool - Metadata Analysis Only",
+        "data_sources": {
+            "onionoo": {
+                "name": "Onionoo - TOR Directory Services",
+                "url": "https://onionoo.torproject.org",
+                "description": "Live TOR network relay metadata, consensus documents, bandwidth statistics",
+                "refresh_frequency": "Hourly",
+                "data_types": ["relay_status", "bandwidth", "flags", "uptime", "geographic_location"]
+            },
+            "collector": {
+                "name": "CollecTor - Historical TOR Relay Data",
+                "url": "https://collector.torproject.org",
+                "description": "Archived TOR directory documents, consensus history, relay descriptors",
+                "refresh_frequency": "Daily",
+                "data_types": ["historical_consensus", "relay_descriptors", "network_archive"]
+            },
+            "geoip": {
+                "name": "GeoIP Databases",
+                "description": "IP geolocation data for relay locations (non-identifying)",
+                "data_types": ["country_code", "coordinates", "ASN"]
+            }
+        },
+        "data_limitations": [
+            "No packet capture or inspection",
+            "No deanonymization attempts",
+            "Correlation scores are plausibility estimates only, not proof",
+            "Geographic data is low-resolution (country-level)",
+            "Relay metadata is public TOR directory data only",
+            "No identification of actual users or traffic"
+        ],
+        "legal_notice": "TOR Unveil is a metadata analysis tool for law enforcement investigative support. Results must be validated through independent investigative methods. No claims of attribution or TOR deanonymization.",
+        "ethical_guidelines": {
+            "purpose": "Support legitimate cybercrime investigations",
+            "scope": "Metadata correlation only",
+            "transparency": "All scoring explained and auditable",
+            "compliance": "Indian Penal Code § 43, § 66 (cybercrime), § 120 (investigation authorization)"
+        }
+    }
+
+
+@app.get("/api/scoring-methodology")
+def scoring_methodology():
+    """
+    Explains the scoring methodology used in path plausibility calculation.
+    Ensures transparency and explainability for police review.
+    """
+    return {
+        "title": "TOR Path Plausibility Scoring Methodology",
+        "version": "2.0",
+        "purpose": "Estimate correlation plausibility between network metadata (uptime, bandwidth, flags)",
+        "important_disclaimer": "Scores are statistical estimates, NOT proof of actual network usage",
+        "score_range": {
+            "minimum": 0.30,
+            "maximum": 0.95,
+            "reason": "Prevents unrealistic claims while allowing natural variation based on relay characteristics"
+        },
+        "confidence_levels": {
+            "HIGH": {"range": [0.80, 0.95], "interpretation": "Strong correlation patterns observed"},
+            "MEDIUM": {"range": [0.50, 0.79], "interpretation": "Moderate correlation indicators present"},
+            "LOW": {"range": [0.30, 0.49], "interpretation": "Weak or limited correlation evidence"}
+        },
+        "score_components": {
+            "uptime_score": {
+                "weight": 0.30,
+                "factors": [
+                    "Temporal overlap between entry/middle/exit relay uptime windows",
+                    "Individual relay stability (days online)",
+                    "Reliability indicators from uptime patterns"
+                ],
+                "range": [0.0, 1.0]
+            },
+            "bandwidth_score": {
+                "weight": 0.45,
+                "factors": [
+                    "Advertised bandwidth of each relay",
+                    "Normalized percentile-based scoring",
+                    "Network capacity contribution"
+                ],
+                "range": [0.0, 1.0],
+                "note": "Highest variation component - differentiates between relay tiers"
+            },
+            "role_score": {
+                "weight": 0.25,
+                "factors": [
+                    "TOR directory flags: Running, Valid, Stable, Fast, Guard",
+                    "Relay role reliability and quality indicators",
+                    "Consensus participation"
+                ],
+                "range": [0.0, 1.0]
+            },
+            "as_penalty": {
+                "value": 0.70,
+                "applied_when": "Entry and Exit nodes share same Autonomous System",
+                "reason": "Network topology suggests suspicious configuration"
+            },
+            "country_penalty": {
+                "value": 0.60,
+                "applied_when": "Entry and Exit nodes in same country",
+                "reason": "Same-country entry/exit is uncommon in TOR network design"
+            }
+        },
+        "calculation": {
+            "formula": "final_score = (0.30 × uptime_score + 0.45 × bandwidth_score + 0.25 × role_score) × as_penalty × country_penalty",
+            "post_processing": "Capped at 95% maximum to ensure empirical humility",
+            "unit": "Dimensionless confidence score (0–1 scale)"
+        },
+        "explainability": {
+            "transparency": "Every component is independently calculable and auditable",
+            "auditability": "Component breakdown provided with each path score",
+            "reproducibility": "Same relay data + same algorithm = same score"
+        },
+        "limitations": {
+            "metadata_only": "Based on public TOR directory metadata, not packet analysis",
+            "timing_variation": "Relay uptime windows vary; scores reflect overlap probability",
+            "no_certainty": "Correlation does not imply causation or actual usage",
+            "false_positives": "High-scoring paths may not represent actual user traffic",
+            "false_negatives": "Low-scoring paths could still be valid network routes"
+        }
+    }

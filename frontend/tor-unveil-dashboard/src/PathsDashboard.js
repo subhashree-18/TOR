@@ -7,6 +7,7 @@ import SankeyChart from "./SankeyChart";
 import ScoreExplainer from "./ScoreExplainer";
 import IndianContextBadge from "./IndianContextBadge";
 import CountryLegend from "./CountryLegend";
+import ScoringMethodologyPanel from "./ScoringMethodologyPanel";
 import "./PathsDashboard.css";
 
 const API_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
@@ -403,6 +404,9 @@ export default function PathsDashboard() {
           {selectedPath && (
             <div className="visualization-panel">
               <h3>Selected Path Visualization</h3>
+              
+              {/* Scoring Methodology Panel - Transparent Documentation */}
+              <ScoringMethodologyPanel />
               
               {/* Score Explainer - Shows reasoning */}
               <ScoreExplainer path={selectedPath} />
