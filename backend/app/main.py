@@ -343,42 +343,172 @@ def api_timeline(limit: int = 500, start: Optional[str] = None, end: Optional[st
 # PDF REPORT GENERATOR (existing)
 # ---------------------------------------------------------
 def build_report_pdf(path_candidate: dict) -> bytes:
+    """
+    Generate professional forensic report PDF with structured sections:
+    - Executive Summary (non-technical)
+    - Technical Findings (detailed)
+    - Timeline (metadata events)
+    - Confidence & Limitations
+    - Legal & Ethical Disclaimers
+    """
     buffer = BytesIO()
     p = canvas.Canvas(buffer, pagesize=letter)
     width, height = letter
-
-    # Header
-    p.setFont("Helvetica-Bold", 14)
-    p.drawString(40, height - 40, "TOR Unveil — Path Plausibility Report")
-
-    p.setFont("Helvetica", 10)
-    p.drawString(40, height - 60, f"Generated: {datetime.datetime.utcnow().isoformat()} UTC")
-    p.drawString(40, height - 80, f"Path ID: {path_candidate.get('id')}")
-    p.drawString(40, height - 100, f"Score: {path_candidate.get('score')}")
-
-    # Components
-    p.drawString(40, height - 130, "Components:")
-    y = height - 150
-    for k, v in path_candidate.get("components", {}).items():
-        p.drawString(60, y, f"{k}: {v}")
-        y -= 14
-
-    # Entry / Middle / Exit details
-    def block(title, obj):
-        nonlocal y
-        y -= 10
-        p.setFont("Helvetica-Bold", 12)
-        p.drawString(40, y, title)
-        p.setFont("Helvetica", 10)
-        y -= 14
-        for k, v in obj.items():
-            p.drawString(60, y, f"{k}: {v}")
-            y -= 12
-
-    block("Entry Relay", path_candidate.get("entry", {}))
-    block("Middle Relay", path_candidate.get("middle", {}))
-    block("Exit Relay", path_candidate.get("exit", {}))
-
+    
+    margin_left = 40
+    margin_right = 40
+    margin_top = 40
+    y_position = height - margin_top
+    line_height = 14
+    
+    def draw_title(text, size=14):
+        nonlocal y_position
+        p.setFont("Helvetica-Bold", size)
+        p.drawString(margin_left, y_position, text)
+        y_position -= (line_height + 4)
+    
+    def draw_text(text, size=10, indent=0):
+        nonlocal y_position
+        p.setFont("Helvetica", size)
+        p.drawString(margin_left + indent, y_position, text)
+        y_position -= line_height
+    
+    def draw_separator():
+        nonlocal y_position
+        p.setLineWidth(0.5)
+        p.line(margin_left, y_position, width - margin_right, y_position)
+        y_position -= 10
+    
+    def check_page_break():
+        nonlocal y_position
+        if y_position < 100:
+            p.showPage()
+            y_position = height - margin_top
+    
+    # ========== PAGE 1: HEADER & EXECUTIVE SUMMARY ==========
+    draw_title("TOR UNVEIL – FORENSIC INVESTIGATION REPORT", 16)
+    draw_text(f"Tamil Nadu Police Cyber Crime Wing", 10)
+    draw_text(f"Generated: {datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}", 9)
+    draw_separator()
+    
+    # Report Metadata
+    draw_text(f"Path ID: {path_candidate.get('id', 'N/A')}", 10)
+    draw_text(f"Plausibility Score: {path_candidate.get('score', 0.0):.1%}", 10)
+    confidence_level = "HIGH" if path_candidate.get('score', 0) >= 0.8 else ("MEDIUM" if path_candidate.get('score', 0) >= 0.5 else "LOW")
+    draw_text(f"Confidence Level: {confidence_level}", 10)
+    y_position -= 6
+    
+    # Executive Summary
+    draw_title("EXECUTIVE SUMMARY", 12)
+    draw_text("This report presents a statistical analysis of TOR network metadata correlation,", 10)
+    draw_text("identifying a probable path configuration based on timing and topological indicators.", 10)
+    draw_text("", 10)
+    draw_text("PURPOSE: Investigative support for cybercrime cases. This analysis is metadata-only", 10)
+    draw_text("and does NOT break TOR anonymity or identify actual users.", 10)
+    draw_text("", 10)
+    draw_text("KEY FINDINGS:", 10, 10)
+    draw_text("The entry → middle → exit relay configuration identified herein exhibits", 10, 20)
+    draw_text(f"a correlation score of {path_candidate.get('score', 0.0):.1%}, indicating {confidence_level.lower()} confidence", 10, 20)
+    draw_text("that these relays were temporally and topologically compatible for routing a", 10, 20)
+    draw_text("single TOR connection.", 10, 20)
+    y_position -= 6
+    
+    check_page_break()
+    
+    # ========== TECHNICAL FINDINGS ==========
+    draw_title("TECHNICAL FINDINGS", 12)
+    
+    # Entry Relay
+    draw_title("Entry Node (Connection Entry Point)", 11)
+    entry = path_candidate.get("entry", {})
+    draw_text(f"Nickname: {entry.get('nickname', 'Unknown')}", 10, 10)
+    draw_text(f"Fingerprint: {entry.get('fingerprint', 'N/A')[:16]}...", 9, 10)
+    draw_text(f"IP Address: {entry.get('ip', 'Unknown')}", 10, 10)
+    draw_text(f"Country: {entry.get('country', 'Unknown')}", 10, 10)
+    draw_text(f"Advertised Bandwidth: {entry.get('advertised_bandwidth', 0) / 1_000_000:.1f} Mbps", 10, 10)
+    draw_text(f"Uptime: {entry.get('first_seen', 'Unknown')} to {entry.get('last_seen', 'Unknown')}", 9, 10)
+    y_position -= 4
+    
+    # Middle Relay
+    draw_title("Middle Relay (Intermediate Node)", 11)
+    middle = path_candidate.get("middle", {})
+    draw_text(f"Nickname: {middle.get('nickname', 'Unknown')}", 10, 10)
+    draw_text(f"Fingerprint: {middle.get('fingerprint', 'N/A')[:16]}...", 9, 10)
+    draw_text(f"IP Address: {middle.get('ip', 'Unknown')}", 10, 10)
+    draw_text(f"Country: {middle.get('country', 'Unknown')}", 10, 10)
+    draw_text(f"Advertised Bandwidth: {middle.get('advertised_bandwidth', 0) / 1_000_000:.1f} Mbps", 10, 10)
+    draw_text(f"Uptime: {middle.get('first_seen', 'Unknown')} to {middle.get('last_seen', 'Unknown')}", 9, 10)
+    y_position -= 4
+    
+    # Exit Relay
+    draw_title("Exit Node (Connection Exit Point)", 11)
+    exit_node = path_candidate.get("exit", {})
+    draw_text(f"Nickname: {exit_node.get('nickname', 'Unknown')}", 10, 10)
+    draw_text(f"Fingerprint: {exit_node.get('fingerprint', 'N/A')[:16]}...", 9, 10)
+    draw_text(f"IP Address: {exit_node.get('ip', 'Unknown')}", 10, 10)
+    draw_text(f"Country: {exit_node.get('country', 'Unknown')}", 10, 10)
+    draw_text(f"Advertised Bandwidth: {exit_node.get('advertised_bandwidth', 0) / 1_000_000:.1f} Mbps", 10, 10)
+    draw_text(f"Uptime: {exit_node.get('first_seen', 'Unknown')} to {exit_node.get('last_seen', 'Unknown')}", 9, 10)
+    
+    check_page_break()
+    
+    # ========== SCORE BREAKDOWN ==========
+    draw_title("SCORE COMPONENTS & METHODOLOGY", 12)
+    components = path_candidate.get("components", {})
+    draw_text("Uptime Score: Temporal overlap + stability", 10, 10)
+    draw_text(f"  Value: {components.get('uptime_score', 0):.3f} (Weight: 30%)", 9, 20)
+    draw_text("Bandwidth Score: Relay capacity distribution", 10, 10)
+    draw_text(f"  Value: {components.get('bandwidth_score', 0):.3f} (Weight: 45%)", 9, 20)
+    draw_text("Role Score: TOR directory flags (Running, Valid, Stable, etc.)", 10, 10)
+    draw_text(f"  Value: {components.get('role_score', 0):.3f} (Weight: 25%)", 9, 20)
+    y_position -= 6
+    
+    draw_text("Applied Penalties:", 10)
+    draw_text(f"Autonomous System Penalty: {components.get('as_penalty', 1.0):.2f}x", 10, 10)
+    draw_text("  (Applied if entry & exit share same AS)", 9, 20)
+    draw_text(f"Country Penalty: {components.get('country_penalty', 1.0):.2f}x", 10, 10)
+    draw_text("  (Applied if entry & exit in same country)", 9, 20)
+    y_position -= 6
+    
+    draw_text(f"Final Score: {path_candidate.get('score', 0.0):.1%}", 10)
+    draw_text("(Capped at 95% to prevent unrealistic confidence claims)", 9)
+    
+    check_page_break()
+    
+    # ========== CONFIDENCE & LIMITATIONS ==========
+    draw_title("CONFIDENCE ASSESSMENT & LIMITATIONS", 12)
+    draw_text("This analysis provides PLAUSIBILITY estimates based on metadata correlation only:", 10)
+    y_position -= 2
+    draw_text("• NO packet inspection or traffic analysis performed", 10, 10)
+    draw_text("• NO TOR anonymity broken or attempted", 10, 10)
+    draw_text("• NO user identification or endpoint deanonymization", 10, 10)
+    draw_text("• Metadata: uptime, bandwidth, flags from public TOR directory", 10, 10)
+    draw_text("• Score does NOT prove actual usage — indicates plausibility only", 10, 10)
+    y_position -= 6
+    
+    draw_text("Limitations:", 10)
+    draw_text("• False Positives: High-scoring paths may not represent actual traffic", 10, 10)
+    draw_text("• False Negatives: Low-scoring paths could still be valid routes", 10, 10)
+    draw_text("• Temporal Variability: Relay uptime windows change; scores reflect snapshots", 10, 10)
+    draw_text("• No Causation: Correlation ≠ Causation in network analysis", 10, 10)
+    y_position -= 6
+    
+    # ========== LEGAL & ETHICAL DISCLAIMER ==========
+    draw_title("LEGAL & ETHICAL STATEMENT", 12)
+    draw_text("AUTHORIZED LAW ENFORCEMENT USE ONLY", 10)
+    draw_text("This tool is designed for investigative support in cybercrime cases.", 9)
+    y_position -= 4
+    draw_text("IMPORTANT DISCLAIMERS:", 10)
+    draw_text("1. This analysis is metadata-only and does NOT break TOR anonymity", 9, 10)
+    draw_text("2. Results must be independently validated through other investigative methods", 9, 10)
+    draw_text("3. These findings are NOT admissible as proof; use for investigative guidance only", 9, 10)
+    draw_text("4. Compliance: Indian Penal Code § 43, § 66 (cybercrime), § 120 (investigation)", 9, 10)
+    draw_text("5. Court admissibility requires corroboration with non-metadata evidence", 9, 10)
+    y_position -= 6
+    
+    draw_text("Prepared by: TOR Unveil v2.0 — Tamil Nadu Police Cyber Crime Wing", 10)
+    draw_text(f"Date: {datetime.datetime.utcnow().strftime('%Y-%m-%d')}", 10)
+    
     p.showPage()
     p.save()
     buffer.seek(0)
