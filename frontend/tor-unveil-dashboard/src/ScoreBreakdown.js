@@ -20,7 +20,6 @@ const ScoreBreakdown = ({ score = 0.75, components = {}, penalties = {} }) => {
   };
 
   const conf = confidenceLevel(score);
-  const scorePercent = Math.round(score * 100);
 
   // Default components if not provided
   const defaultComponents = {
@@ -42,14 +41,13 @@ const ScoreBreakdown = ({ score = 0.75, components = {}, penalties = {} }) => {
       {/* Main Score Display */}
       <div className="score-header">
         <div className="score-circle" style={{ background: conf.bg, borderColor: conf.color }}>
-          <div className="score-value">{scorePercent}%</div>
           <div className="score-label" style={{ color: conf.color }}>
             {conf.label}
           </div>
         </div>
         <div className="score-info">
-          <p className="score-title">Path Plausibility Score</p>
-          <p className="score-subtitle">Probabilistic estimate, not certainty</p>
+          <p className="score-title">Path Plausibility Assessment</p>
+          <p className="score-subtitle">Confidence level based on correlation analysis</p>
           <div className="confidence-badge" style={{ background: conf.bg, color: conf.color }}>
             {conf.label} Confidence
           </div>
@@ -115,19 +113,14 @@ const ScoreBreakdown = ({ score = 0.75, components = {}, penalties = {} }) => {
         </div>
         <div className="interpretation-content">
           <div className="interpretation-item">
-            <span className="interpretation-label">Score Range:</span>
-            <span className="interpretation-value">30% (min) to 95% (max)</span>
-          </div>
-          <div className="interpretation-item">
-            <span className="interpretation-label">This Score:</span>
+            <span className="interpretation-label">Confidence:</span>
             <span className="interpretation-value">
-              {scorePercent}% indicates a{" "}
               <strong>
                 {conf.label === "HIGH"
-                  ? "strong correlation match"
+                  ? "Strong correlation match"
                   : conf.label === "MEDIUM"
-                  ? "moderate correlation"
-                  : "weak correlation"}
+                  ? "Moderate correlation"
+                  : "Weak correlation"}
               </strong>
             </span>
           </div>

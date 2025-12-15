@@ -111,7 +111,7 @@ export default function IndianContextBadge({ relay, entry, middle, exit }) {
       hasRiskPattern = true;
       badges.push({
         type: "high-risk-exit",
-        label: `⚠️ HIGH-RISK EXIT JURISDICTION`,
+        label: `HIGH-RISK EXIT JURISDICTION`,
         subtitle: exit.country,
         description: HIGH_RISK_COUNTRIES[exit.country.toUpperCase()],
         severity: "critical",
@@ -131,7 +131,7 @@ export default function IndianContextBadge({ relay, entry, middle, exit }) {
     hasRiskPattern = true;
     badges.push({
       type: "india-foreign-fraud",
-      label: `🚨 INDIA→FOREIGN HIGH-RISK PATTERN`,
+      label: `INDIA→FOREIGN HIGH-RISK PATTERN`,
       subtitle: `${exit.country} (Known fraud jurisdiction)`,
       description:
         "Indian user routing through high-risk country jurisdiction. STRONG INDICATOR of financial fraud targeting Indian residents (phishing, UPI scams, OTP theft, etc.)",
@@ -149,7 +149,8 @@ export default function IndianContextBadge({ relay, entry, middle, exit }) {
       {/* Severity banner at top */}
       {hasRiskPattern && (
         <div className="severity-banner critical">
-          ⚠️ INVESTIGATIVE ALERT: Pattern detected relevant to Tamil Nadu Cyber Crime Wing
+          <AlertTriangle size={16} style={{display: 'inline-block', marginRight: '6px'}} />
+          INVESTIGATIVE ALERT: Pattern detected relevant to Tamil Nadu Cyber Crime Wing
         </div>
       )}
 
@@ -195,7 +196,7 @@ export default function IndianContextBadge({ relay, entry, middle, exit }) {
 
           {hasRiskPattern && (
             <div className="info-section pattern-alert">
-              <strong>🚨 Critical Pattern Indicators:</strong>
+              <strong>Critical Pattern Indicators:</strong>
               <ul>
                 <li>India→High-Risk Country routing = Strong correlation with financial fraud</li>
                 <li>Multiple Indian nodes = Infrastructure reuse or deliberate network routing</li>

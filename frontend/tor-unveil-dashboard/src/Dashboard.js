@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useAppContext } from "./AppContext";
-import { Copy, CheckCircle, AlertCircle, XCircle } from "lucide-react";
+import { Copy, CheckCircle, X } from "lucide-react";
 import "./Dashboard.css";
 import CountryLegend from "./CountryLegend";
 import {
   ResponsiveContainer,
   BarChart,
   Bar,
+  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -17,7 +18,7 @@ import {
 const API_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
 
 // Semantic colors
-const COLORS = {
+const SEMANTIC_COLORS = {
   entryNode: "#3b82f6",     // Blue
   middleNode: "#f59e0b",    // Amber
   exitNode: "#ef4444",      // Red
@@ -33,6 +34,8 @@ export default function Dashboard() {
   const [countryData, setCountryData] = useState([]);
   const [error, setError] = useState(null);
   const [copiedFp, setCopiedFp] = useState(null);
+  const [drawerRelay, setDrawerRelay] = useState(null); // For left-side panel
+  const [showAllCountries, setShowAllCountries] = useState(false);
 
   const loadData = async () => {
     try {
@@ -52,12 +55,27 @@ export default function Dashboard() {
         counts[c] = (counts[c] || 0) + 1;
       });
 
-      const formatted = Object.keys(counts)
-        .map((c) => ({ country: c, count: counts[c] }))
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 10);
+      // Separate India and other countries
+      const indiaCount = counts["IN"] || 0;
+      const otherCounts = { ...counts };
+      delete otherCounts["IN"];
 
-      setCountryData(formatted);
+      let formatted = Object.keys(counts)
+        .map((c) => ({ country: c, count: counts[c] }))
+        .sort((a, b) => b.count - a.count);
+
+      // Always show India first if present, then others
+      if (indiaCount > 0) {
+        formatted = [
+          { country: "IN", count: indiaCount, isIndia: true },
+          ...formatted.filter((c) => c.country !== "IN"),
+        ];
+      }
+
+      // Limit to top 15 by default, but allow showing all
+      const displayData = showAllCountries ? formatted : formatted.slice(0, 15);
+
+      setCountryData(displayData);
     } catch (err) {
       console.error("Error loading data:", err);
       setError("Failed to load data from backend");
@@ -80,13 +98,18 @@ export default function Dashboard() {
     setCopiedFp(id);
     setTimeout(() => setCopiedFp(null), 2000);
   };
-
+  
   useEffect(() => {
     loadData();
-  }, []);
+  }, [showAllCountries]);
 
   const handleSelectRelay = (relay) => {
-    selectRelay(relay);
+    setDrawerRelay(relay); // Open left-side drawer instead of navigating
+  };
+
+  const handleInvestigateRelay = (relay) => {
+    selectRelay(relay); // This will navigate to timeline
+    setDrawerRelay(null); // Close drawer
   };
 
   return (
@@ -158,10 +181,25 @@ export default function Dashboard() {
           <CountryLegend countryData={countryData} isExpanded={false} />
 
           <div className="section">
-            <h3 className="section-title">Geographic Distribution</h3>
-            <p className="section-description">
-              Distribution of TOR relays across the top 10 countries. Each relay provides routing capability for TOR traffic.
-            </p>
+            <div className="section-header">
+              <div>
+                <h3 className="section-title">Geographic Distribution</h3>
+                <p className="section-description">
+                  Distribution of TOR relays across participating countries.
+                  {!showAllCountries && countryData.length > 15 && (
+                    <> (Top 15 of {countryData.length} shown) </>
+                  )}
+                </p>
+              </div>
+              {countryData.length > 15 && (
+                <button
+                  className="toggle-countries-btn"
+                  onClick={() => setShowAllCountries(!showAllCountries)}
+                >
+                  {showAllCountries ? "Show Top 15" : "Show All Countries"}
+                </button>
+              )}
+            </div>
             <div className="chart-container">
               <ResponsiveContainer width="100%" height={350}>
                 <BarChart data={countryData}>
@@ -175,7 +213,22 @@ export default function Dashboard() {
                       borderRadius: "6px"
                     }}
                   />
-                  <Bar dataKey="count" fill="#0ea5e9" radius={[8, 8, 0, 0]} />
+                  <Bar 
+                    dataKey="count" 
+                    fill="#0ea5e9" 
+                    radius={[8, 8, 0, 0]}
+                    isAnimationActive={true}
+                  >
+                    {countryData.map((entry, idx) => {
+                      const isIndia = entry.country === "IN";
+                      return (
+                        <Cell 
+                          key={`cell-${idx}`} 
+                          fill={isIndia ? "#ef4444" : "#0ea5e9"}
+                        />
+                      );
+                    })}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -249,6 +302,99 @@ export default function Dashboard() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Left-Side Drawer for Relay Details */}
+      {drawerRelay && (
+        <>
+          <div 
+            className="drawer-overlay" 
+            onClick={() => setDrawerRelay(null)}
+          ></div>
+          <div className="drawer-panel">
+            <div className="drawer-header">
+              <h2>Relay Details</h2>
+              <button 
+                className="drawer-close-btn"
+                onClick={() => setDrawerRelay(null)}
+                title="Close"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            
+            <div className="drawer-content">
+              <div className="detail-section">
+                <h3>Fingerprint</h3>
+                <code className="fp-block">{drawerRelay.fingerprint}</code>
+                <button 
+                  className="copy-button"
+                  onClick={() => copyToClipboard(drawerRelay.fingerprint, "drawer")}
+                >
+                  <Copy size={16} />
+                  {copiedFp === "drawer" ? "Copied!" : "Copy"}
+                </button>
+              </div>
+
+              <div className="detail-section">
+                <h3>Basic Information</h3>
+                <div className="detail-row">
+                  <span className="label">Nickname:</span>
+                  <span className="value">{drawerRelay.nickname || "N/A"}</span>
+                </div>
+                <div className="detail-row">
+                  <span className="label">Country:</span>
+                  <span className="value">{drawerRelay.country}</span>
+                </div>
+                <div className="detail-row">
+                  <span className="label">Role:</span>
+                  <span className="value">
+                    {drawerRelay.is_exit ? "Exit Node" : drawerRelay.is_guard ? "Guard Node" : "Middle Node"}
+                  </span>
+                </div>
+              </div>
+
+              <div className="detail-section">
+                <h3>Network Metrics</h3>
+                <div className="detail-row">
+                  <span className="label">Bandwidth:</span>
+                  <span className="value">{(drawerRelay.advertised_bandwidth / 1_000_000).toFixed(2)} Mbps</span>
+                </div>
+                <div className="detail-row">
+                  <span className="label">Uptime:</span>
+                  <span className="value">{(drawerRelay.uptime || 0).toFixed(0)} seconds</span>
+                </div>
+              </div>
+
+              <div className="detail-section">
+                <h3>Operational Details</h3>
+                <div className="detail-row">
+                  <span className="label">Platform:</span>
+                  <span className="value">{drawerRelay.platform || "Unknown"}</span>
+                </div>
+                <div className="detail-row">
+                  <span className="label">Contact:</span>
+                  <span className="value">{drawerRelay.contact || "Not provided"}</span>
+                </div>
+              </div>
+
+              <div className="drawer-actions">
+                <button 
+                  className="action-btn investigate-btn"
+                  onClick={() => handleInvestigateRelay(drawerRelay)}
+                >
+                  Begin Investigation
+                </button>
+                <button 
+                  className="action-btn secondary-btn"
+                  onClick={() => setDrawerRelay(null)}
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
         </>

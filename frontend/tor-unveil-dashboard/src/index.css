@@ -52,22 +52,22 @@ code {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #0ea5e9;
+  background: #ff6b35;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #0284c7;
+  background: #e55a25;
 }
 
 /* Selection */
 ::selection {
-  background-color: #0ea5e9;
+  background-color: #ff6b35;
   color: #0a0e27;
 }
 
 ::-moz-selection {
-  background-color: #0ea5e9;
+  background-color: #ff6b35;
   color: #0a0e27;
 }
 
@@ -102,8 +102,8 @@ input, textarea, select {
 
 input:focus, textarea:focus, select:focus {
   outline: none;
-  border-color: #0ea5e9;
-  box-shadow: 0 0 8px rgba(14, 165, 233, 0.3);
+  border-color: #ff6b35;
+  box-shadow: 0 0 8px rgba(255, 107, 53, 0.3);
 }
 
 /* Tables */
@@ -118,13 +118,13 @@ th {
 
 /* Links */
 a {
-  color: #0ea5e9;
+  color: #ff6b35;
   text-decoration: none;
   transition: color 0.2s ease;
 }
 
 a:hover {
-  color: #38bdf8;
+  color: #ffa500;
 }
 
 /* Headings */
@@ -135,12 +135,12 @@ h1, h2, h3, h4, h5, h6 {
 
 h1 {
   font-size: 28px;
-  color: #0ea5e9;
+  color: #ff6b35;
 }
 
 h2 {
   font-size: 22px;
-  color: #0ea5e9;
+  color: #ff6b35;
 }
 
 h3 {
@@ -165,7 +165,7 @@ h4 {
   --color-entry: #3b82f6;      /* Blue */
   --color-middle: #f59e0b;     /* Amber */
   --color-exit: #ef4444;        /* Red */
-  --color-primary: #0ea5e9;     /* Cyan */
+  --color-primary: #ff6b35;     /* Orange */
   --color-success: #10b981;     /* Green */
   --color-warning: #f59e0b;     /* Amber */
   --color-danger: #ef4444;      /* Red */

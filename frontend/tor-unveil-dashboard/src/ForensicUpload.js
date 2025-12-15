@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import axios from "axios";
 import {
   Upload,
   AlertCircle,
@@ -14,6 +15,8 @@ import {
 } from "lucide-react";
 import "./ForensicUpload.css";
 
+const API_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
+
 const ForensicUpload = ({ onAnalysisComplete, caseId = null }) => {
   const [files, setFiles] = useState([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -21,6 +24,7 @@ const ForensicUpload = ({ onAnalysisComplete, caseId = null }) => {
   const [dragActive, setDragActive] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const SUPPORTED_FORMATS = {
     pcap: {
@@ -127,73 +131,97 @@ const ForensicUpload = ({ onAnalysisComplete, caseId = null }) => {
     setIsAnalyzing(true);
     setErrorMessage("");
     setSuccessMessage("");
+    setUploadProgress(0);
 
     try {
-      // Simulate API analysis (in production, would upload to backend)
-      const formData = new FormData();
-      files.forEach((fileObj, idx) => {
-        formData.append(`file_${idx}`, fileObj.file);
-      });
+      // Process each file through the forensic upload API endpoint
+      // FEATURE 12: FILE UPLOAD FOR FORENSIC CORRELATION
+      // Real API call to backend /forensic/upload endpoint
+      
+      let combinedResults = null;
+      let processedCount = 0;
 
-      if (caseId) {
-        formData.append("case_id", caseId);
+      for (let fileObj of files) {
+        try {
+          const formData = new FormData();
+          formData.append("file", fileObj.file);
+
+          // Upload to real backend endpoint
+          console.log(`Uploading forensic file: ${fileObj.name}`);
+          
+          const response = await axios.post(`${API_URL}/forensic/upload`, formData, {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+            timeout: 30000, // 30 second timeout
+          });
+
+          processedCount++;
+          setUploadProgress(Math.round((processedCount / files.length) * 100));
+
+          if (response.data && response.data.status === "success") {
+            console.log(`✓ File processed: ${fileObj.name}`, response.data);
+
+            // Merge results from this file
+            if (!combinedResults) {
+              combinedResults = response.data;
+            } else {
+              // Combine results from multiple files
+              combinedResults.events.found += response.data.events.found;
+              combinedResults.correlation.overlapping_tor_paths += 
+                response.data.correlation.overlapping_tor_paths;
+              combinedResults.sample_events = [
+                ...combinedResults.sample_events,
+                ...response.data.sample_events,
+              ].slice(0, 20);
+            }
+          } else {
+            setErrorMessage(`Error - File ${fileObj.name}: Invalid response from server`);
+            return;
+          }
+        } catch (error) {
+          const errorDetail = error.response?.data?.detail || error.message;
+          setErrorMessage(`Error processing ${fileObj.name}: ${errorDetail}`);
+          console.error(`Upload error for ${fileObj.name}:`, error);
+          return;
+        }
       }
 
-      // Simulate parsing timestamps from files
-      // In production: POST to /api/forensic/parse
-      const mockResults = {
-        fileCount: files.length,
-        totalTimestamps: Math.floor(Math.random() * 500) + 100,
-        dateRange: {
-          earliest: new Date(Date.now() - 86400000).toISOString(),
-          latest: new Date().toISOString(),
-        },
-        correlatedPaths: Math.floor(Math.random() * 10) + 2,
-        correlationStrength: (Math.random() * 0.4 + 0.6).toFixed(2), // 60-100%
-        ipAddresses: [
-          "192.168.1.100",
-          "10.0.0.50",
-          "172.16.0.25",
-        ],
-        ports: [443, 8443, 9001],
-        protocols: ["TCP", "DNS", "HTTPS"],
-        suspiciousPatterns: [
-          "High-frequency connections to known TOR exit nodes",
-          "Traffic spike 2 minutes before fraud event",
-          "Multiple protocol switches within 5-second window",
-        ],
-        timeline: [
-          {
-            timestamp: new Date(Date.now() - 3600000).toISOString(),
-            event: "Initial connection to 203.0.113.50:443",
-            confidence: 95,
+      // Transform API response to match component's expected format
+      if (combinedResults) {
+        const transformedResults = {
+          fileCount: files.length,
+          totalTimestamps: combinedResults.events.found,
+          dateRange: {
+            earliest: combinedResults.events.timestamp_range.earliest,
+            latest: combinedResults.events.timestamp_range.latest,
           },
-          {
-            timestamp: new Date(Date.now() - 1800000).toISOString(),
-            event: "DNS query for suspicious domain",
-            confidence: 78,
-          },
-          {
-            timestamp: new Date().toISOString(),
-            event: "Connection to detected TOR exit node",
-            confidence: 87,
-          },
-        ],
-      };
+          correlatedPaths: combinedResults.correlation.overlapping_tor_paths,
+          correlationStrength: (
+            (combinedResults.correlation.overlapping_tor_paths / 
+            Math.max(1, combinedResults.correlation.total_paths_checked)) * 100
+          ).toFixed(1),
+          filesProcessed: combinedResults.message,
+          processingTime: combinedResults.processing_time_seconds,
+          // Extract metadata from paths
+          torPaths: combinedResults.correlation.paths || [],
+          sampleEvents: combinedResults.sample_events || [],
+        };
 
-      // Simulate network delay
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+        setAnalysisResults(transformedResults);
+        setSuccessMessage("✓ Forensic analysis complete!");
 
-      setAnalysisResults(mockResults);
-      setSuccessMessage("Analysis complete!");
-
-      if (onAnalysisComplete) {
-        onAnalysisComplete(mockResults);
+        if (onAnalysisComplete) {
+          onAnalysisComplete(transformedResults);
+        }
       }
     } catch (error) {
-      setErrorMessage(`Error - Analysis failed: ${error.message}`);
+      const errorMsg = error.response?.data?.detail || error.message || "Unknown error";
+      setErrorMessage(`Error - Forensic analysis failed: ${errorMsg}`);
+      console.error("Forensic upload error:", error);
     } finally {
       setIsAnalyzing(false);
+      setUploadProgress(0);
     }
   };
 

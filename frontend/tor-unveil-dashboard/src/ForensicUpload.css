@@ -3,11 +3,12 @@
   flex-direction: column;
   gap: 20px;
   padding: 20px;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  background: linear-gradient(135deg, #1a3d5c 0%, #0f172a 100%);
   border-radius: 8px;
-  border: 1px solid #0ea5e9;
+  border: 2px solid #ff6b35;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   color: #e0e0e0;
+  box-shadow: 0 0 20px rgba(255, 107, 53, 0.1);
 }
 
 /* Header */
@@ -16,13 +17,16 @@
   flex-direction: column;
   gap: 8px;
   padding-bottom: 12px;
-  border-bottom: 1px solid #0ea5e9;
+  border-bottom: 2px solid #ff6b35;
 }
 
 .upload-header h2 {
   font-size: 24px;
   font-weight: 600;
-  color: #0ea5e9;
+  background: linear-gradient(135deg, #ff6b35 0%, #ffa500 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   margin: 0;
   display: flex;
   align-items: center;
@@ -41,7 +45,7 @@
   justify-content: space-between;
   align-items: center;
   padding-bottom: 12px;
-  border-bottom: 1px solid #10b981;
+  border-bottom: 2px solid #10b981;
 }
 
 .results-title {
@@ -62,20 +66,22 @@
 }
 
 .clear-button {
-  background: #ef4444;
+  background: #ff6b35;
   border: none;
   color: white;
   border-radius: 4px;
-  padding: 8px;
+  padding: 8px 12px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s;
+  transition: all 0.2s;
+  font-weight: 600;
 }
 
 .clear-button:hover {
-  background: #dc2626;
+  background: #e55a25;
+  box-shadow: 0 0 15px rgba(255, 107, 53, 0.4);
 }
 
 /* Results View */
@@ -91,8 +97,8 @@
 }
 
 .result-card {
-  background: #0f3460;
-  border: 1px solid #0ea5e9;
+  background: #111c3a;
+  border: 1px solid rgba(255, 107, 53, 0.2);
   border-radius: 6px;
   padding: 15px;
   display: flex;
@@ -102,7 +108,7 @@
 
 .result-label {
   font-size: 12px;
-  color: #0ea5e9;
+  color: #ff6b35;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -155,7 +161,7 @@
 .format-info h3 {
   font-size: 16px;
   font-weight: 600;
-  color: #0ea5e9;
+  color: #ff6b35;
   margin: 0;
 }
 
@@ -167,7 +173,7 @@
 
 .format-card {
   background: #0f3460;
-  border: 1px solid #0ea5e9;
+  border: 1px solid #ff6b35;
   border-radius: 6px;
   padding: 12px;
   display: flex;
@@ -183,7 +189,7 @@
 }
 
 .format-card svg {
-  color: #0ea5e9;
+  color: #ff6b35;
 }
 
 .format-name {
@@ -199,7 +205,7 @@
 
 .format-size {
   font-size: 11px;
-  color: #0ea5e9;
+  color: #ff6b35;
   font-weight: 600;
 }
 
@@ -211,7 +217,7 @@
   justify-content: center;
   gap: 12px;
   padding: 40px 20px;
-  border: 2px dashed #0ea5e9;
+  border: 2px dashed #ff6b35;
   border-radius: 8px;
   background: #0f3460;
   cursor: pointer;
@@ -231,14 +237,14 @@
 }
 
 .drop-zone .upload-icon {
-  color: #0ea5e9;
+  color: #ff6b35;
   opacity: 0.7;
 }
 
 .drop-zone h3 {
   font-size: 18px;
   font-weight: 600;
-  color: #0ea5e9;
+  color: #ff6b35;
   margin: 0;
 }
 
@@ -307,7 +313,7 @@
 .files-section h3 {
   font-size: 15px;
   font-weight: 600;
-  color: #0ea5e9;
+  color: #ff6b35;
   margin: 0;
 }
 
@@ -323,7 +329,7 @@
   align-items: center;
   padding: 12px;
   background: #0f3460;
-  border: 1px solid #0ea5e9;
+  border: 1px solid #ff6b35;
   border-radius: 6px;
   transition: border-color 0.2s;
 }
@@ -341,7 +347,7 @@
 }
 
 .file-info svg {
-  color: #0ea5e9;
+  color: #ff6b35;
   flex-shrink: 0;
 }
 
@@ -385,7 +391,7 @@
 /* Analyze Button */
 .analyze-button {
   padding: 12px 20px;
-  background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
+  background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%);
   border: none;
   color: white;
   font-size: 15px;
@@ -443,13 +449,13 @@
   padding: 15px;
   background: #0f3460;
   border-radius: 6px;
-  border: 1px solid #0ea5e9;
+  border: 1px solid #ff6b35;
 }
 
 .results-section h3 {
   font-size: 15px;
   font-weight: 600;
-  color: #0ea5e9;
+  color: #ff6b35;
   margin: 0;
 }
 
@@ -462,8 +468,8 @@
 
 .protocol-badge {
   background: #1f2937;
-  border: 1px solid #0ea5e9;
-  color: #0ea5e9;
+  border: 1px solid #ff6b35;
+  color: #ff6b35;
   padding: 6px 12px;
   border-radius: 4px;
   font-size: 12px;
@@ -512,14 +518,14 @@
   gap: 15px;
   padding: 12px;
   background: #1a1a2e;
-  border-left: 3px solid #0ea5e9;
+  border-left: 3px solid #ff6b35;
   border-radius: 4px;
 }
 
 .timeline-time {
   font-size: 13px;
   font-weight: 600;
-  color: #0ea5e9;
+  color: #ff6b35;
   white-space: nowrap;
   min-width: 80px;
 }
@@ -547,13 +553,13 @@
   gap: 12px;
   padding: 15px;
   background: #1f2937;
-  border: 1px solid #0ea5e9;
+  border: 1px solid #ff6b35;
   border-radius: 6px;
   color: #b0b0b0;
 }
 
 .legal-notice svg {
-  color: #0ea5e9;
+  color: #ff6b35;
   flex-shrink: 0;
   margin-top: 2px;
 }
@@ -564,7 +570,7 @@
 }
 
 .legal-notice strong {
-  color: #0ea5e9;
+  color: #ff6b35;
 }
 
 /* Methodology Footer */

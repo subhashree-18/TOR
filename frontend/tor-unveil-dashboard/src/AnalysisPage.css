@@ -8,7 +8,7 @@
 
 .explanation-banner {
   background: linear-gradient(135deg, #1e3a5f 0%, #2d5a7b 100%);
-  border-left: 4px solid #0ea5e9;
+  border-left: 4px solid #ff6b35;
   padding: 16px 20px;
   border-radius: 8px;
   margin-bottom: 24px;
@@ -18,7 +18,7 @@
 .explanation-banner h2 {
   margin: 0 0 8px 0;
   font-size: 18px;
-  color: #0ea5e9;
+  color: #ff6b35;
 }
 
 .explanation-banner p {
@@ -41,7 +41,7 @@
   width: 100%;
   padding: 12px 16px;
   background: linear-gradient(135deg, #1e3a5f 0%, #2d5a7b 100%);
-  color: #0ea5e9;
+  color: #ff6b35;
   border: none;
   font-size: 14px;
   font-weight: 700;
@@ -70,12 +70,12 @@
   background: #1a2332;
   padding: 12px;
   border-radius: 4px;
-  border-left: 3px solid #0ea5e9;
+  border-left: 3px solid #ff6b35;
 }
 
 .methodology-item h4 {
   margin: 0 0 4px 0;
-  color: #0ea5e9;
+  color: #ff6b35;
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -129,7 +129,7 @@
 
 .selected-info h3 {
   margin: 0 0 16px 0;
-  color: #0ea5e9;
+  color: #ff6b35;
   font-size: 16px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -145,7 +145,7 @@
   background: #0f172a;
   padding: 12px;
   border-radius: 6px;
-  border-left: 3px solid #0ea5e9;
+  border-left: 3px solid #ff6b35;
 }
 
 .info-item label {
@@ -177,13 +177,13 @@
 }
 
 .fingerprint-display:hover {
-  border-color: #0ea5e9;
+  border-color: #ff6b35;
   box-shadow: 0 0 8px rgba(14, 165, 233, 0.3);
 }
 
 .role-badge {
   display: inline-block;
-  background: #0ea5e9;
+  background: #ff6b35;
   color: #0a0e27;
   padding: 4px 8px;
   border-radius: 4px;
@@ -255,7 +255,7 @@
 
 .flow-arrow {
   font-size: 24px;
-  color: #0ea5e9;
+  color: #ff6b35;
   font-weight: bold;
 }
 
@@ -272,13 +272,13 @@
   padding: 24px;
   border-radius: 8px;
   text-align: center;
-  border: 1px solid #0ea5e9;
+  border: 1px solid #ff6b35;
 }
 
 .score-value {
   font-size: 48px;
   font-weight: 700;
-  color: #0ea5e9;
+  color: #ff6b35;
   margin-bottom: 8px;
 }
 
@@ -331,8 +331,8 @@
 }
 
 .tab-btn.active {
-  color: #0ea5e9;
-  border-bottom-color: #0ea5e9;
+  color: #ff6b35;
+  border-bottom-color: #ff6b35;
 }
 
 /* Tab Content */
@@ -345,7 +345,7 @@
 
 .tab-content h3 {
   margin: 0 0 16px 0;
-  color: #0ea5e9;
+  color: #ff6b35;
   font-size: 16px;
 }
 
@@ -377,7 +377,7 @@
   top: 0;
   bottom: 0;
   width: 2px;
-  background: linear-gradient(180deg, #0ea5e9 0%, #0284c7 100%);
+  background: linear-gradient(180deg, #ff6b35 0%, #e55a25 100%);
 }
 
 .timeline-event {
@@ -396,7 +396,7 @@
   top: 4px;
   width: 12px;
   height: 12px;
-  background: #0ea5e9;
+  background: #ff6b35;
   border: 3px solid #0a0e27;
   border-radius: 50%;
   box-shadow: 0 0 12px rgba(14, 165, 233, 0.5);
@@ -412,7 +412,7 @@
 .event-type {
   font-size: 13px;
   font-weight: 700;
-  color: #0ea5e9;
+  color: #ff6b35;
   margin-bottom: 4px;
 }
 
@@ -510,7 +510,7 @@
   padding: 8px;
   background: rgba(14, 165, 233, 0.05);
   border-radius: 4px;
-  border-left: 2px solid #0ea5e9;
+  border-left: 2px solid #ff6b35;
 }
 
 .component-label {
@@ -521,7 +521,7 @@
 
 .component-value {
   font-size: 13px;
-  color: #0ea5e9;
+  color: #ff6b35;
   font-weight: 600;
   font-family: "Courier New", monospace;
 }

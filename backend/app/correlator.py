@@ -165,12 +165,17 @@ def path_plausibility(entry: Dict, middle: Dict, exit: Dict) -> Dict:
 
     # Weighted sum to final plausibility (explainable)
     # NEW WEIGHTING: Emphasize bandwidth (has variation), less on role (all similar)
-    # 30% uptime, 45% bandwidth (highest variation), 25% role quality
-    final = (0.30 * uptime_score) + (0.45 * bw_score) + (0.25 * role_s)
+    # 35% uptime, 50% bandwidth (highest variation), 15% role quality
+    final = (0.35 * uptime_score) + (0.50 * bw_score) + (0.15 * role_s)
     final = final * as_penalty * country_penalty
     
-    # CRITICAL: Cap at 95% to allow realistic variation while preventing unrealistic claims
-    # Let scores vary naturally: 30-95% range based on actual relay characteristics
+    # IMPROVED: Allow wider variation (20-95%) instead of clustering around 85%
+    # Apply logarithmic scaling to expand the middle range
+    # This creates natural differentiation in scores
+    if final > 0.5:
+        # For high scores, use logarithmic scaling to spread out clustering
+        final = 0.50 + (0.45 * (1.0 - pow(0.5, (final - 0.5) * 3)))
+    
     final = max(0.0, min(0.95, final))
 
     return {
@@ -290,9 +295,32 @@ def score_candidate_paths(guards, middles, exits, top_k:int=1000, max_combinatio
                 result = path_plausibility(g, m, x)
                 candidate = {
                     "id": str(uuid.uuid4()),
-                    "entry": {"fingerprint": g.get("fingerprint"), "nickname": g.get("nickname"), "ip": g.get("ip"), "country": g.get("country"), "as": g.get("as")},
-                    "middle": {"fingerprint": m.get("fingerprint"), "nickname": m.get("nickname"), "ip": m.get("ip"), "country": m.get("country"), "as": m.get("as")},
-                    "exit": {"fingerprint": x.get("fingerprint"), "nickname": x.get("nickname"), "ip": x.get("ip"), "country": x.get("country"), "as": x.get("as")},
+                    "entry": {
+                        "fingerprint": g.get("fingerprint"),
+                        "nickname": g.get("nickname"),
+                        "ip": g.get("ip"),
+                        "country": g.get("country"),
+                        "as": g.get("as"),
+                        "advertised_bandwidth": g.get("advertised_bandwidth"),
+                        "is_guard": g.get("is_guard")
+                    },
+                    "middle": {
+                        "fingerprint": m.get("fingerprint"),
+                        "nickname": m.get("nickname"),
+                        "ip": m.get("ip"),
+                        "country": m.get("country"),
+                        "as": m.get("as"),
+                        "advertised_bandwidth": m.get("advertised_bandwidth")
+                    },
+                    "exit": {
+                        "fingerprint": x.get("fingerprint"),
+                        "nickname": x.get("nickname"),
+                        "ip": x.get("ip"),
+                        "country": x.get("country"),
+                        "as": x.get("as"),
+                        "advertised_bandwidth": x.get("advertised_bandwidth"),
+                        "is_exit": x.get("is_exit")
+                    },
                     "score": result["score"],
                     "components": result["components"],
                     "generated_at": datetime.utcnow().isoformat() + "Z"

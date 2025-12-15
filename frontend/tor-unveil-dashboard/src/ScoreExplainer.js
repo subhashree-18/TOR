@@ -25,7 +25,6 @@ export default function ScoreExplainer({ path, expanded = false, onToggle }) {
   }
 
   const score = path.score || 0;
-  const scorePercent = (score * 100).toFixed(1);
   
   // Determine confidence level
   let confidenceLevel, confidenceColor;
@@ -113,9 +112,8 @@ export default function ScoreExplainer({ path, expanded = false, onToggle }) {
             style={{ borderColor: confidenceColor }}
           >
             <span className="confidence-label" style={{ color: confidenceColor }}>
-              {confidenceLevel}
+              {confidenceLevel} Confidence
             </span>
-            <span className="score-value">{scorePercent}%</span>
           </span>
           {isExpanded ? (
             <ChevronUp size={20} />

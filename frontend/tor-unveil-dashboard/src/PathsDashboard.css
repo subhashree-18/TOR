@@ -9,7 +9,7 @@
 /* Explanation Banner */
 .explanation-banner {
   background: linear-gradient(135deg, #1e3a5f 0%, #2d5a7b 100%);
-  border-left: 4px solid #0ea5e9;
+  border-left: 4px solid #ff6b35;
   padding: 20px;
   border-radius: 8px;
   margin-bottom: 28px;
@@ -19,7 +19,7 @@
 .explanation-banner h2 {
   margin: 0 0 10px 0;
   font-size: 18px;
-  color: #0ea5e9;
+  color: #ff6b35;
   font-weight: 700;
 }
 
@@ -42,7 +42,7 @@
 
 .dashboard-header h1 {
   font-size: 28px;
-  color: #0ea5e9;
+  color: #ff6b35;
   margin: 0;
   font-weight: 700;
   flex: 1;
@@ -50,7 +50,7 @@
 }
 
 .refresh-btn {
-  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+  background: linear-gradient(135deg, #ff6b35 0%, #e55a25 100%);
   color: #0a0e27;
   border: none;
   padding: 12px 24px;
@@ -85,7 +85,7 @@
   width: 100%;
   padding: 16px 20px;
   background: linear-gradient(135deg, #1e3a5f 0%, #2d5a7b 100%);
-  color: #0ea5e9;
+  color: #ff6b35;
   border: none;
   font-size: 14px;
   font-weight: 700;
@@ -117,12 +117,12 @@
   background: #1a2332;
   padding: 16px;
   border-radius: 6px;
-  border-left: 3px solid #0ea5e9;
+  border-left: 3px solid #ff6b35;
 }
 
 .methodology-item h4 {
   margin: 0 0 8px 0;
-  color: #0ea5e9;
+  color: #ff6b35;
   font-size: 13px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -172,7 +172,7 @@
   width: 40px;
   height: 40px;
   border: 3px solid #334155;
-  border-top-color: #0ea5e9;
+  border-top-color: #ff6b35;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
   margin-bottom: 20px;
@@ -211,7 +211,7 @@
 .paths-table-section h3 {
   margin: 0 0 8px 0;
   font-size: 16px;
-  color: #0ea5e9;
+  color: #ff6b35;
   font-weight: 700;
 }
 
@@ -221,7 +221,7 @@
   margin-bottom: 16px;
   padding: 12px;
   background: rgba(14, 165, 233, 0.05);
-  border-left: 3px solid #0ea5e9;
+  border-left: 3px solid #ff6b35;
   border-radius: 4px;
 }
 
@@ -239,7 +239,7 @@
 
 .paths-table thead tr {
   background: #1e3a5f;
-  border-bottom: 2px solid #0ea5e9;
+  border-bottom: 2px solid #ff6b35;
 }
 
 .paths-table th {
@@ -247,7 +247,7 @@
   text-align: left;
   font-size: 11px;
   text-transform: uppercase;
-  color: #0ea5e9;
+  color: #ff6b35;
   font-weight: 700;
   letter-spacing: 0.5px;
 }
@@ -263,7 +263,7 @@
 
 .paths-table tbody tr.selected {
   background: rgba(14, 165, 233, 0.15);
-  border-left: 3px solid #0ea5e9;
+  border-left: 3px solid #ff6b35;
 }
 
 .paths-table td {
@@ -301,7 +301,7 @@
   border-radius: 6px;
   font-family: "Courier New", monospace;
   font-size: 12px;
-  color: #0ea5e9;
+  color: #ff6b35;
   max-width: 260px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -339,7 +339,7 @@
 /* Score Cell */
 .score-cell code {
   background: rgba(14, 165, 233, 0.1);
-  color: #0ea5e9;
+  color: #ff6b35;
   padding: 4px 8px;
   border-radius: 4px;
   font-family: "Courier New", monospace;
@@ -349,8 +349,8 @@
 /* Select Button */
 .select-btn {
   background: #1e3a5f;
-  color: #0ea5e9;
-  border: 1px solid #0ea5e9;
+  color: #ff6b35;
+  border: 1px solid #ff6b35;
   padding: 6px 12px;
   border-radius: 4px;
   cursor: pointer;
@@ -362,12 +362,12 @@
 }
 
 .select-btn:hover {
-  background: #0ea5e9;
+  background: #ff6b35;
   color: #0a0e27;
 }
 
 .select-btn.selected {
-  background: #0ea5e9;
+  background: #ff6b35;
   color: #0a0e27;
 }
 
@@ -490,7 +490,7 @@
   flex: 1;
   font-family: "Courier New", monospace;
   font-size: 12px;
-  color: #0ea5e9;
+  color: #ff6b35;
   font-weight: 600;
   user-select: all;
   word-break: break-all;
@@ -499,7 +499,7 @@
 .copy-btn {
   background: transparent;
   border: none;
-  color: #0ea5e9;
+  color: #ff6b35;
   cursor: pointer;
   padding: 4px;
   display: flex;
@@ -532,7 +532,7 @@
   margin: 0 0 12px 0;
   font-size: 13px;
   text-transform: uppercase;
-  color: #0ea5e9;
+  color: #ff6b35;
   font-weight: 700;
   letter-spacing: 0.5px;
 }
@@ -563,7 +563,7 @@
 .component-value {
   font-size: 14px;
   font-weight: 700;
-  color: #0ea5e9;
+  color: #ff6b35;
   font-family: "Courier New", monospace;
 }
 
@@ -574,7 +574,7 @@
   line-height: 1.5;
   padding: 12px;
   background: rgba(14, 165, 233, 0.05);
-  border-left: 2px solid #0ea5e9;
+  border-left: 2px solid #ff6b35;
   border-radius: 4px;
 }
 
@@ -593,14 +593,14 @@
 .visualization-panel h3 {
   margin: 0 0 12px 0;
   font-size: 14px;
-  color: #0ea5e9;
+  color: #ff6b35;
   font-weight: 700;
 }
 
 /* Confidence Summary */
 .confidence-summary {
   background: linear-gradient(135deg, #1e3a5f 0%, #2d5a7b 100%);
-  border: 1px solid #0ea5e9;
+  border: 1px solid #ff6b35;
   border-radius: 8px;
   padding: 16px;
   text-align: center;
@@ -613,7 +613,7 @@
 .confidence-percent {
   font-size: 36px;
   font-weight: 700;
-  color: #0ea5e9;
+  color: #ff6b35;
   margin-bottom: 4px;
 }
 
@@ -684,7 +684,7 @@
 
 .flow-arrow {
   font-size: 20px;
-  color: #0ea5e9;
+  color: #ff6b35;
   font-weight: bold;
 }
 
@@ -711,7 +711,7 @@
   padding: 12px;
   background: #0f172a;
   border-radius: 6px;
-  border-left: 3px solid #0ea5e9;
+  border-left: 3px solid #ff6b35;
 }
 
 .legend-item {
@@ -757,7 +757,7 @@
 }
 
 .legal-note strong {
-  color: #0ea5e9;
+  color: #ff6b35;
   font-weight: 700;
 }
 

@@ -8,7 +8,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { BarChart2, FileText, Download, Upload, Zap, Briefcase } from "lucide-react";
-import InvestigationWorkflow from "./InvestigationWorkflow";
+import ImprovedInvestigationWorkflow from "./ImprovedInvestigationWorkflow";
 import MandatoryDisclaimer from "./MandatoryDisclaimer";
 import "./InvestigationPage.css";
 
@@ -16,7 +16,11 @@ const API_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
 
 export default function InvestigationPage() {
   const navigate = useNavigate();
-  const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
+  const [disclaimerAccepted, setDisclaimerAccepted] = useState(() => {
+    // Check localStorage for persisted acceptance
+    const stored = localStorage.getItem("disclaimerAccepted");
+    return stored === "true";
+  });
   const [caseData, setCaseData] = useState({
     caseId: "CASE-2025-001",
     officerName: "Officer",
@@ -35,16 +39,17 @@ export default function InvestigationPage() {
       try {
         // Get relay count
         const relaysRes = await axios.get(`${API_URL}/relays?limit=1`);
-        const totalRelays = relaysRes.data?.total || 0;
+        const totalRelays = (relaysRes.data?.total || relaysRes.data?.count || 0);
         setTorDataCount(totalRelays);
 
         // Get top paths to show evidence count
         const pathsRes = await axios.get(`${API_URL}/paths/top?limit=200`);
-        const paths = pathsRes.data || [];
+        // Handle both direct array and nested response structure
+        const paths = Array.isArray(pathsRes.data) ? pathsRes.data : (pathsRes.data?.results || []);
         setPathsFound(paths.length);
 
         // Count high-confidence paths (>80%)
-        const highConf = paths.filter((p) => (p.score || 0) > 0.80).length;
+        const highConf = Array.isArray(paths) ? paths.filter((p) => (p.score || 0) > 0.80).length : 0;
         setHighConfidencePaths(highConf);
 
         setLoading(false);
@@ -129,7 +134,10 @@ export default function InvestigationPage() {
       {!disclaimerAccepted && (
         <MandatoryDisclaimer
           isModal={true}
-          onAcknowledge={() => setDisclaimerAccepted(true)}
+          onAcknowledge={() => {
+            setDisclaimerAccepted(true);
+            localStorage.setItem("disclaimerAccepted", "true"); // Persist acceptance
+          }}
         />
       )}
 
@@ -137,7 +145,7 @@ export default function InvestigationPage() {
       <div className="page-header">
         <h1><Briefcase size={32} style={{marginRight: "10px", verticalAlign: "middle"}} />Active Investigation</h1>
         <p className="page-subtitle">
-          Police Cybercrime Unit Investigation Workflow
+          Tamil Nadu Police Cybercrime Investigation Unit - TOR Network Forensics
         </p>
       </div>
 
@@ -213,7 +221,7 @@ export default function InvestigationPage() {
           <p>Loading investigation data...</p>
         </div>
       ) : (
-        <InvestigationWorkflow
+        <ImprovedInvestigationWorkflow
           caseId={caseData.caseId}
           officerName={caseData.officerName}
           startedAt={caseData.startedAt}

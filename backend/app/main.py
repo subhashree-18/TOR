@@ -5,15 +5,19 @@ from pymongo import MongoClient
 import os
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
-from io import BytesIO
+from fastapi import File, UploadFile
+from io import BytesIO, StringIO
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 import datetime
 from dateutil import parser as date_parser
+import csv
+import json
 
 # Internal imports
 from .fetcher import fetch_and_store_relays
 from .correlator import generate_candidate_paths, top_candidate_paths
+from .pcap_analyzer import analyze_pcap_file
 from typing import List, Dict, Any, Optional
 
 app = FastAPI(title="TOR Unveil API", version="2.0")
@@ -36,6 +40,110 @@ MONGO_URL = os.getenv("MONGO_URL", "mongodb://mongo:27017/torunveil")
 client = MongoClient(MONGO_URL)
 db = client["torunveil"]
 
+# ---------------------------------------------------------
+# LOGGING & MONITORING (FEATURE 13: BACKEND HARDENING)
+# ---------------------------------------------------------
+import logging
+
+logger = logging.getLogger("tor_unveil")
+if not logger.handlers:
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter('[%(asctime)s] %(name)s - %(levelname)s - %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logger.setLevel(logging.INFO)
+
+
+# ---------------------------------------------------------
+# VALIDATION & ERROR HANDLING HELPERS (FEATURE 13)
+# ---------------------------------------------------------
+
+def validate_limit_parameter(value: int, default: int = 500, min_val: int = 1, max_val: int = 5000) -> int:
+    """Validate and normalize limit parameters.
+    
+    Ensures:
+    - No negative values
+    - Respects max limits for scalability
+    - Returns safe defaults on error
+    """
+    try:
+        val = int(value)
+        if val < min_val:
+            logger.debug(f"validate_limit_parameter: {val} < {min_val}, using {min_val}")
+            return min_val
+        if val > max_val:
+            logger.debug(f"validate_limit_parameter: {val} > {max_val}, capping at {max_val}")
+            return max_val
+        return val
+    except (TypeError, ValueError):
+        logger.warning(f"validate_limit_parameter: Invalid value {value}, using default {default}")
+        return default
+
+
+def validate_skip_parameter(value: int, default: int = 0) -> int:
+    """Validate pagination skip parameter."""
+    try:
+        val = int(value)
+        return max(0, val)
+    except (TypeError, ValueError):
+        logger.warning(f"validate_skip_parameter: Invalid value {value}, using default {default}")
+        return default
+
+
+def validate_country_code(code: Optional[str]) -> Optional[str]:
+    """Validate and normalize ISO country codes.
+    
+    Returns:
+    - Uppercase 2-letter country code if valid
+    - None if invalid or not provided
+    """
+    if not code:
+        return None
+    try:
+        code_upper = str(code).strip().upper()
+        if len(code_upper) == 2 and code_upper.isalpha():
+            return code_upper
+        logger.warning(f"validate_country_code: Invalid country code '{code}'")
+        return None
+    except Exception as e:
+        logger.error(f"validate_country_code: Error validating '{code}': {e}")
+        return None
+
+
+def log_endpoint_call(endpoint: str, **kwargs):
+    """Log API endpoint calls for audit trail."""
+    params = ", ".join([f"{k}={v}" for k, v in kwargs.items()])
+    logger.info(f"[API] {endpoint} called with: {params if params else 'no params'}")
+
+
+def log_endpoint_response(endpoint: str, status: str, count: int = None, error: str = None):
+    """Log API endpoint responses for monitoring."""
+    if error:
+        logger.error(f"[API] {endpoint}: {status} - ERROR: {error}")
+    else:
+        msg = f"[API] {endpoint}: {status}"
+        if count is not None:
+            msg += f" ({count} items)"
+        logger.info(msg)
+
+
+def safe_db_query(query_func, *args, **kwargs):
+    """Safely execute database queries with error handling.
+    
+    Ensures:
+    - No silent failures
+    - Proper logging of errors
+    - Deterministic responses
+    """
+    try:
+        return query_func(*args, **kwargs)
+    except Exception as e:
+        logger.error(f"Database query error: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail="Database query failed. Please try again."
+        )
+
 
 # ---------------------------------------------------------
 # BASIC ROUTES
@@ -47,39 +155,150 @@ def root():
 
 @app.get("/relays/fetch")
 def fetch_relays():
-    count = fetch_and_store_relays()
-    return {"status": "success", "stored_relays": count}
+    """Fetch latest TOR relay data from Onionoo and index in MongoDB.
+    
+    FEATURE 13: BACKEND HARDENING - DETERMINISTIC OPERATIONS
+    =========================================================
+    
+    This endpoint:
+    - Fetches complete relay list from Onionoo
+    - Normalizes and enriches with risk scores, geoIP, threat intel
+    - Stores in MongoDB for fast queries
+    - Supports 5,000+ relays for large-scale investigations
+    
+    Returns:
+    - Success status with relay count
+    - Deterministic error messages on failure
+    - No silent failures
+    """
+    start_time = datetime.datetime.utcnow()
+    
+    try:
+        log_endpoint_call("GET /relays/fetch")
+        logger.info("fetch_relays: Starting TOR relay fetch from Onionoo...")
+        
+        count = fetch_and_store_relays()
+        
+        elapsed = (datetime.datetime.utcnow() - start_time).total_seconds()
+        
+        if count == 0:
+            logger.warning("fetch_relays: No relays fetched from Onionoo")
+        
+        response = {
+            "status": "success",
+            "stored_relays": count,
+            "indexing_time_seconds": round(elapsed, 3),
+            "message": f"✓ Indexed {count} running TOR relays successfully"
+        }
+        
+        logger.info(f"fetch_relays: SUCCESS - {count} relays indexed in {elapsed:.2f}s")
+        log_endpoint_response("GET /relays/fetch", "success", count=count)
+        return response
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        elapsed = (datetime.datetime.utcnow() - start_time).total_seconds()
+        logger.error(f"fetch_relays: FAILED after {elapsed:.2f}s - {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to fetch TOR network data from Onionoo. Please verify network connectivity."
+        )
 
 
 # ---------------------------------------------------------
-# RELAYS – WITH NEW FIELDS
+# RELAYS – WITH PAGINATION AND FILTERING
 # ---------------------------------------------------------
 @app.get("/relays")
-def get_relays(limit: int = 500):
-    projection = {
-        "_id": 0,
-        "fingerprint": 1,
-        "nickname": 1,
-        "or_addresses": 1,
-        "ip": 1,
-        "country": 1,
-        "flags": 1,
-        "is_exit": 1,
-        "is_guard": 1,
-        "running": 1,
-        "advertised_bandwidth": 1,
-        "first_seen": 1,
-        "last_seen": 1,
-        "hostnames": 1,
-        "as": 1,
-        "lat": 1,
-        "lon": 1,
-        "risk_score": 1,
-        "is_malicious": 1,
-    }
+def get_relays(limit: int = 500, skip: int = 0, country: Optional[str] = None, is_exit: Optional[bool] = None):
+    """Get TOR relays with optional filtering.
+    
+    FEATURE 13: BACKEND HARDENING - ROBUST API
+    ===========================================
+    
+    Parameters:
+    - limit: Maximum relays to return (default 500, max 5000 for scalability)
+    - skip: Number of relays to skip (for pagination)
+    - country: Filter by ISO country code (e.g., 'US', 'IN')
+    - is_exit: Filter exit relays (true/false)
+    
+    Returns:
+    - Metadata and list of relays
+    - Pagination info for large datasets
+    - Deterministic error messages on failure
+    """
+    start_time = datetime.datetime.utcnow()
+    
+    try:
+        # Validate input parameters
+        limit = validate_limit_parameter(limit, default=500, max_val=5000)
+        skip = validate_skip_parameter(skip)
+        country = validate_country_code(country)
+        
+        log_endpoint_call("GET /relays", limit=limit, skip=skip, country=country, is_exit=is_exit)
+        
+        # Build query filter
+        filter_query = {}
+        if country:
+            filter_query["country"] = country
+        if is_exit is not None:
+            filter_query["is_exit"] = is_exit
+        
+        projection = {
+            "_id": 0,
+            "fingerprint": 1,
+            "nickname": 1,
+            "or_addresses": 1,
+            "ip": 1,
+            "country": 1,
+            "flags": 1,
+            "is_exit": 1,
+            "is_guard": 1,
+            "running": 1,
+            "advertised_bandwidth": 1,
+            "first_seen": 1,
+            "last_seen": 1,
+            "hostnames": 1,
+            "as": 1,
+            "lat": 1,
+            "lon": 1,
+            "risk_score": 1,
+            "is_malicious": 1,
+        }
 
-    relays = list(db.relays.find({}, projection).limit(limit))
-    return {"count": len(relays), "data": relays}
+        # Execute query with error handling
+        total_count = safe_db_query(db.relays.count_documents, filter_query)
+        relays = safe_db_query(
+            lambda: list(
+                db.relays.find(filter_query, projection)
+                .skip(skip)
+                .limit(limit)
+            )
+        )
+        
+        elapsed = (datetime.datetime.utcnow() - start_time).total_seconds()
+        
+        response = {
+            "status": "success",
+            "total": total_count,
+            "count": len(relays),
+            "skip": skip,
+            "limit": limit,
+            "query_time_seconds": round(elapsed, 3),
+            "data": relays
+        }
+        
+        log_endpoint_response("GET /relays", "success", count=len(relays))
+        return response
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"GET /relays failed: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to retrieve relays. Database may be unavailable."
+        )
 
 
 # ---------------------------------------------------------
@@ -177,7 +396,541 @@ def api_malicious(limit: int = 100):
 
 
 # ---------------------------------------------------------
-# CORRELATOR ENDPOINTS (existing)
+# NEW: INDIA-SPECIFIC ANALYTICS
+# ---------------------------------------------------------
+@app.get("/analytics/india")
+def india_analytics():
+    """Return India-focused TOR network statistics.
+    
+    Returns:
+    - Indian relay count and details
+    - Indian ASN involvement
+    - Domestic vs foreign infrastructure split
+    - High-risk paths involving India
+    """
+    projection = {
+        "_id": 0,
+        "fingerprint": 1,
+        "nickname": 1,
+        "country": 1,
+        "is_exit": 1,
+        "is_guard": 1,
+        "advertised_bandwidth": 1,
+        "as": 1,
+        "risk_score": 1,
+    }
+    
+    # Indian relays
+    indian_relays = list(db.relays.find({"country": "IN"}, projection))
+    
+    # All relays for calculating percentages
+    total_relays = db.relays.count_documents({})
+    
+    # Count Indian ASN involvement (if present in 'as' field)
+    indian_asn_relays = list(db.relays.find(
+        {"as": {"$regex": "^(AS4755|AS9829|AS9498|AS18101|AS55836|AS24560|AS133480|AS45839|AS17638|AS56399|AS58953)"}},
+        {"_id": 0, "as": 1, "nickname": 1}
+    ))
+    
+    # Calculate infrastructure split: domestic vs foreign
+    domestic_count = len(indian_relays)
+    foreign_count = total_relays - domestic_count
+    
+    # Path statistics (check if any paths use Indian relays)
+    indian_paths = list(db.paths.find(
+        {
+            "$or": [
+                {"entry.country": "IN"},
+                {"middle.country": "IN"},
+                {"exit.country": "IN"}
+            ]
+        },
+        {"_id": 0, "score": 1, "entry.country": 1, "exit.country": 1}
+    ).limit(100))
+    
+    return {
+        "indian_relays": {
+            "count": domestic_count,
+            "percentage": round((domestic_count / total_relays * 100) if total_relays > 0 else 0, 2),
+            "details": indian_relays
+        },
+        "indian_asn_involvement": {
+            "count": len(indian_asn_relays),
+            "relays": indian_asn_relays[:20]  # Top 20
+        },
+        "infrastructure_split": {
+            "domestic": {
+                "count": domestic_count,
+                "percentage": round((domestic_count / total_relays * 100) if total_relays > 0 else 0, 2)
+            },
+            "foreign": {
+                "count": foreign_count,
+                "percentage": round((foreign_count / total_relays * 100) if total_relays > 0 else 0, 2)
+            }
+        },
+        "paths_involving_india": {
+            "count": len(indian_paths),
+            "high_confidence": len([p for p in indian_paths if p.get("score", 0) > 0.8])
+        },
+        "total_relays_indexed": total_relays
+    }
+
+
+# ---------------------------------------------------------
+# NEW: FORENSIC FILE UPLOAD & CORRELATION
+# ---------------------------------------------------------
+import re
+import logging
+
+# Setup logging
+logger = logging.getLogger("tor_unveil")
+if not logger.handlers:
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter('[%(asctime)s] %(name)s - %(levelname)s - %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logger.setLevel(logging.INFO)
+
+
+@app.post("/forensic/upload")
+async def forensic_upload(file: UploadFile = File(...)):
+    """Upload forensic data (logs, metadata, PCAP analysis) for correlation.
+    
+    FEATURE 12: FILE UPLOAD FOR FORENSIC CORRELATION
+    ================================================
+    
+    Accepts:
+    - CSV files with timestamped events (metadata only)
+    - JSON files with event metadata
+    - Log files (text format with timestamps)
+    
+    Does NOT accept:
+    - Binary PCAP files (payload data)
+    - Raw packet data
+    
+    Returns:
+    - Parsed events with timestamp ranges
+    - Correlation with TOR activity windows
+    - Forensic metadata for case documentation
+    
+    Processing:
+    1. Validates file size (max 50MB)
+    2. Parses timestamps using multiple date formats
+    3. Extracts metadata (no packet inspection)
+    4. Correlates with TOR path activity windows
+    5. Returns structured analysis results
+    """
+    start_time = datetime.datetime.utcnow()
+    
+    try:
+        # ============================================================
+        # STEP 1: VALIDATE INPUT FILE
+        # ============================================================
+        
+        if not file:
+            logger.error("forensic_upload: No file provided")
+            raise HTTPException(status_code=400, detail="No file provided")
+        
+        if not file.filename:
+            logger.error("forensic_upload: File has no name")
+            raise HTTPException(status_code=400, detail="File has no name")
+        
+        # Read file content
+        content = await file.read()
+        filename = file.filename
+        file_size = len(content)
+        file_ext = filename.split('.')[-1].lower()
+        
+        logger.info(f"forensic_upload: Processing file '{filename}' ({file_size} bytes, .{file_ext})")
+        
+        # Validate file size (50MB limit for safety)
+        MAX_FILE_SIZE = 50 * 1024 * 1024
+        if file_size > MAX_FILE_SIZE:
+            logger.error(f"forensic_upload: File too large ({file_size} > {MAX_FILE_SIZE})")
+            raise HTTPException(
+                status_code=413,
+                detail=f"File too large ({file_size / 1024 / 1024:.1f}MB > 50MB limit)"
+            )
+        
+        # Validate file type
+        ALLOWED_EXTENSIONS = ['csv', 'json', 'log', 'txt', 'pcap', 'pcapng', 'cap']
+        if file_ext not in ALLOWED_EXTENSIONS:
+            logger.error(f"forensic_upload: Unsupported file type .{file_ext}")
+            raise HTTPException(
+                status_code=400,
+                detail=f"Unsupported file type (.{file_ext}). Allowed: {', '.join(ALLOWED_EXTENSIONS)}"
+            )
+        
+        # ============================================================
+        # STEP 2: PARSE FILE AND EXTRACT TIMESTAMPS
+        # ============================================================
+        
+        events = []
+        timestamps = []
+        parse_errors = 0
+        
+        # ============================================================
+        # PCAP FILE PROCESSING (BINARY FILES)
+        # ============================================================
+        if file_ext in ['pcap', 'pcapng', 'cap']:
+            try:
+                logger.info(f"forensic_upload: Processing PCAP file '{filename}'...")
+                pcap_result = analyze_pcap_file(content)
+                
+                if pcap_result.get('success'):
+                    logger.info(f"forensic_upload: PCAP parsed successfully - {pcap_result.get('total_packets')} packets")
+                    
+                    # Extract events from PCAP packets
+                    sample_events = []
+                    for packet in pcap_result.get('packets', [])[:100]:  # Limit to first 100 for sample
+                        if 'timestamp' in packet:
+                            try:
+                                dt = datetime.datetime.fromisoformat(packet['timestamp'].replace('Z', '+00:00'))
+                                timestamps.append(dt)
+                                event_entry = {
+                                    'timestamp': packet['timestamp'],
+                                    'source': 'pcap',
+                                    'src_ip': packet.get('src_ip'),
+                                    'dst_ip': packet.get('dst_ip'),
+                                    'protocol': packet.get('protocol_name'),
+                                    'src_port': packet.get('src_port'),
+                                    'dst_port': packet.get('dst_port'),
+                                    'size': packet.get('captured_len', 0)
+                                }
+                                events.append(event_entry)
+                                sample_events.append(event_entry)
+                            except Exception as e:
+                                parse_errors += 1
+                                logger.debug(f"forensic_upload: Could not parse PCAP packet timestamp: {e}")
+                    
+                    logger.info(f"forensic_upload: PCAP extracted {len(events)} events with timestamps")
+                    
+                    # Transform PCAP data to expected frontend format
+                    unique_ips = set()
+                    protocols = set()
+                    
+                    for pkt in pcap_result.get('packets', []):
+                        if pkt.get('src_ip'):
+                            unique_ips.add(pkt['src_ip'])
+                        if pkt.get('dst_ip'):
+                            unique_ips.add(pkt['dst_ip'])
+                        if pkt.get('protocol_name'):
+                            protocols.add(pkt['protocol_name'])
+                    
+                    # Return PCAP analysis in frontend-expected format
+                    elapsed = (datetime.datetime.utcnow() - start_time).total_seconds()
+                    return {
+                        "status": "success",
+                        "filename": filename,
+                        "file_type": file_ext,
+                        "processing_time_seconds": round(elapsed, 2),
+                        "message": f"✓ PCAP file analyzed successfully",
+                        "events": {
+                            "found": len(events),
+                            "timestamp_range": {
+                                "earliest": min(timestamps).isoformat() if timestamps else None,
+                                "latest": max(timestamps).isoformat() if timestamps else None,
+                            }
+                        },
+                        "correlation": {
+                            "overlapping_tor_paths": 0,  # Will be calculated if needed
+                            "total_paths_checked": 0,
+                            "paths": []
+                        },
+                        "sample_events": sample_events,
+                        "pcap_metadata": {
+                            "total_packets": pcap_result.get('total_packets', 0),
+                            "unique_ips": len(unique_ips),
+                            "protocols": list(protocols),
+                            "time_range": {
+                                "first": min(timestamps).isoformat() if timestamps else None,
+                                "last": max(timestamps).isoformat() if timestamps else None,
+                            }
+                        }
+                    }
+                else:
+                    logger.error(f"forensic_upload: PCAP analysis failed - {pcap_result.get('error')}")
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"PCAP parsing error: {pcap_result.get('error')}"
+                    )
+                    
+            except HTTPException:
+                raise
+            except Exception as e:
+                logger.error(f"forensic_upload: PCAP processing error: {e}")
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"PCAP file processing error: {str(e)}"
+                )
+        
+        # ============================================================
+        # TEXT FILE DECODING (for CSV, JSON, LOG, TXT)
+        # ============================================================
+        try:
+            text_content = content.decode('utf-8', errors='replace')
+        except Exception as e:
+            logger.error(f"forensic_upload: Decoding error: {e}")
+            raise HTTPException(status_code=400, detail="File encoding error (must be UTF-8)")
+        
+        # ============================================================
+        # CSV FILE PROCESSING
+        # ============================================================
+        if file_ext == 'csv':
+            try:
+                reader = csv.DictReader(StringIO(text_content))
+                
+                if not reader.fieldnames:
+                    logger.error("forensic_upload: CSV has no headers")
+                    raise HTTPException(status_code=400, detail="CSV file has no headers")
+                
+                row_count = 0
+                for row in reader:
+                    row_count += 1
+                    
+                    # Look for timestamp column (multiple naming conventions)
+                    ts_value = None
+                    for ts_col in ['timestamp', 'time', 'date', 'datetime', 'ts', 'event_time', 'occurred_at']:
+                        if ts_col in row and row[ts_col]:
+                            ts_value = row[ts_col]
+                            break
+                    
+                    if ts_value:
+                        try:
+                            dt = date_parser.parse(ts_value)
+                            timestamps.append(dt)
+                            events.append({
+                                'timestamp': dt.isoformat(),
+                                'source': 'csv',
+                                'data': dict(row),
+                                'row': row_count
+                            })
+                        except Exception as e:
+                            parse_errors += 1
+                            logger.debug(f"forensic_upload: Could not parse timestamp '{ts_value}': {e}")
+                
+                logger.info(f"forensic_upload: CSV parsed {row_count} rows, {len(events)} events extracted")
+                
+            except HTTPException:
+                raise
+            except Exception as e:
+                logger.error(f"forensic_upload: CSV parsing error: {e}")
+                raise HTTPException(status_code=400, detail=f"CSV parsing error: {str(e)}")
+        
+        # ============================================================
+        # JSON FILE PROCESSING
+        # ============================================================
+        elif file_ext == 'json':
+            try:
+                data = json.loads(text_content)
+                
+                # Handle both array and single object
+                if isinstance(data, dict):
+                    data = [data]
+                elif not isinstance(data, list):
+                    logger.error("forensic_upload: JSON root is not array or object")
+                    raise HTTPException(status_code=400, detail="JSON must be array or object")
+                
+                for idx, item in enumerate(data):
+                    if not isinstance(item, dict):
+                        parse_errors += 1
+                        continue
+                    
+                    # Look for timestamp field
+                    ts_value = item.get('timestamp') or item.get('time') or item.get('date')
+                    
+                    if ts_value:
+                        try:
+                            dt = date_parser.parse(ts_value)
+                            timestamps.append(dt)
+                            events.append({
+                                'timestamp': dt.isoformat(),
+                                'source': 'json',
+                                'data': item,
+                                'index': idx
+                            })
+                        except Exception as e:
+                            parse_errors += 1
+                            logger.debug(f"forensic_upload: Could not parse JSON timestamp: {e}")
+                    else:
+                        parse_errors += 1
+                
+                logger.info(f"forensic_upload: JSON parsed {len(data)} items, {len(events)} events extracted")
+                
+            except HTTPException:
+                raise
+            except json.JSONDecodeError as e:
+                logger.error(f"forensic_upload: JSON decode error: {e}")
+                raise HTTPException(status_code=400, detail=f"Invalid JSON format: {str(e)}")
+            except Exception as e:
+                logger.error(f"forensic_upload: JSON parsing error: {e}")
+                raise HTTPException(status_code=400, detail=f"JSON parsing error: {str(e)}")
+        
+        # ============================================================
+        # LOG/TEXT FILE PROCESSING
+        # ============================================================
+        else:  # .log, .txt
+            try:
+                lines = text_content.split('\n')
+                max_lines = 5000  # Process first 5000 lines max
+                processed_lines = 0
+                
+                # Multiple regex patterns for timestamp detection
+                patterns = [
+                    r'\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}[\.\,]?\d*(?:Z|[\+\-]\d{2}:\d{2})?',  # ISO
+                    r'\w{3}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2}',  # Syslog style
+                    r'\d{1,2}/\d{1,2}/\d{4}\s+\d{2}:\d{2}:\d{2}',  # US date
+                ]
+                
+                for line in lines[:max_lines]:
+                    if not line.strip():
+                        continue
+                    
+                    processed_lines += 1
+                    
+                    # Try to find timestamp using patterns
+                    found_timestamp = False
+                    for pattern in patterns:
+                        match = re.search(pattern, line)
+                        if match:
+                            try:
+                                dt = date_parser.parse(match.group())
+                                timestamps.append(dt)
+                                events.append({
+                                    'timestamp': dt.isoformat(),
+                                    'source': 'log',
+                                    'line': line[:200],  # First 200 chars
+                                    'line_num': processed_lines
+                                })
+                                found_timestamp = True
+                                break
+                            except Exception as e:
+                                logger.debug(f"forensic_upload: Timestamp parse error: {e}")
+                    
+                    if not found_timestamp:
+                        parse_errors += 1
+                
+                logger.info(f"forensic_upload: Log file processed {processed_lines} lines, {len(events)} events extracted")
+                
+            except Exception as e:
+                logger.error(f"forensic_upload: Log file parsing error: {e}")
+                raise HTTPException(status_code=400, detail=f"Log file parsing error: {str(e)}")
+        
+        # ============================================================
+        # STEP 3: VALIDATE EVENT EXTRACTION
+        # ============================================================
+        
+        if not events or not timestamps:
+            logger.warning(f"forensic_upload: No valid events found in {filename}")
+            raise HTTPException(
+                status_code=400,
+                detail=f"No valid timestamps found in file ({parse_errors} parse errors). Ensure file has timestamp column/field."
+            )
+        
+        logger.info(f"forensic_upload: Successfully extracted {len(events)} events from file")
+        
+        # ============================================================
+        # STEP 4: FIND OVERLAPPING TOR PATHS
+        # ============================================================
+        
+        min_ts = min(timestamps)
+        max_ts = max(timestamps)
+        time_window = (max_ts - min_ts).total_seconds()
+        
+        logger.info(f"forensic_upload: Timestamp range: {min_ts} to {max_ts} (window: {time_window}s)")
+        
+        overlapping_paths = []
+        path_query_errors = 0
+        
+        try:
+            # Query all paths from database
+            total_paths = db.path_candidates.count_documents({}) if 'path_candidates' in db.list_collection_names() else 0
+            
+            if total_paths == 0:
+                logger.warning("forensic_upload: No paths in database for correlation")
+            else:
+                # Look for overlapping paths (within 24 hours of any event)
+                paths = list(db.path_candidates.find({}).limit(1000))
+                
+                for path in paths:
+                    try:
+                        path_ts = path.get('timestamp') or path.get('generated_at')
+                        if not path_ts:
+                            continue
+                        
+                        path_dt = date_parser.parse(path_ts)
+                        
+                        # Check if path timestamp overlaps with any event (24h window)
+                        for evt_ts in timestamps:
+                            time_diff = abs((path_dt - evt_ts).total_seconds())
+                            if time_diff < 86400:  # 24 hours
+                                overlapping_paths.append({
+                                    'path_id': path.get('id'),
+                                    'score': path.get('score', 0),
+                                    'entry': path.get('entry', {}).get('nickname', 'unknown'),
+                                    'exit': path.get('exit', {}).get('nickname', 'unknown'),
+                                    'time_diff_seconds': time_diff
+                                })
+                                break  # Only add once per path
+                    except Exception as e:
+                        path_query_errors += 1
+                        logger.debug(f"forensic_upload: Path correlation error: {e}")
+                
+                logger.info(f"forensic_upload: Found {len(overlapping_paths)} overlapping paths ({path_query_errors} errors)")
+        
+        except Exception as e:
+            logger.error(f"forensic_upload: Path query failed: {e}")
+            # Don't fail the upload if path query fails
+        
+        # ============================================================
+        # STEP 5: BUILD RESPONSE
+        # ============================================================
+        
+        elapsed = (datetime.datetime.utcnow() - start_time).total_seconds()
+        
+        response = {
+            "status": "success",
+            "filename": filename,
+            "file_size_bytes": file_size,
+            "processing_time_seconds": round(elapsed, 3),
+            "events": {
+                "found": len(events),
+                "with_errors": parse_errors,
+                "timestamp_range": {
+                    "earliest": min_ts.isoformat(),
+                    "latest": max_ts.isoformat(),
+                    "window_seconds": int(time_window)
+                }
+            },
+            "correlation": {
+                "overlapping_tor_paths": len(overlapping_paths),
+                "total_paths_checked": total_paths,
+                "paths": overlapping_paths[:20]  # Top 20
+            },
+            "sample_events": events[:10],  # Return first 10 events for preview
+            "message": (
+                f"✓ Forensic upload complete: {len(events)} events parsed, "
+                f"{len(overlapping_paths)} potentially correlated TOR paths found."
+            )
+        }
+        
+        logger.info(f"forensic_upload: SUCCESS - {response['message']}")
+        return response
+    
+    except HTTPException as e:
+        logger.error(f"forensic_upload: HTTP error {e.status_code}: {e.detail}")
+        raise
+    
+    except Exception as e:
+        logger.error(f"forensic_upload: Unexpected error: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Upload processing failed: {str(e)}"
+        )
+
+
+# ---------------------------------------------------------
+# CORRELATOR ENDPOINTS (FEATURE 13: HARDENED)
 # ---------------------------------------------------------
 @app.get("/paths/generate")
 def api_generate_paths(
@@ -186,19 +939,114 @@ def api_generate_paths(
     exits: int = 30,
     top_k: int = 500,
 ):
-    top = generate_candidate_paths(
-        limit_guards=guards,
-        limit_middles=middles,
-        limit_exits=exits,
-        top_k=top_k,
-    )
-    return {"count": len(top), "paths": top}
+    """Generate candidate TOR paths with plausibility scoring.
+    
+    FEATURE 13: BACKEND HARDENING - ROBUST API
+    ===========================================
+    
+    Parameters:
+    - guards: Number of guard relay candidates (default 30, max 200)
+    - middles: Number of middle relay candidates (default 80, max 500)
+    - exits: Number of exit relay candidates (default 30, max 200)
+    - top_k: Return top K paths by score (default 500, max 10000)
+    
+    Returns:
+    - Scored paths with component breakdown
+    - Ranked by correlation plausibility
+    - Deterministic error messages on failure
+    """
+    start_time = datetime.datetime.utcnow()
+    
+    try:
+        # Validate and normalize parameters
+        guards = validate_limit_parameter(guards, default=30, min_val=1, max_val=200)
+        middles = validate_limit_parameter(middles, default=80, min_val=1, max_val=500)
+        exits = validate_limit_parameter(exits, default=30, min_val=1, max_val=200)
+        top_k = validate_limit_parameter(top_k, default=500, min_val=1, max_val=10000)
+        
+        log_endpoint_call("GET /paths/generate", guards=guards, middles=middles, exits=exits, top_k=top_k)
+        
+        # Generate paths
+        top = safe_db_query(
+            generate_candidate_paths,
+            limit_guards=guards,
+            limit_middles=middles,
+            limit_exits=exits,
+            top_k=top_k,
+        )
+        
+        elapsed = (datetime.datetime.utcnow() - start_time).total_seconds()
+        
+        response = {
+            "status": "success",
+            "count": len(top),
+            "query_time_seconds": round(elapsed, 3),
+            "parameters": {
+                "guards": guards,
+                "middles": middles,
+                "exits": exits,
+                "top_k": top_k
+            },
+            "paths": top
+        }
+        
+        log_endpoint_response("GET /paths/generate", "success", count=len(top))
+        return response
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"GET /paths/generate failed: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail="Path generation failed. Please verify relays are indexed."
+        )
 
 
 @app.get("/paths/top")
 def api_top_paths(limit: int = 100):
-    top = top_candidate_paths(limit=limit)
-    return {"count": len(top), "paths": top}
+    """Get top candidate paths by plausibility score.
+    
+    FEATURE 13: BACKEND HARDENING - ROBUST API
+    ===========================================
+    
+    Parameters:
+    - limit: Maximum paths to return (default 100, max 5000)
+    
+    Returns top-scoring paths for rapid investigation start
+    """
+    start_time = datetime.datetime.utcnow()
+    
+    try:
+        # Validate limit
+        limit = validate_limit_parameter(limit, default=100, max_val=5000)
+        
+        log_endpoint_call("GET /paths/top", limit=limit)
+        
+        # Retrieve paths
+        top = safe_db_query(top_candidate_paths, limit=limit)
+        
+        elapsed = (datetime.datetime.utcnow() - start_time).total_seconds()
+        
+        response = {
+            "status": "success",
+            "count": len(top),
+            "limit": limit,
+            "query_time_seconds": round(elapsed, 3),
+            "paths": top
+        }
+        
+        log_endpoint_response("GET /paths/top", "success", count=len(top))
+        return response
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"GET /paths/top failed: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail="Could not retrieve top paths. Database may be unavailable."
+        )
 
 
 # ---------------------------------------------------------

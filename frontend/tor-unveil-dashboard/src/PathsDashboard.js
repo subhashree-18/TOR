@@ -14,7 +14,7 @@ import "./PathsDashboard.css";
 
 const API_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
 
-// Helper function to get confidence level
+// Helper function to get confidence level (qualitative only)
 function getConfidenceLevel(score) {
   if (score >= 0.8) return { level: "HIGH", color: "#10b981" };
   if (score >= 0.5) return { level: "MEDIUM", color: "#f59e0b" };
@@ -148,7 +148,7 @@ export default function PathsDashboard() {
               </div>
               <div className="methodology-item">
                 <h4>Confidence Levels</h4>
-                <p><span style={{color: "#10b981"}}>● HIGH</span> ≥80% | <span style={{color: "#f59e0b"}}>● MEDIUM</span> ≥50% | <span style={{color: "#ef4444"}}>● LOW</span> &lt;50%</p>
+                <p><span style={{color: "#10b981"}}>● HIGH</span> (score ≥0.80) | <span style={{color: "#f59e0b"}}>● MEDIUM</span> (score ≥0.50) | <span style={{color: "#ef4444"}}>● LOW</span> (score &lt;0.50)</p>
               </div>
             </div>
             <div className="methodology-warning">
@@ -251,9 +251,6 @@ export default function PathsDashboard() {
                             <div className="confidence-badge" style={{ borderColor: confidence.color }}>
                               <span className="confidence-level" style={{ color: confidence.color }}>
                                 {confidence.level}
-                              </span>
-                              <span className="confidence-pct">
-                                {(path.score * 100).toFixed(0)}%
                               </span>
                             </div>
                           </td>

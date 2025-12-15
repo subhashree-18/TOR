@@ -17,7 +17,7 @@
   padding: 20px;
   background: linear-gradient(135deg, #0f3460 0%, #1a4d3e 100%);
   border-radius: 8px;
-  border: 1px solid #0ea5e9;
+  border: 1px solid #ff6b35;
 }
 
 .header-content {
@@ -27,13 +27,13 @@
 }
 
 .page-icon {
-  color: #0ea5e9;
+  color: #ff6b35;
 }
 
 .header-content h1 {
   font-size: 28px;
   font-weight: 700;
-  color: #0ea5e9;
+  color: #ff6b35;
   margin: 0;
 }
 
@@ -51,14 +51,14 @@
   background: transparent;
   border-radius: 8px;
   overflow: hidden;
-  border: 1px solid #0ea5e9;
+  border: 1px solid #ff6b35;
 }
 
 .tabs-header {
   display: flex;
   gap: 0;
   background: #0f3460;
-  border-bottom: 1px solid #0ea5e9;
+  border-bottom: 1px solid #ff6b35;
   padding: 0;
 }
 
@@ -80,13 +80,13 @@
 }
 
 .tab-button:hover:not(:disabled) {
-  color: #0ea5e9;
+  color: #ff6b35;
   background: #1a4d3e;
 }
 
 .tab-button.active {
-  color: #0ea5e9;
-  border-bottom: 3px solid #0ea5e9;
+  color: #ff6b35;
+  border-bottom: 3px solid #ff6b35;
   background: linear-gradient(to bottom, #1a3d4a 0%, transparent 100%);
 }
 
@@ -151,13 +151,13 @@
   padding: 20px;
   background: linear-gradient(135deg, #0f3460 0%, #16213e 100%);
   border-radius: 8px;
-  border: 1px solid #0ea5e9;
+  border: 1px solid #ff6b35;
 }
 
 .methodology-section h2 {
   font-size: 22px;
   font-weight: 600;
-  color: #0ea5e9;
+  color: #ff6b35;
   margin: 0;
 }
 
@@ -173,7 +173,7 @@
   gap: 10px;
   padding: 20px;
   background: #0a2e4a;
-  border: 1px solid #0ea5e9;
+  border: 1px solid #ff6b35;
   border-radius: 6px;
   transition: all 0.3s;
 }
@@ -181,7 +181,7 @@
 .methodology-card:hover {
   border-color: #10b981;
   transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(14, 165, 233, 0.2);
+  box-shadow: 0 8px 24px rgba(255, 107, 53, 0.2);
 }
 
 .card-icon {
@@ -190,7 +190,7 @@
   justify-content: center;
   width: 50px;
   height: 50px;
-  background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
+  background: linear-gradient(135deg, #ff6b35 0%, #ffa500 100%);
   color: white;
   font-size: 18px;
   font-weight: 700;
@@ -201,7 +201,7 @@
 .methodology-card h3 {
   font-size: 16px;
   font-weight: 600;
-  color: #0ea5e9;
+  color: #ff6b35;
   margin: 0;
 }
 
@@ -220,13 +220,13 @@
   padding: 20px;
   background: linear-gradient(135deg, #1a3d4a 0%, #16213e 100%);
   border-radius: 8px;
-  border: 1px solid #10b981;
+  border: 1px solid #ff6b35;
 }
 
 .investigation-workflow h2 {
   font-size: 22px;
   font-weight: 600;
-  color: #10b981;
+  color: #ff6b35;
   margin: 0;
 }
 
@@ -241,13 +241,13 @@
   gap: 15px;
   padding: 15px;
   background: #0f3460;
-  border: 1px solid #10b981;
+  border: 1px solid #ff6b35;
   border-radius: 6px;
   transition: all 0.3s;
 }
 
 .step:hover {
-  border-color: #0ea5e9;
+  border-color: #ff8c42;
   transform: translateX(4px);
 }
 
@@ -258,7 +258,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #0ea5e9;
+  color: #ff6b35;
 }
 
 .step-content {
@@ -270,7 +270,7 @@
 .step-content h4 {
   font-size: 15px;
   font-weight: 600;
-  color: #0ea5e9;
+  color: #ff6b35;
   margin: 0;
 }
 
@@ -383,7 +383,7 @@
   }
 
   .tab-button.active {
-    border-bottom: 3px solid #0ea5e9;
+    border-bottom: 3px solid #ff6b35;
     border-right: none;
   }
 

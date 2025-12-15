@@ -1,7 +1,7 @@
 // src/App.js - SOC-Style Sidebar + Top Bar Layout
 import React, { useState } from "react";
 import { BrowserRouter, Routes, Route, useNavigate, useLocation } from "react-router-dom";
-import { LayoutDashboard, GitBranch, Activity, FileText, RefreshCw, Download, Menu, X, Eye, Briefcase, Search } from "lucide-react";
+import { LayoutDashboard, GitBranch, Activity, FileText, RefreshCw, Menu, X, Eye, Briefcase, Search } from "lucide-react";
 import { AppProvider, useAppContext } from "./AppContext";
 import Dashboard from "./Dashboard";
 import PathsDashboard from "./PathsDashboard";
@@ -9,7 +9,9 @@ import AnalysisPage from "./AnalysisPage";
 import ReportPage from "./ReportPage";
 import InvestigationPage from "./InvestigationPage";
 import ForensicPage from "./ForensicPage";
+import IndiaAnalytics from "./IndiaAnalytics";
 import Breadcrumb from "./Breadcrumb";
+import TamilNaduBrand from "./TamilNaduBrand";
 
 // ============================================================================
 // SIDEBAR NAVIGATION COMPONENT
@@ -30,6 +32,12 @@ function SideNavigation() {
         { path: "/dashboard", label: "Dashboard", Icon: LayoutDashboard },
         { path: "/paths", label: "Paths", Icon: GitBranch },
         { path: "/analysis", label: "Analysis", Icon: Activity },
+      ],
+    },
+    {
+      title: "REGIONAL ANALYTICS",
+      items: [
+        { path: "/india", label: "India Focus", Icon: Search },
       ],
     },
     {
@@ -158,12 +166,6 @@ function TopBar() {
         >
           <RefreshCw size={18} strokeWidth={1.5} stroke="currentColor" fill="none" />
         </button>
-        <button
-          style={styles.toolbarBtn}
-          title="Export"
-        >
-          <Download size={18} strokeWidth={1.5} stroke="currentColor" fill="none" />
-        </button>
       </div>
     </header>
   );
@@ -175,24 +177,28 @@ function TopBar() {
 
 function AppContent() {
   return (
-    <div style={styles.appContainer}>
-      <SideNavigation />
-      <div style={styles.mainContent}>
-        <TopBar />
-        <Breadcrumb />
-        <div style={styles.pageContainer}>
-          <Routes>
-            <Route path="/investigation" element={<InvestigationPage />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/paths" element={<PathsDashboard />} />
-            <Route path="/analysis" element={<AnalysisPage />} />
-            <Route path="/forensic" element={<ForensicPage />} />
-            <Route path="/report" element={<ReportPage />} />
-            <Route path="/" element={<InvestigationPage />} />
-          </Routes>
+    <>
+      <TamilNaduBrand />
+      <div style={styles.appContainer}>
+        <SideNavigation />
+        <div style={styles.mainContent}>
+          <TopBar />
+          <Breadcrumb />
+          <div style={styles.pageContainer}>
+            <Routes>
+              <Route path="/investigation" element={<InvestigationPage />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/paths" element={<PathsDashboard />} />
+              <Route path="/analysis" element={<AnalysisPage />} />
+              <Route path="/forensic" element={<ForensicPage />} />
+              <Route path="/india" element={<IndiaAnalytics />} />
+              <Route path="/report" element={<ReportPage />} />
+              <Route path="/" element={<InvestigationPage />} />
+            </Routes>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
@@ -227,13 +233,13 @@ const styles = {
   sidebar: (isCollapsed) => ({
     width: isCollapsed ? "70px" : "240px",
     height: "100vh",
-    background: "#0f172a",
-    borderRight: "2px solid #0ea5e9",
+    background: "linear-gradient(180deg, #1a3d5c 0%, #0f172a 50%, #1a2332 100%)",
+    borderRight: "3px solid #ff6b35",
     padding: "12px 0",
     display: "flex",
     flexDirection: "column",
     transition: "width 0.3s ease",
-    boxShadow: "2px 0 8px rgba(0, 0, 0, 0.5)",
+    boxShadow: "2px 0 12px rgba(255, 107, 53, 0.2)",
     zIndex: 100,
     overflowY: "auto",
   }),
@@ -262,7 +268,10 @@ const styles = {
   brandTitle: {
     fontSize: "13px",
     fontWeight: "700",
-    color: "#0ea5e9",
+    background: "linear-gradient(135deg, #ff6b35 0%, #ffa500 100%)",
+    backgroundClip: "text",
+    WebkitBackgroundClip: "text",
+    WebkitTextFillColor: "transparent",
     margin: "0",
     letterSpacing: "1px",
     flex: 1,
@@ -318,13 +327,13 @@ const styles = {
 
   // ========== TOP BAR ==========
   topbar: {
-    background: "#111c3a",
-    borderBottom: "1px solid #0ea5e9",
+    background: "linear-gradient(90deg, #1a3d5c 0%, #111c3a 50%, #1a2332 100%)",
+    borderBottom: "2px solid #ff6b35",
     padding: "12px 20px",
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.4)",
+    boxShadow: "0 4px 12px rgba(255, 107, 53, 0.2)",
     flexShrink: 0,
   },
 

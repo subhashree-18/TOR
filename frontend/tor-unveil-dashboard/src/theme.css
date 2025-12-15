@@ -1,0 +1,759 @@
+/* ===================================================================
+   TAMIL NADU POLICE TOR UNVEIL - UNIFIED THEME
+   ===================================================================
+   
+   This file defines the consistent color scheme, typography, spacing,
+   and component styles for the entire application.
+   
+   Color Palette:
+   - Primary: #ff6b35 (Tamil Nadu Police Orange)
+   - Secondary: #ffa500 (Lighter Orange)
+   - Dark: #1a3d5c (Authority Blue)
+   - Background: #0f172a (Deep Navy)
+   - Card: #111c3a (Slightly lighter navy)
+   - Text: #ffffff (White text)
+   - Accent: #00d4ff (Cyan accents - used sparingly)
+   
+   ==================================================================== */
+
+:root {
+  /* Primary Colors - Tamil Nadu Theme */
+  --tn-primary: #ff6b35;        /* Police Orange */
+  --tn-primary-light: #ffa500;  /* Light Orange */
+  --tn-primary-dark: #e55a25;   /* Dark Orange */
+  
+  /* Background Colors */
+  --tn-bg-dark: #0f172a;        /* Main background */
+  --tn-bg-darker: #0a0e1a;      /* Darker overlay */
+  --tn-bg-card: #111c3a;        /* Card background */
+  --tn-bg-elevated: #1a2332;    /* Slightly elevated */
+  
+  /* Authority Colors */
+  --tn-authority: #1a3d5c;      /* Authority Blue */
+  --tn-authority-light: #244d7c; /* Light Authority */
+  
+  /* Text Colors */
+  --tn-text-primary: #ffffff;   /* Primary text */
+  --tn-text-secondary: #b0b7c3; /* Secondary text */
+  --tn-text-tertiary: #808a99;  /* Tertiary text */
+  
+  /* Status Colors */
+  --tn-success: #10b981;        /* Green */
+  --tn-warning: #f59e0b;        /* Amber */
+  --tn-danger: #ef4444;         /* Red */
+  --tn-info: #3b82f6;           /* Blue */
+  
+  /* India Emphasis */
+  --tn-india-red: #ef4444;      /* India highlight */
+  --tn-india-light: #fca5a5;    /* Light india */
+  
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 20px;
+  --spacing-2xl: 24px;
+  --spacing-3xl: 32px;
+  
+  /* Border Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
+  --shadow-tn: 0 0 20px rgba(255, 107, 53, 0.2);
+  
+  /* Typography */
+  --font-primary: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  --font-mono: 'Courier New', monospace;
+  
+  /* Transitions */
+  --transition-fast: 150ms ease-in-out;
+  --transition-normal: 300ms ease-in-out;
+  --transition-slow: 500ms ease-in-out;
+}
+
+/* ===================================================================
+   GLOBAL STYLES
+   ==================================================================== */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--tn-bg-dark);
+  color: var(--tn-text-primary);
+  font-family: var(--font-primary);
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* ===================================================================
+   BUTTONS - UNIFIED STYLE
+   ==================================================================== */
+
+button, 
+.button,
+[role="button"] {
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  font-family: var(--font-primary);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+}
+
+/* Primary Button (Orange) */
+button.btn-primary,
+.btn-primary {
+  background-color: var(--tn-primary);
+  color: white;
+  border: 2px solid var(--tn-primary);
+}
+
+button.btn-primary:hover,
+.btn-primary:hover {
+  background-color: var(--tn-primary-dark);
+  border-color: var(--tn-primary-dark);
+  box-shadow: var(--shadow-tn);
+  transform: translateY(-2px);
+}
+
+button.btn-primary:active,
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Secondary Button (Outline) */
+button.btn-secondary,
+.btn-secondary {
+  background-color: transparent;
+  color: var(--tn-primary);
+  border: 2px solid var(--tn-primary);
+}
+
+button.btn-secondary:hover,
+.btn-secondary:hover {
+  background-color: rgba(255, 107, 53, 0.1);
+  box-shadow: var(--shadow-tn);
+}
+
+/* Ghost Button */
+button.btn-ghost,
+.btn-ghost {
+  background-color: transparent;
+  color: var(--tn-text-secondary);
+  border: 2px solid var(--tn-text-secondary);
+}
+
+button.btn-ghost:hover,
+.btn-ghost:hover {
+  color: var(--tn-primary);
+  border-color: var(--tn-primary);
+}
+
+/* Danger Button */
+button.btn-danger,
+.btn-danger {
+  background-color: var(--tn-danger);
+  color: white;
+  border: 2px solid var(--tn-danger);
+}
+
+button.btn-danger:hover,
+.btn-danger:hover {
+  opacity: 0.8;
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
+}
+
+/* Success Button */
+button.btn-success,
+.btn-success {
+  background-color: var(--tn-success);
+  color: white;
+  border: 2px solid var(--tn-success);
+}
+
+button.btn-success:hover,
+.btn-success:hover {
+  opacity: 0.8;
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+}
+
+/* Small Button */
+button.btn-sm,
+.btn-sm {
+  padding: var(--spacing-xs) var(--spacing-md);
+  font-size: 12px;
+}
+
+/* Large Button */
+button.btn-lg,
+.btn-lg {
+  padding: var(--spacing-md) var(--spacing-2xl);
+  font-size: 16px;
+}
+
+/* Disabled State */
+button:disabled,
+button[disabled],
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: var(--tn-text-tertiary);
+  border-color: var(--tn-text-tertiary);
+}
+
+/* ===================================================================
+   CARDS - UNIFIED STYLE
+   ==================================================================== */
+
+.card,
+[role="region"] {
+  background-color: var(--tn-bg-card);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  border: 1px solid rgba(255, 107, 53, 0.1);
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-normal);
+}
+
+.card:hover {
+  border-color: rgba(255, 107, 53, 0.3);
+  box-shadow: var(--shadow-tn);
+  transform: translateY(-4px);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 2px solid rgba(255, 107, 53, 0.2);
+}
+
+.card-header h2,
+.card-header h3 {
+  margin: 0;
+  color: var(--tn-text-primary);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.card-title {
+  color: var(--tn-primary);
+  font-weight: 600;
+  margin-bottom: var(--spacing-md);
+}
+
+.card-content {
+  color: var(--tn-text-secondary);
+  line-height: 1.6;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-md);
+  border-top: 1px solid rgba(255, 107, 53, 0.1);
+}
+
+/* ===================================================================
+   INPUTS - UNIFIED STYLE
+   ==================================================================== */
+
+input,
+textarea,
+select {
+  background-color: var(--tn-bg-elevated);
+  color: var(--tn-text-primary);
+  border: 2px solid rgba(255, 107, 53, 0.2);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  font-family: var(--font-primary);
+  font-size: 14px;
+  transition: all var(--transition-fast);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--tn-primary);
+  box-shadow: 0 0 10px rgba(255, 107, 53, 0.3);
+  background-color: rgba(255, 107, 53, 0.05);
+}
+
+input::placeholder {
+  color: var(--tn-text-tertiary);
+}
+
+textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* ===================================================================
+   BADGES & LABELS
+   ==================================================================== */
+
+.badge,
+[role="status"] {
+  display: inline-block;
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge-primary {
+  background-color: rgba(255, 107, 53, 0.15);
+  color: var(--tn-primary);
+  border: 1px solid var(--tn-primary);
+}
+
+.badge-success {
+  background-color: rgba(16, 185, 129, 0.15);
+  color: var(--tn-success);
+  border: 1px solid var(--tn-success);
+}
+
+.badge-danger {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: var(--tn-danger);
+  border: 1px solid var(--tn-danger);
+}
+
+.badge-warning {
+  background-color: rgba(245, 158, 11, 0.15);
+  color: var(--tn-warning);
+  border: 1px solid var(--tn-warning);
+}
+
+.badge-info {
+  background-color: rgba(59, 130, 246, 0.15);
+  color: var(--tn-info);
+  border: 1px solid var(--tn-info);
+}
+
+/* ===================================================================
+   TABLES - UNIFIED STYLE
+   ==================================================================== */
+
+table,
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: var(--tn-bg-card);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+table thead,
+.table thead {
+  background-color: rgba(255, 107, 53, 0.1);
+  border-bottom: 2px solid var(--tn-primary);
+}
+
+table th,
+.table th {
+  padding: var(--spacing-md);
+  text-align: left;
+  font-weight: 600;
+  color: var(--tn-primary);
+}
+
+table td,
+.table td {
+  padding: var(--spacing-md);
+  border-bottom: 1px solid rgba(255, 107, 53, 0.1);
+  color: var(--tn-text-secondary);
+}
+
+table tbody tr,
+.table tbody tr {
+  transition: all var(--transition-fast);
+}
+
+table tbody tr:hover,
+.table tbody tr:hover {
+  background-color: rgba(255, 107, 53, 0.05);
+}
+
+/* ===================================================================
+   HEADINGS & TEXT
+   ==================================================================== */
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  color: var(--tn-text-primary);
+  font-weight: 600;
+}
+
+h1 {
+  font-size: 32px;
+  background: linear-gradient(135deg, var(--tn-primary) 0%, var(--tn-primary-light) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+h2 {
+  font-size: 24px;
+}
+
+h3 {
+  font-size: 18px;
+}
+
+p {
+  margin: 0;
+  line-height: 1.6;
+  color: var(--tn-text-secondary);
+}
+
+.text-primary {
+  color: var(--tn-primary) !important;
+}
+
+.text-secondary {
+  color: var(--tn-text-secondary) !important;
+}
+
+.text-danger {
+  color: var(--tn-danger) !important;
+}
+
+.text-success {
+  color: var(--tn-success) !important;
+}
+
+.text-muted {
+  color: var(--tn-text-tertiary) !important;
+}
+
+/* ===================================================================
+   MODALS & OVERLAYS
+   ==================================================================== */
+
+.modal-overlay,
+[role="dialog"] {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn var(--transition-fast);
+}
+
+.modal-content,
+[role="document"] {
+  background-color: var(--tn-bg-card);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-2xl);
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  border: 2px solid var(--tn-primary);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: slideUp var(--transition-normal);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ===================================================================
+   ALERTS & NOTIFICATIONS
+   ==================================================================== */
+
+.alert {
+  padding: var(--spacing-lg);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-lg);
+  display: flex;
+  gap: var(--spacing-md);
+  align-items: flex-start;
+}
+
+.alert-success {
+  background-color: rgba(16, 185, 129, 0.1);
+  border-left: 4px solid var(--tn-success);
+  color: var(--tn-success);
+}
+
+.alert-danger {
+  background-color: rgba(239, 68, 68, 0.1);
+  border-left: 4px solid var(--tn-danger);
+  color: var(--tn-danger);
+}
+
+.alert-warning {
+  background-color: rgba(245, 158, 11, 0.1);
+  border-left: 4px solid var(--tn-warning);
+  color: var(--tn-warning);
+}
+
+.alert-info {
+  background-color: rgba(59, 130, 246, 0.1);
+  border-left: 4px solid var(--tn-info);
+  color: var(--tn-info);
+}
+
+/* ===================================================================
+   UTILITY CLASSES
+   ==================================================================== */
+
+.gradient-primary {
+  background: linear-gradient(135deg, var(--tn-primary) 0%, var(--tn-primary-light) 100%);
+}
+
+.gradient-authority {
+  background: linear-gradient(180deg, var(--tn-authority) 0%, var(--tn-bg-dark) 100%);
+}
+
+.shadow-tn {
+  box-shadow: var(--shadow-tn) !important;
+}
+
+.border-tn {
+  border-color: var(--tn-primary) !important;
+}
+
+.rounded-sm {
+  border-radius: var(--radius-sm);
+}
+
+.rounded-md {
+  border-radius: var(--radius-md);
+}
+
+.rounded-lg {
+  border-radius: var(--radius-lg);
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.gap-sm {
+  gap: var(--spacing-sm);
+}
+
+.gap-md {
+  gap: var(--spacing-md);
+}
+
+.gap-lg {
+  gap: var(--spacing-lg);
+}
+
+.m-0 {
+  margin: 0;
+}
+
+.mt-sm {
+  margin-top: var(--spacing-sm);
+}
+
+.mt-md {
+  margin-top: var(--spacing-md);
+}
+
+.mt-lg {
+  margin-top: var(--spacing-lg);
+}
+
+.mb-sm {
+  margin-bottom: var(--spacing-sm);
+}
+
+.mb-md {
+  margin-bottom: var(--spacing-md);
+}
+
+.mb-lg {
+  margin-bottom: var(--spacing-lg);
+}
+
+.p-sm {
+  padding: var(--spacing-sm);
+}
+
+.p-md {
+  padding: var(--spacing-md);
+}
+
+.p-lg {
+  padding: var(--spacing-lg);
+}
+
+/* ===================================================================
+   RESPONSIVE DESIGN
+   ==================================================================== */
+
+@media (max-width: 768px) {
+  :root {
+    --spacing-lg: 12px;
+    --spacing-xl: 16px;
+  }
+
+  h1 {
+    font-size: 24px;
+  }
+
+  h2 {
+    font-size: 20px;
+  }
+
+  .card {
+    padding: var(--spacing-md);
+  }
+
+  button,
+  .button {
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+
+  table,
+  .table {
+    font-size: 12px;
+  }
+
+  table th,
+  table td,
+  .table th,
+  .table td {
+    padding: var(--spacing-sm);
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --spacing-lg: 8px;
+    --spacing-md: 8px;
+  }
+
+  h1 {
+    font-size: 20px;
+  }
+
+  h2 {
+    font-size: 18px;
+  }
+
+  h3 {
+    font-size: 16px;
+  }
+
+  .card {
+    padding: var(--spacing-md);
+  }
+}
+
+/* ===================================================================
+   ANIMATIONS & TRANSITIONS
+   ==================================================================== */
+
+.fade-in {
+  animation: fadeIn var(--transition-normal);
+}
+
+.slide-in-from-left {
+  animation: slideInFromLeft var(--transition-normal);
+}
+
+@keyframes slideInFromLeft {
+  from {
+    transform: translateX(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.hover-lift {
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-tn);
+}
+
+/* ===================================================================
+   SCROLLBAR STYLING
+   ==================================================================== */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: var(--tn-bg-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--tn-primary);
+  border-radius: var(--radius-md);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--tn-primary-light);
+}
+
+/* ===================================================================
+   END OF UNIFIED THEME
+   ==================================================================== */

@@ -2,7 +2,7 @@
 
 .country-legend-container {
   background: linear-gradient(135deg, #1a2332 0%, #0f172a 100%);
-  border: 1px solid #0ea5e9;
+  border: 1px solid #ff6b35;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
@@ -13,8 +13,8 @@
   width: 100%;
   background: linear-gradient(135deg, #1e3a5f 0%, #1a2332 100%);
   border: none;
-  border-bottom: 1px solid #0ea5e9;
-  color: #0ea5e9;
+  border-bottom: 1px solid #ff6b35;
+  color: #ff6b35;
   padding: 16px 20px;
   font-size: 14px;
   font-weight: 600;
@@ -52,14 +52,14 @@
   align-items: center;
   gap: 10px;
   background: #0f172a;
-  border: 1px solid #0ea5e9;
+  border: 1px solid #ff6b35;
   border-radius: 6px;
   padding: 8px 12px;
   margin-bottom: 16px;
 }
 
 .search-icon {
-  color: #0ea5e9;
+  color: #ff6b35;
   flex-shrink: 0;
 }
 
@@ -97,12 +97,12 @@
 
 .legend-item:hover {
   background: rgba(14, 165, 233, 0.1);
-  border-color: #0ea5e9;
+  border-color: #ff6b35;
   box-shadow: 0 2px 8px rgba(14, 165, 233, 0.15);
 }
 
 .legend-item-code {
-  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+  background: linear-gradient(135deg, #ff6b35 0%, #e55a25 100%);
   color: #0a0e27;
   font-weight: 700;
   font-size: 12px;
@@ -148,12 +148,12 @@
 }
 
 .legend-grid::-webkit-scrollbar-thumb {
-  background: #0ea5e9;
+  background: #ff6b35;
   border-radius: 3px;
 }
 
 .legend-grid::-webkit-scrollbar-thumb:hover {
-  background: #0284c7;
+  background: #e55a25;
 }
 
 /* Responsive Design */

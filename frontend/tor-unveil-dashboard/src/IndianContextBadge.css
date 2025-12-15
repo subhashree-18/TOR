@@ -203,7 +203,7 @@
 /* Information Panel */
 .india-context-info {
   background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);
-  border: 1px solid #06b6d4;
+  border: 1px solid #ff8c42;
   border-radius: 6px;
   padding: 14px;
   margin-top: 8px;
@@ -221,13 +221,13 @@
 .info-header h4 {
   margin: 0;
   font-size: 13px;
-  color: #06b6d4;
+  color: #ff8c42;
   font-weight: 700;
   letter-spacing: 0.3px;
 }
 
 .info-header svg {
-  color: #06b6d4;
+  color: #ff8c42;
   flex-shrink: 0;
 }
 
@@ -245,7 +245,7 @@
 
 .info-section strong {
   font-size: 12px;
-  color: #06b6d4;
+  color: #ff8c42;
   font-weight: 700;
   letter-spacing: 0.3px;
 }
@@ -280,11 +280,11 @@
   border: 1px solid rgba(6, 182, 212, 0.3);
   border-radius: 4px;
   padding: 8px;
-  border-left: 3px solid #06b6d4;
+  border-left: 3px solid #ff8c42;
 }
 
 .info-section.legal-notice strong {
-  color: #06b6d4;
+  color: #ff8c42;
   font-size: 11px;
 }
 
@@ -296,7 +296,7 @@
 }
 
 .info-section p strong {
-  color: #06b6d4;
+  color: #ff8c42;
   font-weight: 600;
 }
 
