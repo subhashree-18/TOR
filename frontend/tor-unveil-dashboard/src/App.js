@@ -177,7 +177,7 @@ function TopBar() {
 
 function AppContent() {
   return (
-    <>
+    <div style={{ display: "flex", flexDirection: "column", height: "100vh", width: "100vw" }}>
       <TamilNaduBrand />
       <div style={styles.appContainer}>
         <SideNavigation />
@@ -198,7 +198,7 @@ function AppContent() {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
 
@@ -218,8 +218,8 @@ export default function App() {
 
 const styles = {
   appContainer: {
-    height: "100vh",
-    width: "100vw",
+    flex: 1,
+    height: "auto",
     background: "#0a0e27",
     color: "#e2e8f0",
     fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
