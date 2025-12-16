@@ -1,9 +1,9 @@
 // src/TamilNaduBrand.js
 import React from "react";
-import { ShieldAlert, Globe } from "lucide-react";
+import { ShieldAlert, Globe, LogOut } from "lucide-react";
 import "./TamilNaduBrand.css";
 
-export default function TamilNaduBrand() {
+export default function TamilNaduBrand({ userInfo, onLogout }) {
   return (
     <div className="tn-brand-container">
       <div className="tn-brand-header">
@@ -26,6 +26,22 @@ export default function TamilNaduBrand() {
             <span className="seal-text">TN CYBER</span>
           </div>
         </div>
+        {userInfo && (
+          <div className="tn-user-section">
+            <div className="user-info">
+              <p className="user-label">Logged in as</p>
+              <p className="user-id">{userInfo.loginId}</p>
+            </div>
+            <button
+              className="logout-btn"
+              onClick={onLogout}
+              title="Logout"
+            >
+              <LogOut size={18} />
+              <span>Logout</span>
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="tn-mission-stripe">

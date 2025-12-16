@@ -9,9 +9,9 @@ import AnalysisPage from "./AnalysisPage";
 import ReportPage from "./ReportPage";
 import InvestigationPage from "./InvestigationPage";
 import ForensicPage from "./ForensicPage";
-import IndiaAnalytics from "./IndiaAnalytics";
 import Breadcrumb from "./Breadcrumb";
 import TamilNaduBrand from "./TamilNaduBrand";
+import PoliceLogin from "./PoliceLogin";
 
 // ============================================================================
 // SIDEBAR NAVIGATION COMPONENT
@@ -32,12 +32,6 @@ function SideNavigation() {
         { path: "/dashboard", label: "Dashboard", Icon: LayoutDashboard },
         { path: "/paths", label: "Paths", Icon: GitBranch },
         { path: "/analysis", label: "Analysis", Icon: Activity },
-      ],
-    },
-    {
-      title: "REGIONAL ANALYTICS",
-      items: [
-        { path: "/india", label: "India Focus", Icon: Search },
       ],
     },
     {
@@ -176,9 +170,26 @@ function TopBar() {
 // ============================================================================
 
 function AppContent() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userInfo, setUserInfo] = useState(null);
+
+  const handleLoginSuccess = (loginData) => {
+    setUserInfo(loginData);
+    setIsLoggedIn(true);
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setUserInfo(null);
+  };
+
+  if (!isLoggedIn) {
+    return <PoliceLogin onLoginSuccess={handleLoginSuccess} />;
+  }
+
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100vh", width: "100vw" }}>
-      <TamilNaduBrand />
+      <TamilNaduBrand userInfo={userInfo} onLogout={handleLogout} />
       <div style={styles.appContainer}>
         <SideNavigation />
         <div style={styles.mainContent}>
@@ -191,7 +202,6 @@ function AppContent() {
               <Route path="/paths" element={<PathsDashboard />} />
               <Route path="/analysis" element={<AnalysisPage />} />
               <Route path="/forensic" element={<ForensicPage />} />
-              <Route path="/india" element={<IndiaAnalytics />} />
               <Route path="/report" element={<ReportPage />} />
               <Route path="/" element={<InvestigationPage />} />
             </Routes>
@@ -233,13 +243,13 @@ const styles = {
   sidebar: (isCollapsed) => ({
     width: isCollapsed ? "70px" : "240px",
     height: "100vh",
-    background: "linear-gradient(180deg, #1a3d5c 0%, #0f172a 50%, #1a2332 100%)",
-    borderRight: "3px solid #ff6b35",
+    background: "linear-gradient(180deg, #1565c0 0%, #0d47a1 50%, #0d47a1 100%)",
+    borderRight: "3px solid #0d47a1",
     padding: "12px 0",
     display: "flex",
     flexDirection: "column",
     transition: "width 0.3s ease",
-    boxShadow: "2px 0 12px rgba(255, 107, 53, 0.2)",
+    boxShadow: "2px 0 12px rgba(13, 71, 161, 0.2)",
     zIndex: 100,
     overflowY: "auto",
   }),
@@ -256,7 +266,7 @@ const styles = {
   collapseBtn: {
     background: "none",
     border: "none",
-    color: "#0ea5e9",
+    color: "#64b5f6",
     cursor: "pointer",
     padding: "6px",
     display: "flex",
@@ -268,7 +278,7 @@ const styles = {
   brandTitle: {
     fontSize: "13px",
     fontWeight: "700",
-    background: "linear-gradient(135deg, #ff6b35 0%, #ffa500 100%)",
+    background: "linear-gradient(135deg, #64b5f6 0%, #42a5f5 100%)",
     backgroundClip: "text",
     WebkitBackgroundClip: "text",
     WebkitTextFillColor: "transparent",
@@ -311,9 +321,9 @@ const styles = {
   },
 
   sidebarbtnActive: {
-    background: "rgba(14, 165, 233, 0.15)",
-    color: "#0ea5e9",
-    borderLeft: "3px solid #0ea5e9",
+    background: "rgba(100, 181, 246, 0.15)",
+    color: "#64b5f6",
+    borderLeft: "3px solid #64b5f6",
     paddingLeft: "9px",
   },
 
@@ -327,13 +337,13 @@ const styles = {
 
   // ========== TOP BAR ==========
   topbar: {
-    background: "linear-gradient(90deg, #1a3d5c 0%, #111c3a 50%, #1a2332 100%)",
-    borderBottom: "2px solid #ff6b35",
+    background: "linear-gradient(90deg, #1565c0 0%, #0d47a1 50%, #0d47a1 100%)",
+    borderBottom: "2px solid #0d47a1",
     padding: "12px 20px",
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    boxShadow: "0 4px 12px rgba(255, 107, 53, 0.2)",
+    boxShadow: "0 4px 12px rgba(13, 71, 161, 0.2)",
     flexShrink: 0,
   },
 
