@@ -133,27 +133,29 @@ class PCAPAnalyzer:
         if len(self.data) < 24:
             return False
         
-        magic, = struct.unpack_from('>I', self.data, 0)  # First try big-endian
+        # Try little-endian first (most common)
+        magic_le, = struct.unpack_from('<I', self.data, 0)
+        magic_be, = struct.unpack_from('>I', self.data, 0)
         
         # Detect byte order and nanosecond precision
-        if magic == PCAP_MAGIC_BE:
-            self.byte_order = '>'
-            self.nanosecond_precision = False
-            logger.debug("Detected big-endian PCAP (microsecond)")
-        elif magic == PCAP_MAGIC_LE:
+        if magic_le == PCAP_MAGIC_LE:
             self.byte_order = '<'
             self.nanosecond_precision = False
             logger.debug("Detected little-endian PCAP (microsecond)")
-        elif magic == PCAP_MAGIC_BE_NS:
-            self.byte_order = '>'
-            self.nanosecond_precision = True
-            logger.debug("Detected big-endian PCAP (nanosecond)")
-        elif magic == PCAP_MAGIC_LE_NS:
+        elif magic_le == PCAP_MAGIC_LE_NS:
             self.byte_order = '<'
             self.nanosecond_precision = True
             logger.debug("Detected little-endian PCAP (nanosecond)")
+        elif magic_be == PCAP_MAGIC_BE:
+            self.byte_order = '>'
+            self.nanosecond_precision = False
+            logger.debug("Detected big-endian PCAP (microsecond)")
+        elif magic_be == PCAP_MAGIC_BE_NS:
+            self.byte_order = '>'
+            self.nanosecond_precision = True
+            logger.debug("Detected big-endian PCAP (nanosecond)")
         else:
-            logger.error(f"Invalid PCAP magic number: {magic:#010x}")
+            logger.error(f"Invalid PCAP magic number: LE={magic_le:#010x}, BE={magic_be:#010x}")
             return False
         
         # Parse global header fields

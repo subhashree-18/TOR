@@ -15,20 +15,20 @@
 .page-header h1 {
   margin: 0 0 8px 0;
   font-size: 28px;
-  color: #ff6b35;
+  color: var(--accent);
   font-weight: 700;
 }
 
 .page-subtitle {
   margin: 0;
   font-size: 13px;
-  color: #94a3b8;
+  color: var(--text-muted);
 }
 
 /* Case Information Card */
 .case-info-card {
-  background: linear-gradient(135deg, #1a2332 0%, #0f172a 100%);
-  border: 1px solid #ff6b35;
+  background: linear-gradient(135deg, var(--card-bg) 0%, var(--background) 100%);
+  border: 1px solid var(--accent);
   border-radius: 8px;
   padding: 20px;
   margin-bottom: 24px;
@@ -53,17 +53,17 @@
 .case-field label {
   font-weight: 600;
   font-size: 13px;
-  color: #cbd5e1;
+  color: var(--text-secondary);
   min-width: 140px;
 }
 
 .case-id {
-  background: #0f172a;
-  border: 1px solid #ff6b35;
+  background: var(--background);
+  border: 1px solid var(--accent);
   padding: 8px 12px;
   border-radius: 4px;
   font-size: 12px;
-  color: #ff6b35;
+  color: var(--accent);
   font-family: monospace;
   font-weight: 600;
 }
@@ -75,18 +75,18 @@
 }
 
 .officer-display span {
-  background: #0f172a;
-  border: 1px solid #ff6b35;
+  background: var(--background);
+  border: 1px solid var(--accent);
   padding: 8px 12px;
   border-radius: 4px;
   font-size: 13px;
-  color: #ff6b35;
+  color: var(--accent);
 }
 
 .edit-btn {
   background: transparent;
-  border: 1px solid #ff6b35;
-  color: #ff6b35;
+  border: 1px solid var(--accent);
+  color: var(--accent);
   padding: 6px 10px;
   border-radius: 3px;
   font-size: 11px;
@@ -106,9 +106,9 @@
 }
 
 .officer-input {
-  background: #0f172a;
-  border: 1px solid #ff6b35;
-  color: #ff6b35;
+  background: var(--background);
+  border: 1px solid var(--accent);
+  color: var(--accent);
   padding: 8px 12px;
   border-radius: 4px;
   font-size: 13px;
@@ -118,15 +118,15 @@
 }
 
 .officer-input:focus {
-  border-color: #e55a25;
+  border-color: var(--primary-dark);
   box-shadow: 0 0 8px rgba(14, 165, 233, 0.2);
 }
 
 .save-btn,
 .cancel-btn {
   background: transparent;
-  border: 1px solid #ff6b35;
-  color: #ff6b35;
+  border: 1px solid var(--accent);
+  color: var(--accent);
   padding: 6px 10px;
   border-radius: 3px;
   font-size: 11px;
@@ -169,13 +169,13 @@
 .stat-value {
   font-size: 22px;
   font-weight: 700;
-  color: #ff6b35;
+  color: var(--accent);
   margin-bottom: 4px;
 }
 
 .stat-label {
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--text-muted);
   font-weight: 500;
 }
 
@@ -186,14 +186,14 @@
   align-items: center;
   justify-content: center;
   padding: 80px 20px;
-  color: #94a3b8;
+  color: var(--text-muted);
 }
 
 .spinner {
   width: 40px;
   height: 40px;
   border: 3px solid rgba(14, 165, 233, 0.2);
-  border-top: 3px solid #ff6b35;
+  border-top: 3px solid var(--accent);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 16px;
@@ -210,8 +210,8 @@
 
 /* Quick Actions */
 .quick-actions {
-  background: linear-gradient(135deg, #1a2332 0%, #0f172a 100%);
-  border: 1px solid #ff6b35;
+  background: linear-gradient(135deg, var(--card-bg) 0%, var(--background) 100%);
+  border: 1px solid var(--accent);
   border-radius: 8px;
   padding: 20px;
   margin-top: 24px;
@@ -220,7 +220,7 @@
 .quick-actions h3 {
   margin: 0 0 16px 0;
   font-size: 16px;
-  color: #ff6b35;
+  color: var(--accent);
   font-weight: 600;
 }
 
@@ -232,18 +232,18 @@
 
 .action-btn {
   padding: 12px 16px;
-  border: 1px solid #ff6b35;
+  border: 1px solid var(--accent);
   border-radius: 6px;
   font-weight: 600;
   font-size: 12px;
   cursor: pointer;
   transition: all 0.25s ease;
   background: transparent;
-  color: #ff6b35;
+  color: var(--accent);
 }
 
 .action-btn.primary {
-  background: linear-gradient(135deg, #ff6b35 0%, #e55a25 100%);
+  background: linear-gradient(135deg, var(--accent) 0%, var(--primary-dark) 100%);
   color: #0a0e27;
   border-color: transparent;
 }
@@ -287,3 +287,89 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ============= LIGHT THEME ============= */
+[data-theme="light"] .investigation-page {
+  background: #e8eef4;
+}
+
+[data-theme="light"] .page-header h1 {
+  color: #0369a1;
+  font-weight: 700;
+}
+
+[data-theme="light"] .page-subtitle {
+  color: #475569;
+}
+
+[data-theme="light"] .case-info-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+  border: 2px solid #cbd5e1;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .case-field label {
+  color: #0f172a;
+  font-weight: 600;
+}
+
+[data-theme="light"] .case-id,
+[data-theme="light"] .officer-display span {
+  background: #e2e8f0;
+  border: 2px solid #94a3b8;
+  color: #0369a1;
+  font-weight: 700;
+}
+
+[data-theme="light"] .info-stat {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  border: 2px solid #3b82f6;
+}
+
+[data-theme="light"] .stat-value {
+  color: #1d4ed8;
+  font-weight: 700;
+}
+
+[data-theme="light"] .stat-label {
+  color: #475569;
+}
+
+[data-theme="light"] .quick-actions {
+  background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
+  border: 2px solid #c084fc;
+  box-shadow: 0 4px 16px rgba(168, 85, 247, 0.15);
+}
+
+[data-theme="light"] .quick-actions h3 {
+  color: #9333ea;
+  font-weight: 700;
+}
+
+[data-theme="light"] .action-btn {
+  border: 2px solid #3b82f6;
+  color: #0369a1;
+  background: #ffffff;
+}
+
+[data-theme="light"] .action-btn.primary {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+[data-theme="light"] .action-btn.primary:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+}
+
+[data-theme="light"] .action-btn.secondary:hover {
+  background: #dbeafe;
+  border-color: #2563eb;
+}
+
+[data-theme="light"] .workflow-container {
+  background: #ffffff;
+  border: 2px solid #cbd5e1;
+}
+

@@ -18,6 +18,9 @@ typing-inspection==0.4.2
 typing_extensions==4.15.0
 urllib3==2.5.0
 uvicorn==0.38.0
-python-multipart==0.0.8
+twilio==8.10.0
+python-dotenv==1.0.0
+PyJWT==2.10.1
+python-multipart==0.0.6
 python-dateutil
 reportlab==4.2.0

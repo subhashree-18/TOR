@@ -1,7 +1,16 @@
 // src/PoliceLogin.js - Professional Police Login with OTP
 import React, { useState, useEffect } from "react";
-import { Shield, Phone, Lock, CheckCircle, AlertCircle, Loader } from "lucide-react";
+import { Shield, Phone, Lock, CheckCircle, AlertCircle, Loader, LogOut } from "lucide-react";
 import "./PoliceLogin.css";
+
+// Sample Police Officer Database
+const VALID_OFFICERS = [
+  { loginId: "TN001", name: "Rajesh Kumar", mobile: "9876543210", designation: "Inspector" },
+  { loginId: "TN002", name: "Priya Singh", mobile: "9877654321", designation: "Constable" },
+  { loginId: "TN003", name: "Amit Verma", mobile: "9878765432", designation: "Sub-Inspector" },
+  { loginId: "TN004", name: "Vikram Patel", mobile: "9879876543", designation: "ASI" },
+  { loginId: "TN005", name: "Neha Sharma", mobile: "9880987654", designation: "Inspector" },
+];
 
 function PoliceLogin({ onLoginSuccess }) {
   const [step, setStep] = useState("mobile"); // mobile, otp, verification
@@ -13,6 +22,8 @@ function PoliceLogin({ onLoginSuccess }) {
   const [success, setSuccess] = useState("");
   const [timer, setTimer] = useState(0);
   const [otpSent, setOtpSent] = useState(false);
+  const [officerName, setOfficerName] = useState("");
+  const [officerDesignation, setOfficerDesignation] = useState("");
 
   // Timer for OTP resend
   useEffect(() => {
@@ -25,6 +36,13 @@ function PoliceLogin({ onLoginSuccess }) {
 
   const validateMobileNumber = (number) => {
     return /^[0-9]{10}$/.test(number);
+  };
+
+  const validateOfficer = (id, mobile) => {
+    const officer = VALID_OFFICERS.find(
+      (o) => o.loginId === id && o.mobile === mobile
+    );
+    return officer;
   };
 
   const handleSendOtp = async (e) => {
@@ -42,6 +60,16 @@ function PoliceLogin({ onLoginSuccess }) {
       return;
     }
 
+    // Validate officer credentials
+    const officer = validateOfficer(loginId, mobileNumber);
+    if (!officer) {
+      setError("Invalid Login ID or Mobile Number. Check your credentials.");
+      return;
+    }
+
+    setOfficerName(officer.name);
+    setOfficerDesignation(officer.designation);
+
     setLoading(true);
     try {
       // Simulate API call to send OTP
@@ -54,7 +82,7 @@ function PoliceLogin({ onLoginSuccess }) {
       //   body: JSON.stringify({ loginId, mobileNumber })
       // });
 
-      setSuccess("OTP sent successfully to " + mobileNumber);
+      setSuccess(`OTP sent successfully to +91${mobileNumber}`);
       setOtpSent(true);
       setStep("otp");
       setTimer(120); // 2 minutes to enter OTP
@@ -108,6 +136,8 @@ function PoliceLogin({ onLoginSuccess }) {
       setTimeout(() => {
         onLoginSuccess({
           loginId,
+          name: officerName,
+          designation: officerDesignation,
           mobileNumber,
           timestamp: new Date().toISOString(),
         });
@@ -129,12 +159,17 @@ function PoliceLogin({ onLoginSuccess }) {
     <div className="police-login-container">
       {/* Header Section */}
       <div className="login-header">
-        <div className="govt-logo">
-          <Shield size={48} />
-        </div>
-        <div className="header-text">
-          <h1>National Cyber Crime Reporting Portal</h1>
-          <p>Tamil Nadu Police - Cybercrime Investigation Unit</p>
+        <div className="header-logo-section">
+          <div className="govt-logo-left">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%23fff' width='100' height='100' rx='12'/%3E%3Ctext x='50' y='55' font-size='40' font-weight='bold' text-anchor='middle' fill='%230d47a1'%3ETN%3C/text%3E%3C/svg%3E" alt="Tamil Nadu Govt" className="logo-img" title="Tamil Nadu Government Logo Placeholder" />
+          </div>
+          <div className="header-text">
+            <h1>National Cyber Crime Reporting Portal</h1>
+            <p>Tamil Nadu Police - Cybercrime Investigation Unit</p>
+          </div>
+          <div className="govt-logo-right">
+            <Shield size={48} className="shield-icon" />
+          </div>
         </div>
       </div>
 
@@ -161,6 +196,20 @@ function PoliceLogin({ onLoginSuccess }) {
             </div>
           )}
 
+          {/* Quick Login Help */}
+          <div className="quick-help-box">
+            <p className="help-title">💡 Test Credentials:</p>
+            <div className="credentials-list">
+              {VALID_OFFICERS.slice(0, 3).map((officer) => (
+                <div key={officer.loginId} className="credential-item">
+                  <span className="cred-label">ID: {officer.loginId}</span>
+                  <span className="cred-separator">•</span>
+                  <span className="cred-value">{officer.mobile}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* Step 1: Login ID & Mobile */}
           {step === "mobile" && (
             <form onSubmit={handleSendOtp} className="login-form">
@@ -171,10 +220,10 @@ function PoliceLogin({ onLoginSuccess }) {
                   id="login-id"
                   value={loginId}
                   onChange={(e) => {
-                    setLoginId(e.target.value);
+                    setLoginId(e.target.value.toUpperCase());
                     setError("");
                   }}
-                  placeholder="Enter your Login ID"
+                  placeholder="e.g., TN001, TN002"
                   disabled={loading}
                   className="form-input"
                 />
@@ -221,7 +270,7 @@ function PoliceLogin({ onLoginSuccess }) {
           {step === "otp" && (
             <form onSubmit={handleVerifyOtp} className="login-form">
               <div className="otp-instruction">
-                <p>Enter the 6-digit OTP sent to <strong>{mobileNumber}</strong></p>
+                <p>Enter the 6-digit OTP sent to <strong>+91{mobileNumber}</strong></p>
               </div>
 
               <div className="otp-inputs">
@@ -303,7 +352,9 @@ function PoliceLogin({ onLoginSuccess }) {
                 <CheckCircle size={64} />
               </div>
               <h3>Login Successful</h3>
-              <p>Redirecting to dashboard...</p>
+              <p>Welcome, {officerName}</p>
+              <p className="designation-text">{officerDesignation}</p>
+              <p className="redirecting">Redirecting to dashboard...</p>
               <Loader size={32} className="spin" />
             </div>
           )}

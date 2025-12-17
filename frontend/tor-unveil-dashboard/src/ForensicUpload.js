@@ -91,6 +91,10 @@ const ForensicUpload = ({ onAnalysisComplete, caseId = null }) => {
     processFiles(selectedFiles);
   };
 
+  const handleDropZoneClick = () => {
+    document.getElementById("forensic-file-input")?.click();
+  };
+
   const processFiles = (fileList) => {
     setErrorMessage("");
     const validFiles = [];
@@ -381,6 +385,8 @@ const ForensicUpload = ({ onAnalysisComplete, caseId = null }) => {
         onDragLeave={handleDrag}
         onDragOver={handleDrag}
         onDrop={handleDrop}
+        onClick={handleDropZoneClick}
+        style={{ cursor: "pointer" }}
       >
         <Upload size={48} className="upload-icon" />
         <h3>Drop files here or click to browse</h3>

@@ -28,7 +28,7 @@ const SEMANTIC_COLORS = {
 };
 
 export default function Dashboard() {
-  const { selectRelay, selectedRelay } = useAppContext();
+  const { selectRelay, selectedRelay, darkMode } = useAppContext();
   const [relays, setRelays] = useState([]);
   const [loading, setLoading] = useState(true);
   const [countryData, setCountryData] = useState([]);
@@ -36,6 +36,15 @@ export default function Dashboard() {
   const [copiedFp, setCopiedFp] = useState(null);
   const [drawerRelay, setDrawerRelay] = useState(null); // For left-side panel
   const [showAllCountries, setShowAllCountries] = useState(false);
+
+  // Theme-aware chart colors
+  const chartColors = {
+    grid: darkMode ? "#334155" : "#e2e8f0",
+    axis: darkMode ? "#94a3b8" : "#475569",
+    tooltipBg: darkMode ? "#1e293b" : "#ffffff",
+    tooltipBorder: darkMode ? "#0ea5e9" : "#0369a1",
+    bar: darkMode ? "#0ea5e9" : "#0369a1",
+  };
 
   const loadData = async () => {
     try {
@@ -55,22 +64,13 @@ export default function Dashboard() {
         counts[c] = (counts[c] || 0) + 1;
       });
 
-      // Separate India and other countries
-      const indiaCount = counts["IN"] || 0;
-      const otherCounts = { ...counts };
-      delete otherCounts["IN"];
+      // Remove India (IN) from the data
+      const countriesWithoutIndia = { ...counts };
+      delete countriesWithoutIndia["IN"];
 
-      let formatted = Object.keys(counts)
-        .map((c) => ({ country: c, count: counts[c] }))
+      let formatted = Object.keys(countriesWithoutIndia)
+        .map((c) => ({ country: c, count: countriesWithoutIndia[c] }))
         .sort((a, b) => b.count - a.count);
-
-      // Always show India first if present, then others
-      if (indiaCount > 0) {
-        formatted = [
-          { country: "IN", count: indiaCount, isIndia: true },
-          ...formatted.filter((c) => c.country !== "IN"),
-        ];
-      }
 
       // Limit to top 15 by default, but allow showing all
       const displayData = showAllCountries ? formatted : formatted.slice(0, 15);
@@ -203,31 +203,29 @@ export default function Dashboard() {
             <div className="chart-container">
               <ResponsiveContainer width="100%" height={350}>
                 <BarChart data={countryData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                  <XAxis dataKey="country" stroke="#94a3b8" />
-                  <YAxis stroke="#94a3b8" />
+                  <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
+                  <XAxis dataKey="country" stroke={chartColors.axis} />
+                  <YAxis stroke={chartColors.axis} />
                   <Tooltip 
                     contentStyle={{ 
-                      background: "#1e293b", 
-                      border: "1px solid #0ea5e9",
-                      borderRadius: "6px"
+                      background: chartColors.tooltipBg, 
+                      border: `1px solid ${chartColors.tooltipBorder}`,
+                      borderRadius: "6px",
+                      color: darkMode ? "#e2e8f0" : "#1e293b"
                     }}
                   />
                   <Bar 
                     dataKey="count" 
-                    fill="#0ea5e9" 
+                    fill={chartColors.bar} 
                     radius={[8, 8, 0, 0]}
                     isAnimationActive={true}
                   >
-                    {countryData.map((entry, idx) => {
-                      const isIndia = entry.country === "IN";
-                      return (
-                        <Cell 
-                          key={`cell-${idx}`} 
-                          fill={isIndia ? "#ef4444" : "#0ea5e9"}
-                        />
-                      );
-                    })}
+                    {countryData.map((entry, idx) => (
+                      <Cell 
+                        key={`cell-${idx}`} 
+                        fill={chartColors.bar}
+                      />
+                    ))}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>

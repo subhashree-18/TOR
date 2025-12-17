@@ -202,8 +202,8 @@
 
 /* Information Panel */
 .india-context-info {
-  background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);
-  border: 1px solid #ff8c42;
+  background: linear-gradient(135deg, #1e1b4b 0%, var(--background) 100%);
+  border: 1px solid var(--accent-hover);
   border-radius: 6px;
   padding: 14px;
   margin-top: 8px;
@@ -221,13 +221,13 @@
 .info-header h4 {
   margin: 0;
   font-size: 13px;
-  color: #ff8c42;
+  color: var(--accent-hover);
   font-weight: 700;
   letter-spacing: 0.3px;
 }
 
 .info-header svg {
-  color: #ff8c42;
+  color: var(--accent-hover);
   flex-shrink: 0;
 }
 
@@ -245,7 +245,7 @@
 
 .info-section strong {
   font-size: 12px;
-  color: #ff8c42;
+  color: var(--accent-hover);
   font-weight: 700;
   letter-spacing: 0.3px;
 }
@@ -258,7 +258,7 @@
 
 .info-section li {
   font-size: 11px;
-  color: #cbd5e1;
+  color: var(--text-secondary);
   margin-bottom: 5px;
   line-height: 1.4;
 }
@@ -280,23 +280,23 @@
   border: 1px solid rgba(6, 182, 212, 0.3);
   border-radius: 4px;
   padding: 8px;
-  border-left: 3px solid #ff8c42;
+  border-left: 3px solid var(--accent-hover);
 }
 
 .info-section.legal-notice strong {
-  color: #ff8c42;
+  color: var(--accent-hover);
   font-size: 11px;
 }
 
 .info-section p {
   margin: 4px 0 0 0;
   font-size: 11px;
-  color: #cbd5e1;
+  color: var(--text-secondary);
   line-height: 1.5;
 }
 
 .info-section p strong {
-  color: #ff8c42;
+  color: var(--accent-hover);
   font-weight: 600;
 }
 
@@ -353,3 +353,72 @@
   }
 }
 
+/* ============= LIGHT THEME ============= */
+[data-theme="light"] .indian-context-container.has-risk-pattern {
+  background: rgba(239, 68, 68, 0.06);
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+[data-theme="light"] .indian-context-container.has-indian-node {
+  background: rgba(16, 185, 129, 0.06);
+}
+
+[data-theme="light"] .severity-banner.critical {
+  background: linear-gradient(90deg, #dc2626 0%, #b91c1c 100%);
+  color: #ffffff;
+}
+
+[data-theme="light"] .context-badge.severity-high {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: #059669;
+  color: #065f46;
+}
+
+[data-theme="light"] .context-badge.severity-high .badge-icon {
+  background: rgba(16, 185, 129, 0.2);
+  color: #059669;
+}
+
+[data-theme="light"] .context-badge.severity-medium {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: #d97706;
+  color: #92400e;
+}
+
+[data-theme="light"] .context-badge.severity-medium .badge-icon {
+  background: rgba(245, 158, 11, 0.2);
+  color: #d97706;
+}
+
+[data-theme="light"] .context-badge.severity-critical {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: #dc2626;
+  color: #991b1b;
+}
+
+[data-theme="light"] .context-badge.severity-critical .badge-icon {
+  background: rgba(239, 68, 68, 0.2);
+  color: #dc2626;
+}
+
+[data-theme="light"] .badge-description {
+  color: #475569;
+}
+
+[data-theme="light"] .india-context-info {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+[data-theme="light"] .info-header h4 {
+  color: var(--accent);
+}
+
+[data-theme="light"] .info-section strong {
+  color: #1e293b;
+}
+
+[data-theme="light"] .info-section li,
+[data-theme="light"] .info-section p {
+  color: #475569;
+}

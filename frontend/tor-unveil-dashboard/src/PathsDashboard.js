@@ -16,9 +16,11 @@ const API_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
 
 // Helper function to get confidence level (qualitative only)
 function getConfidenceLevel(score) {
-  if (score >= 0.8) return { level: "HIGH", color: "#10b981" };
-  if (score >= 0.5) return { level: "MEDIUM", color: "#f59e0b" };
-  return { level: "LOW", color: "#ef4444" };
+  if (score >= 0.9) return { level: "VERY HIGH", color: "#059669" };
+  if (score >= 0.75) return { level: "HIGH", color: "#10b981" };
+  if (score >= 0.6) return { level: "MEDIUM", color: "#f59e0b" };
+  if (score >= 0.4) return { level: "LOW", color: "#ef4444" };
+  return { level: "VERY LOW", color: "#b91c1c" };
 }
 
 // Helper to resolve ISO country code to full country name (safe fallback)
@@ -247,23 +249,29 @@ export default function PathsDashboard() {
                               <code>{path.exit?.fingerprint || ""}</code>
                             </div>
                           </td>
-                          <td className="confidence-cell">
-                            <div className="confidence-badge" style={{ borderColor: confidence.color }}>
-                              <span className="confidence-level" style={{ color: confidence.color }}>
-                                {confidence.level}
-                              </span>
+                          <td className="cell-score">
+                            <div className="confidence-heatmap">
+                              <div className="heatmap-bar">
+                                <div 
+                                  className="heatmap-marker" 
+                                  style={{ left: `${Math.max(2, Math.min(98, path.score * 100))}%` }}
+                                  title={`Score: ${path.score.toFixed(3)}`}
+                                ></div>
+                              </div>
+                              <div className="score-display">
+                                {(path.score * 100).toFixed(1)}%
+                              </div>
                             </div>
                           </td>
-                          <td className="score-cell">
-                            <code>{path.score.toFixed(3)}</code>
-                          </td>
-                          <td>
-                            <button 
-                              className={`select-btn ${isSelected ? "selected" : ""}`}
-                              onClick={() => handleSelectPath(path)}
-                            >
-                              {isSelected ? <><CheckCircle size={14} style={{display: "inline", marginRight: "4px"}} />Selected</> : "Select"}
-                            </button>
+                          <td className="cell-nodes">
+                            <div className="node-list">
+                              <button 
+                                className={`select-btn ${isSelected ? "selected" : ""}`}
+                                onClick={() => handleSelectPath(path)}
+                              >
+                                {isSelected ? <><CheckCircle size={14} style={{display: "inline", marginRight: "4px"}} />Selected</> : "Select"}
+                              </button>
+                            </div>
                           </td>
                         </tr>
                         

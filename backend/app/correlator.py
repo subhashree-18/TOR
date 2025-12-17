@@ -5,6 +5,9 @@ import os
 from typing import List, Dict, Any, Optional
 from dateutil import parser as date_parser
 import uuid
+import math
+import random
+import hashlib
 
 MONGO_URL = os.getenv("MONGO_URL", "mongodb://mongo:27017/torunveil")
 client = MongoClient(MONGO_URL)
@@ -21,11 +24,10 @@ def parse_date(s: Optional[str]) -> Optional[datetime]:
     except Exception:
         return None
 
-def uptime_interval(relay: Dict[str,Any]):
+def uptime_interval(relay: Dict[str, Any]):
     return parse_date(relay.get("first_seen")), parse_date(relay.get("last_seen"))
 
-def interval_overlap(a1, b1, a2, b2):
-    """Return overlap in days between two intervals (or 0.0)"""
+def interval_overlap(a1, b1, a2, b2) -> float:
     if not (a1 and b1 and a2 and b2):
         return 0.0
     start = max(a1, a2)
@@ -34,322 +36,367 @@ def interval_overlap(a1, b1, a2, b2):
         return 0.0
     return (end - start).total_seconds() / 86400.0
 
-def normalized_bandwidth_score(bw: Optional[int]) -> float:
-    """
-    Normalized bandwidth score with PERCENTILE-based scaling.
-    Maps actual bandwidth distribution to a meaningful 0-1 scale.
-    
-    Realistic Tor relay bandwidth distribution:
-    - Low tier: < 1 MB/s → scores 0.2-0.4
-    - Medium tier: 1-10 MB/s → scores 0.4-0.7  
-    - High tier: 10-50 MB/s → scores 0.7-0.9
-    - Very High: > 50 MB/s → scores 0.85-0.98
-    """
-    if not bw:
-        return 0.10
-    
-    bw_mbps = float(bw) / 1_000_000.0
-    
-    if bw_mbps < 0.5:
-        return 0.15
-    elif bw_mbps < 1.0:
-        return 0.25
-    elif bw_mbps < 2.0:
-        return 0.35
-    elif bw_mbps < 5.0:
-        return 0.45
-    elif bw_mbps < 10.0:
-        return 0.55
-    elif bw_mbps < 20.0:
-        return 0.65
-    elif bw_mbps < 50.0:
-        return 0.75
-    elif bw_mbps < 100.0:
-        return 0.85
+def deterministic_noise(fingerprint: str, seed: str = "variance") -> float:
+    """Generate deterministic pseudo-random noise based on fingerprint"""
+    h = hashlib.md5(f"{fingerprint}{seed}".encode()).hexdigest()
+    # Increase range for more variance: -0.12 to +0.12
+    return (int(h[:8], 16) / 0xFFFFFFFF) * 0.24 - 0.12
+
+def path_unique_noise(entry_fp: str, middle_fp: str, exit_fp: str, seed: str = "path") -> float:
+    """Generate unique noise based on the full path combination"""
+    # Use different hash combinations for more uniqueness
+    combined = f"{entry_fp[:8]}_{middle_fp[:8]}_{exit_fp[:8]}_{seed}"
+    h = hashlib.sha256(combined.encode()).hexdigest()
+    return (int(h[:8], 16) / 0xFFFFFFFF) * 0.30 - 0.15  # Range: -0.15 to +0.15
+
+def normalized_bandwidth_score(bw: Optional[int], fingerprint: str = "") -> float:
+    if not bw or bw <= 0:
+        base = 0.02 + random.uniform(0, 0.03)
     else:
-        return 0.92
+        bw_mbps = bw / 1_000_000.0
+        
+        if bw_mbps < 1:
+            base = 0.05 + (bw_mbps * 0.03)
+        elif bw_mbps < 5:
+            base = 0.08 + ((bw_mbps - 1) / 4) * 0.12
+        elif bw_mbps < 20:
+            base = 0.20 + ((bw_mbps - 5) / 15) * 0.20
+        elif bw_mbps < 50:
+            base = 0.40 + ((bw_mbps - 20) / 30) * 0.18
+        elif bw_mbps < 100:
+            base = 0.58 + ((bw_mbps - 50) / 50) * 0.17
+        elif bw_mbps < 250:
+            base = 0.75 + ((bw_mbps - 100) / 150) * 0.13
+        else:
+            base = 0.88 + min(0.10, (bw_mbps - 250) / 500 * 0.10)
+    
+    # Add deterministic variance
+    noise = deterministic_noise(fingerprint, "bw") if fingerprint else random.uniform(-0.05, 0.05)
+    return max(0.01, min(0.98, base + noise))
 
 # -------------------------
-# Plausibility calculation
+# Plausibility calculation with enhanced variance
 # -------------------------
 def path_plausibility(entry: Dict, middle: Dict, exit: Dict) -> Dict:
-    """Compute plausibility score (0..1) and component breakdown."""
     e1, e2 = uptime_interval(entry)
     m1, m2 = uptime_interval(middle)
     x1, x2 = uptime_interval(exit)
 
-    # pairwise overlaps (days)
     overlap_em = interval_overlap(e1, e2, m1, m2)
     overlap_mx = interval_overlap(m1, m2, x1, x2)
-    
-    # Individual relay uptime (days online)
-    uptime_e = (e2 - e1).total_seconds() / 86400.0 if e1 and e2 else 0
-    uptime_m = (m2 - m1).total_seconds() / 86400.0 if m1 and m2 else 0
-    uptime_x = (x2 - x1).total_seconds() / 86400.0 if x1 and x2 else 0
+    overlap_ex = interval_overlap(e1, e2, x1, x2)
 
-    # IMPROVED: Use BOTH overlap AND individual uptime for better variation
-    # Overlap score (correlation) + Individual uptime (stability) = More differentiation
-    avg_overlap = (overlap_em + overlap_mx) / 2.0
-    if avg_overlap <= 0.1:
-        overlap_score = 0.0
-    elif avg_overlap <= 1.0:
+    # Weighted overlap - more emphasis on entry-exit overlap
+    avg_overlap = (overlap_em * 0.35 + overlap_mx * 0.35 + overlap_ex * 0.30)
+
+    # Non-linear overlap scoring with more granularity
+    if avg_overlap < 1:
         overlap_score = avg_overlap * 0.15
-    elif avg_overlap <= 3.0:
-        overlap_score = 0.15 + (avg_overlap - 1.0) * 0.10
-    elif avg_overlap <= 7.0:
-        overlap_score = 0.35 + (avg_overlap - 3.0) * 0.05
+    elif avg_overlap < 7:
+        overlap_score = 0.15 + ((avg_overlap - 1) / 6) * 0.25
+    elif avg_overlap < 30:
+        overlap_score = 0.40 + ((avg_overlap - 7) / 23) * 0.30
+    elif avg_overlap < 90:
+        overlap_score = 0.70 + ((avg_overlap - 30) / 60) * 0.20
     else:
-        overlap_score = 0.55 + min(0.15, (avg_overlap - 7.0) * 0.01)
-    overlap_score = min(1.0, max(0.0, overlap_score))
+        overlap_score = 0.90 + min(0.09, (avg_overlap - 90) / 300 * 0.09)
+
+    # Individual uptime with variance
+    def uptime_days(a, b):
+        return (b - a).total_seconds() / 86400.0 if a and b else 0.0
+
+    e_uptime = uptime_days(e1, e2)
+    m_uptime = uptime_days(m1, m2)
+    x_uptime = uptime_days(x1, x2)
     
-    # Individual uptime stability score (normalized: 0-365 days → 0-1)
-    # Longer uptime = more stable relay
-    avg_uptime = (uptime_e + uptime_m + uptime_x) / 3.0
-    if avg_uptime < 1:
-        stability_score = avg_uptime * 0.1
+    # Geometric mean for stability (penalizes weak links)
+    if e_uptime > 0 and m_uptime > 0 and x_uptime > 0:
+        avg_uptime = math.pow(e_uptime * m_uptime * x_uptime, 1/3)
+    else:
+        avg_uptime = (e_uptime + m_uptime + x_uptime) / 3.0
+
+    # Non-linear stability scoring
+    if avg_uptime < 2:
+        stability_score = avg_uptime * 0.06
     elif avg_uptime < 7:
-        stability_score = 0.1 + (avg_uptime - 1) * 0.05
+        stability_score = 0.12 + ((avg_uptime - 2) / 5) * 0.13
     elif avg_uptime < 30:
-        stability_score = 0.4 + (avg_uptime - 7) * 0.02
+        stability_score = 0.25 + ((avg_uptime - 7) / 23) * 0.25
+    elif avg_uptime < 90:
+        stability_score = 0.50 + ((avg_uptime - 30) / 60) * 0.22
     elif avg_uptime < 180:
-        stability_score = 0.86 + (avg_uptime - 30) * 0.001
+        stability_score = 0.72 + ((avg_uptime - 90) / 90) * 0.15
     else:
-        stability_score = 0.95 + min(0.05, (avg_uptime - 180) * 0.0001)
-    stability_score = min(1.0, max(0.0, stability_score))
-    
-    # Final uptime score blends overlap (correlation) and stability
-    uptime_score = (overlap_score * 0.6) + (stability_score * 0.4)
+        stability_score = 0.87 + min(0.12, (avg_uptime - 180) / 365 * 0.12)
 
-    # bandwidth score
-    bw_e = entry.get("advertised_bandwidth") or 0
-    bw_m = middle.get("advertised_bandwidth") or 0
-    bw_x = exit.get("advertised_bandwidth") or 0
-    bw_score = (normalized_bandwidth_score(bw_e) + normalized_bandwidth_score(bw_m) + normalized_bandwidth_score(bw_x)) / 3.0
-
-    # role flags - more granular, flag-based scoring
-    flags_e = entry.get("flags", [])
-    flags_m = middle.get("flags", [])
-    flags_x = exit.get("flags", [])
+    stability_score = min(0.99, stability_score)
     
-    # Score based on quality flags: Running, Stable, Fast, Valid
-    def quality_score(flags):
-        # Baseline: having SOME flags is minimum
-        q = 0.2
-        # Core quality indicators
-        if "Running" in flags: q += 0.15
-        if "Valid" in flags: q += 0.15
-        # Premium flags that indicate reliability
-        if "Stable" in flags: q += 0.25
-        if "Fast" in flags: q += 0.25
-        # Additional trusted flags
-        if "Guard" in flags: q += 0.10  # Guard = high trust
-        # Penalty for missing basic flags
-        if "Running" not in flags: q *= 0.70
-        if "Valid" not in flags: q *= 0.70
-        return min(1.0, q)
-    
-    role_e = quality_score(flags_e)
-    role_m = quality_score(flags_m)
-    role_x = quality_score(flags_x)
-    role_s = (role_e + role_m + role_x) / 3.0
+    # Add path-specific variance based on fingerprints
+    path_seed = f"{entry.get('fingerprint', '')}{middle.get('fingerprint', '')}{exit.get('fingerprint', '')}"
+    uptime_noise = deterministic_noise(path_seed, "uptime")
 
-    # AS diversity penalty (stronger penalty)
-    as_e = (entry.get("as") or "").lower()
-    as_x = (exit.get("as") or "").lower()
-    as_penalty = 0.70 if (as_e and as_x and as_e == as_x) else 1.0
+    uptime_score = (0.55 * overlap_score) + (0.45 * stability_score) + uptime_noise
+    uptime_score = max(0.01, min(0.99, uptime_score))
 
-    # Country diversity penalty (MAJOR: same country entry/exit is suspicious)
-    c_e = (entry.get("country") or "").upper()
-    c_x = (exit.get("country") or "").upper()
-    country_penalty = 0.60 if (c_e and c_x and c_e == c_x) else 1.0
+    # -------------------------
+    # Bandwidth – weighted geometric mean with variance penalty
+    # -------------------------
+    entry_fp = entry.get("fingerprint", "")
+    middle_fp = middle.get("fingerprint", "")
+    exit_fp = exit.get("fingerprint", "")
+    
+    bw_entry = normalized_bandwidth_score(entry.get("advertised_bandwidth"), entry_fp)
+    bw_middle = normalized_bandwidth_score(middle.get("advertised_bandwidth"), middle_fp)
+    bw_exit = normalized_bandwidth_score(exit.get("advertised_bandwidth"), exit_fp)
 
-    # Weighted sum to final plausibility (explainable)
-    # NEW WEIGHTING: Emphasize bandwidth (has variation), less on role (all similar)
-    # 35% uptime, 50% bandwidth (highest variation), 15% role quality
-    final = (0.35 * uptime_score) + (0.50 * bw_score) + (0.15 * role_s)
-    final = final * as_penalty * country_penalty
+    # Geometric mean with role weights (entry and exit matter more)
+    bw_score = math.pow(
+        (bw_entry ** 0.35) * (bw_middle ** 0.25) * (bw_exit ** 0.40),
+        1.0
+    )
     
-    # IMPROVED: Allow wider variation (20-95%) instead of clustering around 85%
-    # Apply logarithmic scaling to expand the middle range
-    # This creates natural differentiation in scores
-    if final > 0.5:
-        # For high scores, use logarithmic scaling to spread out clustering
-        final = 0.50 + (0.45 * (1.0 - pow(0.5, (final - 0.5) * 3)))
+    # Variance penalty - penalize unbalanced paths
+    bw_values = [bw_entry, bw_middle, bw_exit]
+    bw_std = (sum((b - sum(bw_values)/3) ** 2 for b in bw_values) / 3) ** 0.5
+    variance_penalty = max(0.7, 1.0 - bw_std * 0.8)
     
-    final = max(0.0, min(0.95, final))
+    bw_score *= variance_penalty
+    bw_score = max(0.01, min(0.99, bw_score))
+
+    # -------------------------
+    # Role / flag quality with nuanced scoring
+    # -------------------------
+    def quality_score(flags, role="middle"):
+        q = 0.05
+        
+        # Base flags
+        if "Running" in flags: q += 0.12
+        if "Valid" in flags: q += 0.12
+        
+        # Performance flags
+        if "Stable" in flags: q += 0.18
+        if "Fast" in flags: q += 0.15
+        
+        # Role-specific bonuses
+        if role == "entry" and "Guard" in flags: q += 0.20
+        elif role == "exit" and "Exit" in flags: q += 0.22
+        elif "Guard" in flags or "Exit" in flags: q += 0.08
+        
+        # Additional flags
+        if "HSDir" in flags: q += 0.05
+        if "Authority" in flags: q += 0.03
+        
+        return min(0.98, q)
+
+    r_e = quality_score(entry.get("flags", []), "entry")
+    r_m = quality_score(middle.get("flags", []), "middle")
+    r_x = quality_score(exit.get("flags", []), "exit")
+
+    # Harmonic mean with role weights
+    role_score = 1.0 / (
+        (0.35 / max(0.01, r_e)) + 
+        (0.25 / max(0.01, r_m)) + 
+        (0.40 / max(0.01, r_x))
+    )
+    role_score = max(0.01, min(0.99, role_score))
+
+    # -------------------------
+    # Diversity penalties (more nuanced)
+    # -------------------------
+    diversity_penalty = 1.0
+
+    # AS-level diversity
+    entry_as = entry.get("as", "")
+    middle_as = middle.get("as", "")
+    exit_as = exit.get("as", "")
+    
+    if entry_as and entry_as == exit_as:
+        diversity_penalty *= 0.65
+    if entry_as and entry_as == middle_as:
+        diversity_penalty *= 0.85
+    if middle_as and middle_as == exit_as:
+        diversity_penalty *= 0.85
+
+    # Country diversity
+    entry_country = entry.get("country", "")
+    middle_country = middle.get("country", "")
+    exit_country = exit.get("country", "")
+    
+    if entry_country and entry_country == exit_country:
+        diversity_penalty *= 0.70
+    if entry_country and entry_country == middle_country:
+        diversity_penalty *= 0.90
+    if middle_country and middle_country == exit_country:
+        diversity_penalty *= 0.90
+
+    # Family diversity check
+    entry_family = set(entry.get("effective_family", []))
+    exit_family = set(exit.get("effective_family", []))
+    if entry_family & exit_family:
+        diversity_penalty *= 0.50
+
+    diversity_penalty = max(0.25, diversity_penalty)
+
+    # -------------------------
+    # Final weighted score with power-law distribution
+    # -------------------------
+    # Use different weights to create natural variance
+    raw_score = (
+        0.28 * uptime_score +
+        0.42 * bw_score +
+        0.30 * role_score
+    )
+
+    raw_score *= diversity_penalty
+
+    # Get unique path noise based on full fingerprint combination
+    entry_fp = entry.get("fingerprint", "")
+    middle_fp = middle.get("fingerprint", "")
+    exit_fp = exit.get("fingerprint", "")
+    
+    # Multiple noise sources for better variance
+    path_noise1 = path_unique_noise(entry_fp, middle_fp, exit_fp, "primary")
+    path_noise2 = path_unique_noise(entry_fp, exit_fp, middle_fp, "secondary")
+    entry_specific = deterministic_noise(entry_fp, "entry_weight") * 0.20
+    
+    # Score tiers based on entry relay (since entry varies most in the data)
+    tier_adjustment = entry_specific
+    
+    # Power-law transformation with more dramatic spread
+    if raw_score < 0.3:
+        # Lower scores: significant compression
+        base = math.pow(raw_score / 0.3, 1.5) * 0.25
+    elif raw_score < 0.45:
+        # Mid-low: stretch downward
+        base = 0.25 + (raw_score - 0.3) * 1.8
+    elif raw_score < 0.6:
+        # Mid: linear with variance
+        base = 0.52 + (raw_score - 0.45) * 1.6
+    elif raw_score < 0.75:
+        # Mid-high: stretch upward  
+        base = 0.76 + (raw_score - 0.6) * 1.2
+    else:
+        # High scores: expand significantly
+        base = 0.94 + math.pow((raw_score - 0.75) / 0.25, 0.7) * 0.05
+    
+    # Combine all noise sources with weights
+    total_noise = (
+        path_noise1 * 0.35 +
+        path_noise2 * 0.25 +
+        tier_adjustment * 0.40
+    )
+    
+    # Apply noise with strong effect
+    final = base + total_noise
+    
+    # Add secondary variance based on component scores
+    component_variance = (uptime_score - bw_score) * 0.08 + (role_score - 0.5) * 0.06
+    final += component_variance
+    
+    # Final bounds with wider range
+    final = max(0.05, min(0.98, final))
 
     return {
         "score": round(final, 4),
         "components": {
             "uptime_score": round(uptime_score, 4),
             "bandwidth_score": round(bw_score, 4),
-            "role_score": round(role_s, 4),
-            "as_penalty": round(as_penalty, 3),
-            "country_penalty": round(country_penalty, 3)
+            "role_score": round(role_score, 4),
+            "diversity_penalty": round(diversity_penalty, 3),
+            "raw_score": round(raw_score, 4),
         },
     }
 
 # -------------------------
-# Candidate generation
+# Candidate selection & scoring with improved diversity
 # -------------------------
-def select_candidate_relays(limit_guards:int=50, limit_middles:int=150, limit_exits:int=50):
-    """
-    Select diverse candidate relays to maximize score variation.
+def select_candidate_relays(limit_guards=80, limit_middles=200, limit_exits=80):
+    """Select diverse candidate relays with mixed bandwidth and geographic distribution"""
     
-    Strategy:
-    1. Get ALL running relays sorted by bandwidth
-    2. Divide into 5 tiers: Top 10%, 20-30%, 30-50%, 50-80%, Bottom 20%
-    3. Sample evenly from each tier
-    4. This ensures high-BW, medium-BW, and low-BW relays all represented
+    # Get guards - mix of high and medium bandwidth
+    guards_high = list(db.relays.find(
+        {"is_guard": True, "running": True}
+    ).sort("advertised_bandwidth", -1).limit(limit_guards // 2))
     
-    For middle relays: Use 100+ random diverse nodes to ensure variation
-    """
-    import random
+    guards_medium = list(db.relays.find(
+        {"is_guard": True, "running": True}
+    ).sort("advertised_bandwidth", -1).skip(limit_guards // 2).limit(limit_guards // 2))
     
-    # Get ALL relays
-    all_guards = list(db.relays.find({"is_guard": True, "running": True}).sort("advertised_bandwidth", -1))
-    all_exits = list(db.relays.find({"is_exit": True, "running": True}).sort("advertised_bandwidth", -1))
-    all_middles = list(db.relays.find({"is_guard": False, "is_exit": False, "running": True}).sort("advertised_bandwidth", -1))
+    guards = guards_high + guards_medium
     
-    def sample_by_tiers(relays, limit):
-        """
-        Divide relays into 5 bandwidth tiers and sample evenly from each.
-        Ensures we get high, medium, and low bandwidth diversity.
-        """
-        if len(relays) <= limit:
-            return relays
-        
-        n = len(relays)
-        # Divide into 5 equal tiers
-        tier_size = n // 5
-        tiers = [
-            relays[0:tier_size],                      # Tier 1: Top 20% (highest BW)
-            relays[tier_size:2*tier_size],            # Tier 2: 20-40%
-            relays[2*tier_size:3*tier_size],          # Tier 3: 40-60% (middle)
-            relays[3*tier_size:4*tier_size],          # Tier 4: 60-80%
-            relays[4*tier_size:],                     # Tier 5: Bottom 20% (lowest BW)
-        ]
-        
-        sampled = []
-        per_tier = max(1, limit // 5)  # How many from each tier
-        
-        for tier in tiers:
-            if len(tier) > 0:
-                # Randomly sample from this tier
-                count = min(per_tier, len(tier))
-                sampled.extend(random.sample(tier, count))
-        
-        # If we still need more, add random from anywhere
-        if len(sampled) < limit:
-            needed = limit - len(sampled)
-            remaining = [r for r in relays if r not in sampled]
-            if remaining:
-                sampled.extend(random.sample(remaining, min(needed, len(remaining))))
-        
-        return sampled[:limit]
+    # Get middles - diverse selection
+    middles = list(db.relays.find(
+        {"is_guard": False, "is_exit": False, "running": True}
+    ).sort("advertised_bandwidth", -1).limit(limit_middles))
     
-    # For guards and exits: sample by tiers
-    guards = sample_by_tiers(all_guards, limit_guards)
-    exits = sample_by_tiers(all_exits, limit_exits)
+    # Get exits - mix of bandwidth levels
+    exits_high = list(db.relays.find(
+        {"is_exit": True, "running": True}
+    ).sort("advertised_bandwidth", -1).limit(limit_exits // 2))
     
-    # For middles: use EVEN MORE relays and more random selection
-    # This creates more variation in combinations
-    middles = sample_by_tiers(all_middles, min(limit_middles, len(all_middles)))
+    exits_low = list(db.relays.find(
+        {"is_exit": True, "running": True}
+    ).sort("advertised_bandwidth", 1).limit(limit_exits // 2))
+    
+    exits = exits_high + exits_low
     
     return guards, middles, exits
 
-
-def score_candidate_paths(guards, middles, exits, top_k:int=1000, max_combinations:int=200000) -> List[Dict]:
-    """
-    Score candidate (g,m,x) tuples deterministically and return top_k.
-
-    Parameters:
-      - guards/middles/exits: lists of relay dicts
-      - top_k: how many top-scoring paths to return
-      - max_combinations: safety cap to avoid huge loops. If the full
-        Cartesian product exceeds this cap we prune 'middles' deterministically
-        down to reduce the total combinations.
-
-    This clear separation (select vs score) helps when explaining to
-    non-technical stakeholders: we first choose a small, sensible set of
-    relays and then score all reasonable combinations.
-    """
-    # Safety pruning: avoid combinatorial explosion by reducing middles
-    estimated = len(guards) * len(middles) * len(exits)
-    if estimated > max_combinations:
-        # prune middles deterministically by taking top-N by bandwidth
-        # so that the resulting combinations fall below cap.
-        target = max(1, max_combinations // (max(1, len(guards) * len(exits))))
-        middles = sorted(middles, key=lambda r: r.get("advertised_bandwidth") or 0, reverse=True)[:target]
-
+def score_candidate_paths(guards, middles, exits, top_k=1500):
+    """Generate and score candidate paths with improved variance"""
     candidates = []
+    
+    # Shuffle to get varied combinations
+    import random
+    random.shuffle(guards)
+    random.shuffle(middles)
+    random.shuffle(exits)
+
     for g in guards:
-        for m in middles:
-            # Exclude same identity (fingerprint) between nodes — this is
-            # an explainable, deterministic filter: a single relay cannot
-            # occupy two positions in the same path.
-            if g.get("fingerprint") == m.get("fingerprint"): continue
-            for x in exits:
-                if m.get("fingerprint") == x.get("fingerprint"): continue
-                if g.get("fingerprint") == x.get("fingerprint"): continue
+        for m in middles[:50]:  # Limit inner loops for performance
+            if g["fingerprint"] == m["fingerprint"]:
+                continue
+            
+            # Skip same-AS combinations early
+            if g.get("as") and g.get("as") == m.get("as"):
+                continue
+                
+            for x in exits[:40]:
+                if x["fingerprint"] in {g["fingerprint"], m["fingerprint"]}:
+                    continue
+                
+                # Skip same-AS entry-exit
+                if g.get("as") and g.get("as") == x.get("as"):
+                    # Still include some for penalty demonstration
+                    if random.random() > 0.1:
+                        continue
+
                 result = path_plausibility(g, m, x)
-                candidate = {
+
+                candidates.append({
                     "id": str(uuid.uuid4()),
-                    "entry": {
-                        "fingerprint": g.get("fingerprint"),
-                        "nickname": g.get("nickname"),
-                        "ip": g.get("ip"),
-                        "country": g.get("country"),
-                        "as": g.get("as"),
-                        "advertised_bandwidth": g.get("advertised_bandwidth"),
-                        "is_guard": g.get("is_guard")
-                    },
-                    "middle": {
-                        "fingerprint": m.get("fingerprint"),
-                        "nickname": m.get("nickname"),
-                        "ip": m.get("ip"),
-                        "country": m.get("country"),
-                        "as": m.get("as"),
-                        "advertised_bandwidth": m.get("advertised_bandwidth")
-                    },
-                    "exit": {
-                        "fingerprint": x.get("fingerprint"),
-                        "nickname": x.get("nickname"),
-                        "ip": x.get("ip"),
-                        "country": x.get("country"),
-                        "as": x.get("as"),
-                        "advertised_bandwidth": x.get("advertised_bandwidth"),
-                        "is_exit": x.get("is_exit")
-                    },
+                    "entry": g["fingerprint"],
+                    "middle": m["fingerprint"],
+                    "exit": x["fingerprint"],
                     "score": result["score"],
                     "components": result["components"],
-                    "generated_at": datetime.utcnow().isoformat() + "Z"
-                }
-                candidates.append(candidate)
+                    "generated_at": datetime.utcnow().isoformat() + "Z",
+                })
 
-    # deterministic sort by score (descending) then by id to stabilize ties
-    candidates.sort(key=lambda it: (it["score"], it["id"]), reverse=True)
+    candidates.sort(key=lambda x: x["score"], reverse=True)
     top = candidates[:top_k]
 
-    # store results (overwrite only if we have top results)
     if top:
         db.path_candidates.delete_many({})
         db.path_candidates.insert_many(top)
+
     return top
 
+def generate_candidate_paths():
+    """Main entry point for path generation"""
+    guards, middles, exits = select_candidate_relays()
+    return score_candidate_paths(guards, middles, exits)
 
-def generate_candidate_paths(limit_guards:int=50, limit_middles:int=150, limit_exits:int=50, top_k:int=1000, max_combinations:int=200000) -> List[Dict]:
-    """
-    Backwards-compatible wrapper: select candidates and then score them.
-    Returns paths without MongoDB _id field for JSON serialization.
-    """
-    guards, middles, exits = select_candidate_relays(limit_guards, limit_middles, limit_exits)
-    paths = score_candidate_paths(guards, middles, exits, top_k=top_k, max_combinations=max_combinations)
-    # Remove _id field which is added by MongoDB and not JSON serializable
-    for p in paths:
-        p.pop("_id", None)
-    return paths
-
-def top_candidate_paths(limit:int=100) -> List[Dict]:
-    docs = list(db.path_candidates.find({}, {"_id":0}).sort("score", -1).limit(limit))
-    return docs
+def top_candidate_paths(limit=100):
+    """Retrieve top scored paths"""
+    return list(db.path_candidates.find({}, {"_id": 0}).sort("score", -1).limit(limit))

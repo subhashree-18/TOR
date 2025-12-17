@@ -74,7 +74,7 @@ export default function AnalysisPage() {
           <p>
             Please select a relay from the Dashboard or a path from the Paths page to view the analysis.
           </p>
-          <p style={{ fontSize: "14px", color: "#94a3b8" }}>
+          <p style={{ fontSize: "14px", color: "var(--text-muted)" }}>
             The Analysis page will display both chronological events and network flow visualization.
           </p>
         </div>

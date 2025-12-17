@@ -1,36 +1,31 @@
 /* ===================================================================
-   TAMIL NADU POLICE TOR UNVEIL - UNIFIED THEME
+   TAMIL NADU POLICE TOR UNVEIL - MODERN THEME
    ===================================================================
    
-   This file defines the consistent color scheme, typography, spacing,
-   and component styles for the entire application.
-   
    Color Palette:
-   - Primary: #ff6b35 (Tamil Nadu Police Orange)
-   - Secondary: #ffa500 (Lighter Orange)
-   - Dark: #1a3d5c (Authority Blue)
-   - Background: #0f172a (Deep Navy)
-   - Card: #111c3a (Slightly lighter navy)
-   - Text: #ffffff (White text)
-   - Accent: #00d4ff (Cyan accents - used sparingly)
+   - Primary: #0ea5e9 (Cyan/Teal)
+   - Secondary: #38bdf8 (Light Cyan)
+   - Background: #0a0e27 (Deep Navy)
+   - Accent: #0ea5e9 (Cyan accents)
    
+   Supports both Dark and Light themes via data-theme attribute
    ==================================================================== */
 
 :root {
-  /* Primary Colors - Tamil Nadu Theme */
-  --tn-primary: #ff6b35;        /* Police Orange */
-  --tn-primary-light: #ffa500;  /* Light Orange */
-  --tn-primary-dark: #e55a25;   /* Dark Orange */
+  /* Primary Colors - Cyan Theme */
+  --tn-primary: #0ea5e9;        /* Modern Cyan */
+  --tn-primary-light: #38bdf8;  /* Light Cyan */
+  --tn-primary-dark: #0284c7;   /* Dark Cyan */
   
   /* Background Colors */
-  --tn-bg-dark: #0f172a;        /* Main background */
+  --tn-bg-dark: var(--background);        /* Main background */
   --tn-bg-darker: #0a0e1a;      /* Darker overlay */
-  --tn-bg-card: #111c3a;        /* Card background */
-  --tn-bg-elevated: #1a2332;    /* Slightly elevated */
+  --tn-bg-card: var(--card-bg-solid);        /* Card background */
+  --tn-bg-elevated: var(--card-bg);    /* Slightly elevated */
   
   /* Authority Colors */
-  --tn-authority: #1a3d5c;      /* Authority Blue */
-  --tn-authority-light: #244d7c; /* Light Authority */
+  --tn-authority: #0ea5e9;      /* Cyan Authority */
+  --tn-authority-light: #38bdf8; /* Light Authority */
   
   /* Text Colors */
   --tn-text-primary: #ffffff;   /* Primary text */
@@ -41,7 +36,7 @@
   --tn-success: #10b981;        /* Green */
   --tn-warning: #f59e0b;        /* Amber */
   --tn-danger: #ef4444;         /* Red */
-  --tn-info: #3b82f6;           /* Blue */
+  --tn-info: #0ea5e9;           /* Cyan */
   
   /* India Emphasis */
   --tn-india-red: #ef4444;      /* India highlight */

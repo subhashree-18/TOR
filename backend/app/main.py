@@ -18,9 +18,15 @@ import json
 from .fetcher import fetch_and_store_relays
 from .correlator import generate_candidate_paths, top_candidate_paths
 from .pcap_analyzer import analyze_pcap_file
+from .auth import router as auth_router
 from typing import List, Dict, Any, Optional
 
 app = FastAPI(title="TOR Unveil API", version="2.0")
+
+# ---------------------------------------------------------
+# INCLUDE AUTH ROUTES
+# ---------------------------------------------------------
+app.include_router(auth_router)
 
 # ---------------------------------------------------------
 # CORS CONFIG (MANDATORY FOR FRONTEND)

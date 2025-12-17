@@ -7,26 +7,40 @@
 }
 
 .police-login-container {
-  min-height: 100vh;
+  width: 100vw;
+  height: 100vh;
   background: linear-gradient(135deg, #0d47a1 0%, #1565c0 50%, #0d47a1 100%);
   display: flex;
   flex-direction: column;
   font-family: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
   color: #fff;
+  overflow: hidden;
 }
 
 /* ============= HEADER ============= */
 .login-header {
-  background: linear-gradient(90deg, #0d47a1 0%, #0d47a1 50%, #ff6b35 100%);
+  background: linear-gradient(90deg, #0d47a1 0%, #0d47a1 40%, var(--accent) 100%);
   padding: 20px 40px;
   display: flex;
   align-items: center;
-  gap: 20px;
+  justify-content: center;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  border-bottom: 3px solid #ff6b35;
+  border-bottom: 3px solid var(--accent);
+  flex-shrink: 0;
+  height: 100px;
 }
 
-.govt-logo {
+.header-logo-section {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.govt-logo-left,
+.govt-logo-right {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -37,12 +51,19 @@
   flex-shrink: 0;
 }
 
-.govt-logo svg {
+.logo-img {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+}
+
+.shield-icon {
   color: #fff;
 }
 
 .header-text {
   flex: 1;
+  text-align: center;
 }
 
 .header-text h1 {
@@ -69,6 +90,7 @@
   max-width: 1400px;
   margin: 0 auto;
   width: 100%;
+  overflow-y: auto;
 }
 
 /* ============= LOGIN CARD ============= */
@@ -80,6 +102,7 @@
   width: 100%;
   max-width: 420px;
   animation: slideInUp 0.5s ease;
+  color: #333;
 }
 
 @keyframes slideInUp {
@@ -129,6 +152,50 @@
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+}
+
+/* ============= QUICK HELP BOX ============= */
+.quick-help-box {
+  background: #f0f4ff;
+  border: 2px solid #64b5f6;
+  border-radius: 8px;
+  padding: 14px;
+  margin-bottom: 20px;
+  font-size: 12px;
+  color: #0d47a1;
+}
+
+.help-title {
+  font-weight: 700;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.credentials-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.credential-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-family: 'Courier New', monospace;
+}
+
+.cred-label {
+  font-weight: 700;
+  color: #0d47a1;
+}
+
+.cred-separator {
+  color: #999;
+}
+
+.cred-value {
+  color: #666;
 }
 
 /* ============= ALERTS ============= */
@@ -454,6 +521,19 @@
   margin: 0;
 }
 
+.designation-text {
+  color: #1565c0;
+  font-weight: 600;
+  font-size: 14px !important;
+  margin-top: 4px !important;
+}
+
+.redirecting {
+  color: #999;
+  font-size: 12px !important;
+  margin-top: 8px !important;
+}
+
 .verification-success .spin {
   animation: spin 1s linear infinite;
   color: #0d47a1;
@@ -556,6 +636,8 @@
   font-size: 12px;
   color: rgba(255, 255, 255, 0.7);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+  height: auto;
 }
 
 .login-page-footer p {
@@ -569,29 +651,43 @@
 
 /* ============= RESPONSIVE ============= */
 @media (max-width: 768px) {
+  .police-login-container {
+    width: 100vw;
+    height: 100vh;
+  }
+
   .login-header {
-    padding: 16px 20px;
-    flex-direction: column;
-    text-align: center;
+    padding: 12px 16px;
+    height: auto;
+  }
+
+  .header-logo-section {
     gap: 12px;
   }
 
-  .govt-logo {
+  .govt-logo-left,
+  .govt-logo-right {
     width: 60px;
     height: 60px;
   }
 
+  .logo-img {
+    width: 48px;
+    height: 48px;
+  }
+
   .header-text h1 {
-    font-size: 20px;
+    font-size: 18px;
   }
 
   .header-text p {
-    font-size: 12px;
+    font-size: 11px;
   }
 
   .login-content {
-    padding: 20px 16px;
+    padding: 20px 12px;
     gap: 20px;
+    flex-direction: column;
   }
 
   .login-card {
@@ -612,38 +708,54 @@
     height: 42px;
     font-size: 18px;
   }
+
+  .login-info-panel {
+    display: none !important;
+  }
 }
 
 @media (max-width: 480px) {
-  .login-header {
-    padding: 12px 16px;
+  .police-login-container {
+    width: 100vw;
+    height: 100vh;
   }
 
-  .govt-logo {
+  .login-header {
+    padding: 10px 12px;
+    height: auto;
+  }
+
+  .header-logo-section {
+    gap: 8px;
+  }
+
+  .govt-logo-left,
+  .govt-logo-right {
     width: 48px;
     height: 48px;
   }
 
-  .govt-logo svg {
-    width: 28px;
-    height: 28px;
+  .logo-img {
+    width: 36px;
+    height: 36px;
   }
 
   .header-text h1 {
-    font-size: 16px;
+    font-size: 14px;
   }
 
   .header-text p {
-    font-size: 11px;
+    font-size: 10px;
   }
 
   .login-card {
-    padding: 20px;
+    padding: 16px;
     border-radius: 12px;
+    max-width: 100%;
   }
 
   .login-title h2 {
-    font-size: 18px;
+    font-size: 16px;
   }
 
   .lock-icon {
@@ -662,7 +774,7 @@
   }
 
   .login-form {
-    gap: 16px;
+    gap: 14px;
   }
 
   .form-input {
@@ -673,5 +785,14 @@
   .submit-btn {
     font-size: 12px;
     padding: 10px 16px;
+  }
+
+  .quick-help-box {
+    font-size: 11px;
+    padding: 10px;
+  }
+
+  .credential-item {
+    font-size: 10px;
   }
 }

@@ -1,10 +1,35 @@
 import React from "react";
 import { Sankey, Tooltip, ResponsiveContainer } from "recharts";
+import { useAppContext } from "./AppContext";
 
 export default function SankeyChart({ paths = [] }) {
+  const { darkMode } = useAppContext();
+  
+  // Theme-aware styles
+  const themeStyles = {
+    container: {
+      background: darkMode ? "#1e293b" : "#ffffff",
+      border: darkMode ? "1px solid #334155" : "2px solid #cbd5e1",
+    },
+    legend: {
+      color: darkMode ? "#cbd5e1" : "#475569",
+    },
+    emptyBox: {
+      background: darkMode ? "#1e293b" : "#ffffff",
+      color: darkMode ? "#94a3b8" : "#475569",
+      border: darkMode ? "1px solid #334155" : "2px solid #cbd5e1",
+    },
+    tooltip: {
+      background: darkMode ? "#0f172a" : "#ffffff",
+      border: darkMode ? "1px solid #38bdf8" : "2px solid #0369a1",
+      color: darkMode ? "#f8fafc" : "#1e293b",
+    },
+    linkStroke: darkMode ? "rgba(14, 165, 233, 0.4)" : "rgba(3, 105, 161, 0.4)",
+  };
+
   if (!paths.length) {
     return (
-      <div style={styles.emptyBox}>
+      <div style={{ ...styles.emptyBox, ...themeStyles.emptyBox }}>
         No path data to visualize.
       </div>
     );
@@ -55,7 +80,7 @@ export default function SankeyChart({ paths = [] }) {
 
   if (nodes.length === 0 || links.length === 0) {
     return (
-      <div style={styles.emptyBox}>
+      <div style={{ ...styles.emptyBox, ...themeStyles.emptyBox }}>
         No valid Sankey data.
       </div>
     );
@@ -67,38 +92,48 @@ export default function SankeyChart({ paths = [] }) {
     const node = nodes[index];
     const color = getNodeColor(node.type);
     
+    // Ensure minimum width for text visibility
+    const nodeWidth = Math.max(width, 80);
+    const nodeX = x - (nodeWidth - width) / 2;
+    
+    // Text color based on theme for external labels
+    const labelColor = darkMode ? "#f8fafc" : "#1e293b";
+    
     return (
       <g>
         <rect 
-          x={x} 
+          x={nodeX} 
           y={y} 
-          width={width} 
+          width={nodeWidth} 
           height={height} 
           fill={color}
-          stroke={color}
+          stroke={darkMode ? color : "#1e293b"}
           strokeWidth={2}
           rx={6}
-          opacity={0.9}
+          opacity={0.95}
         />
+        {/* Node name inside */}
         <text 
-          x={x + width / 2} 
-          y={y + height / 2 - 6}
+          x={nodeX + nodeWidth / 2} 
+          y={y + height / 2}
           textAnchor="middle"
           dominantBaseline="middle"
-          fontSize={13}
+          fontSize={11}
           fill="#ffffff"
           fontWeight="700"
           fontFamily="'Courier New', monospace"
         >
           {node.name}
         </text>
+        {/* Type label below node */}
         <text 
-          x={x + width / 2} 
-          y={y + height / 2 + 8}
+          x={nodeX + nodeWidth / 2} 
+          y={y + height + 14}
           textAnchor="middle"
           dominantBaseline="middle"
           fontSize={10}
-          fill="rgba(255, 255, 255, 0.8)"
+          fill={labelColor}
+          fontWeight="600"
           fontFamily="'Segoe UI', sans-serif"
         >
           {node.type.toUpperCase()}
@@ -108,23 +143,23 @@ export default function SankeyChart({ paths = [] }) {
   };
 
   return (
-    <div style={styles.container}>
-      <ResponsiveContainer width="100%" height={350}>
+    <div style={{ ...styles.container, ...themeStyles.container }}>
+      <ResponsiveContainer width="100%" height={400}>
         <Sankey
           data={{ nodes, links }}
           node={<NodeShape />}
-          nodePadding={100}
-          margin={{ top: 30, right: 60, bottom: 30, left: 60 }}
-          link={{ stroke: "rgba(14, 165, 233, 0.4)", strokeOpacity: 0.6, strokeWidth: 2.5 }}
-          label={{ fill: "#f8fafc", fontSize: 12, fontWeight: 600 }}
+          nodeWidth={20}
+          nodePadding={80}
+          margin={{ top: 40, right: 100, bottom: 50, left: 100 }}
+          link={{ stroke: themeStyles.linkStroke, strokeOpacity: 0.6, strokeWidth: 2.5 }}
         >
           <Tooltip
-            contentStyle={styles.tooltip}
+            contentStyle={themeStyles.tooltip}
             formatter={(value) => `Confidence: ${value}`}
           />
         </Sankey>
       </ResponsiveContainer>
-      <div style={styles.legend}>
+      <div style={{ ...styles.legend, ...themeStyles.legend }}>
         <div style={styles.legendItem}>
           <div style={{ ...styles.legendDot, backgroundColor: "#3b82f6" }}></div>
           <span>Entry Node (Blue)</span>

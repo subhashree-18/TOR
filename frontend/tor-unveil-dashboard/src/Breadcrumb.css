@@ -1,8 +1,8 @@
 /* Breadcrumb.css - Investigation Context Navigation */
 
 .breadcrumb-container {
-  background: linear-gradient(90deg, #1a2332 0%, #0f172a 100%);
-  border-bottom: 1px solid #2d3e4f;
+  background: linear-gradient(90deg, var(--card-bg) 0%, var(--background) 100%);
+  border-bottom: 1px solid var(--border);
   padding: 12px 20px;
   margin-bottom: 12px;
   position: sticky;
@@ -22,7 +22,7 @@
 .breadcrumb-item {
   background: none;
   border: none;
-  color: #cbd5e1;
+  color: var(--text-secondary);
   font-size: 13px;
   font-weight: 500;
   padding: 6px 12px;
@@ -37,11 +37,11 @@
 
 .breadcrumb-item:hover {
   background: rgba(6, 182, 212, 0.1);
-  color: #ff8c42;
+  color: var(--accent-hover);
 }
 
 .breadcrumb-item.active {
-  color: #ff6b35;
+  color: var(--accent);
   background: rgba(14, 165, 233, 0.1);
   font-weight: 600;
   border: 1px solid rgba(14, 165, 233, 0.2);
@@ -70,4 +70,30 @@
   .breadcrumb-icon {
     display: none;
   }
+}
+
+/* ============= LIGHT THEME ============= */
+[data-theme="light"] .breadcrumb-container {
+  background: linear-gradient(90deg, #ffffff 0%, #f1f5f9 100%);
+  border-bottom: 2px solid #cbd5e1;
+}
+
+[data-theme="light"] .breadcrumb-item {
+  color: #475569;
+}
+
+[data-theme="light"] .breadcrumb-item:hover {
+  background: rgba(3, 105, 161, 0.12);
+  color: #0369a1;
+}
+
+[data-theme="light"] .breadcrumb-item.active {
+  color: #0369a1;
+  background: rgba(3, 105, 161, 0.12);
+  border: 1px solid rgba(3, 105, 161, 0.3);
+  font-weight: 700;
+}
+
+[data-theme="light"] .breadcrumb-separator {
+  color: #94a3b8;
 }

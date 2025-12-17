@@ -1,7 +1,7 @@
 // src/App.js - SOC-Style Sidebar + Top Bar Layout
 import React, { useState } from "react";
 import { BrowserRouter, Routes, Route, useNavigate, useLocation } from "react-router-dom";
-import { LayoutDashboard, GitBranch, Activity, FileText, RefreshCw, Menu, X, Eye, Briefcase, Search } from "lucide-react";
+import { LayoutDashboard, GitBranch, Activity, FileText, RefreshCw, Menu, X, Eye, Briefcase, Search, Sun, Moon } from "lucide-react";
 import { AppProvider, useAppContext } from "./AppContext";
 import Dashboard from "./Dashboard";
 import PathsDashboard from "./PathsDashboard";
@@ -99,7 +99,7 @@ function SideNavigation() {
 // ============================================================================
 
 function TopBar() {
-  const { selectedRelay, selectedPath } = useAppContext();
+  const { selectedRelay, selectedPath, darkMode, toggleTheme } = useAppContext();
   const [caseId, setCaseId] = useState("CASE-2025-001");
   const [isEditingCase, setIsEditingCase] = useState(false);
 
@@ -155,6 +155,17 @@ function TopBar() {
         </span>
         <button
           style={styles.toolbarBtn}
+          onClick={toggleTheme}
+          title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+        >
+          {darkMode ? (
+            <Sun size={18} strokeWidth={1.5} stroke="currentColor" fill="none" />
+          ) : (
+            <Moon size={18} strokeWidth={1.5} stroke="currentColor" fill="none" />
+          )}
+        </button>
+        <button
+          style={styles.toolbarBtn}
           onClick={handleRefresh}
           title="Refresh data"
         >
@@ -170,17 +181,30 @@ function TopBar() {
 // ============================================================================
 
 function AppContent() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userInfo, setUserInfo] = useState(null);
+  // Initialize login state from localStorage
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    const saved = localStorage.getItem("tor-unveil-logged-in");
+    return saved === "true";
+  });
+  const [userInfo, setUserInfo] = useState(() => {
+    const saved = localStorage.getItem("tor-unveil-user-info");
+    return saved ? JSON.parse(saved) : null;
+  });
 
   const handleLoginSuccess = (loginData) => {
     setUserInfo(loginData);
     setIsLoggedIn(true);
+    // Persist login state to localStorage
+    localStorage.setItem("tor-unveil-logged-in", "true");
+    localStorage.setItem("tor-unveil-user-info", JSON.stringify(loginData));
   };
 
   const handleLogout = () => {
     setIsLoggedIn(false);
     setUserInfo(null);
+    // Clear login state from localStorage
+    localStorage.removeItem("tor-unveil-logged-in");
+    localStorage.removeItem("tor-unveil-user-info");
   };
 
   if (!isLoggedIn) {
@@ -230,9 +254,9 @@ const styles = {
   appContainer: {
     flex: 1,
     height: "auto",
-    background: "#0a0e27",
-    color: "#e2e8f0",
-    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+    background: "var(--background)",
+    color: "var(--text-primary)",
+    fontFamily: "'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
     display: "flex",
     overflow: "hidden",
     margin: 0,
@@ -243,13 +267,13 @@ const styles = {
   sidebar: (isCollapsed) => ({
     width: isCollapsed ? "70px" : "240px",
     height: "100vh",
-    background: "linear-gradient(180deg, #1565c0 0%, #0d47a1 50%, #0d47a1 100%)",
-    borderRight: "3px solid #0d47a1",
+    background: "var(--sidebar-bg)",
+    borderRight: "2px solid var(--accent-border)",
     padding: "12px 0",
     display: "flex",
     flexDirection: "column",
     transition: "width 0.3s ease",
-    boxShadow: "2px 0 12px rgba(13, 71, 161, 0.2)",
+    boxShadow: "var(--shadow)",
     zIndex: 100,
     overflowY: "auto",
   }),
@@ -259,14 +283,14 @@ const styles = {
     alignItems: "center",
     justifyContent: "space-between",
     padding: "12px 12px",
-    borderBottom: "1px solid #1e3a5f",
+    borderBottom: "1px solid var(--border)",
     marginBottom: "8px",
   },
 
   collapseBtn: {
     background: "none",
     border: "none",
-    color: "#64b5f6",
+    color: "var(--accent)",
     cursor: "pointer",
     padding: "6px",
     display: "flex",
@@ -278,7 +302,7 @@ const styles = {
   brandTitle: {
     fontSize: "13px",
     fontWeight: "700",
-    background: "linear-gradient(135deg, #64b5f6 0%, #42a5f5 100%)",
+    background: "linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%)",
     backgroundClip: "text",
     WebkitBackgroundClip: "text",
     WebkitTextFillColor: "transparent",
@@ -291,13 +315,13 @@ const styles = {
   sidebarSection: {
     padding: "8px 0",
     marginBottom: "12px",
-    borderBottom: "1px solid #1e3a5f",
+    borderBottom: "1px solid var(--border)",
   },
 
   sectionTitle: {
     fontSize: "10px",
     fontWeight: "700",
-    color: "#64748b",
+    color: "var(--text-muted)",
     padding: "8px 16px",
     textTransform: "uppercase",
     letterSpacing: "0.5px",
@@ -306,7 +330,7 @@ const styles = {
   sidebarBtn: {
     background: "none",
     border: "none",
-    color: "#cbd5e1",
+    color: "var(--text-secondary)",
     padding: "12px 12px",
     margin: "0 6px",
     borderRadius: "6px",
@@ -321,9 +345,9 @@ const styles = {
   },
 
   sidebarbtnActive: {
-    background: "rgba(100, 181, 246, 0.15)",
-    color: "#64b5f6",
-    borderLeft: "3px solid #64b5f6",
+    background: "var(--accent-light)",
+    color: "var(--accent)",
+    borderLeft: "3px solid var(--accent)",
     paddingLeft: "9px",
   },
 
@@ -337,13 +361,13 @@ const styles = {
 
   // ========== TOP BAR ==========
   topbar: {
-    background: "linear-gradient(90deg, #1565c0 0%, #0d47a1 50%, #0d47a1 100%)",
-    borderBottom: "2px solid #0d47a1",
+    background: "var(--topbar-bg)",
+    borderBottom: "2px solid var(--accent-border)",
     padding: "12px 20px",
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    boxShadow: "0 4px 12px rgba(13, 71, 161, 0.2)",
+    boxShadow: "var(--shadow)",
     flexShrink: 0,
   },
 
@@ -362,14 +386,14 @@ const styles = {
   caseLabel: {
     fontSize: "11px",
     fontWeight: "700",
-    color: "#64748b",
+    color: "var(--text-muted)",
     textTransform: "uppercase",
   },
 
   caseId: {
     fontSize: "12px",
     fontWeight: "600",
-    color: "#0ea5e9",
+    color: "var(--accent)",
     cursor: "pointer",
     padding: "4px 8px",
     borderRadius: "4px",
@@ -377,9 +401,9 @@ const styles = {
   },
 
   caseInput: {
-    background: "#1e3a5f",
-    border: "1px solid #0ea5e9",
-    color: "#0ea5e9",
+    background: "var(--input-bg)",
+    border: "1px solid var(--accent-border)",
+    color: "var(--accent)",
     padding: "4px 8px",
     borderRadius: "4px",
     fontSize: "12px",
@@ -392,11 +416,11 @@ const styles = {
     alignItems: "center",
     gap: "6px",
     fontSize: "11px",
-    color: "#94a3b8",
-    background: "#1e3a5f",
+    color: "var(--text-secondary)",
+    background: "var(--card-bg)",
     padding: "4px 10px",
     borderRadius: "4px",
-    border: "1px solid #0ea5e9",
+    border: "1px solid var(--accent-border)",
   },
 
   topbarRight: {
@@ -407,14 +431,14 @@ const styles = {
 
   timestamp: {
     fontSize: "11px",
-    color: "#64748b",
+    color: "var(--text-muted)",
     whiteSpace: "nowrap",
   },
 
   toolbarBtn: {
-    background: "#1e3a5f",
-    border: "1px solid #0ea5e9",
-    color: "#0ea5e9",
+    background: "var(--accent-light)",
+    border: "1px solid var(--accent-border)",
+    color: "var(--accent)",
     width: "36px",
     height: "36px",
     borderRadius: "6px",
@@ -430,8 +454,9 @@ const styles = {
     flex: 1,
     overflow: "auto",
     padding: "12px",
-    background: "#0a0e27",
+    background: "var(--background)",
     margin: 0,
     height: "calc(100vh - 64px)",
   },
 };
+

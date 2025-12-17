@@ -1,7 +1,7 @@
 /* src/ScoreExplainer.css - Professional Score Breakdown UI */
 
 .score-explainer {
-  background: linear-gradient(135deg, #1a2332 0%, #1e2a3f 100%);
+  background: linear-gradient(135deg, var(--card-bg) 0%, #1e2a3f 100%);
   border: 1px solid #334155;
   border-radius: 8px;
   overflow: hidden;
@@ -34,7 +34,7 @@
   cursor: pointer;
   transition: all 0.2s ease;
   font-size: 14px;
-  color: #e2e8f0;
+  color: var(--text-primary);
 }
 
 .explainer-header:hover {
@@ -46,13 +46,13 @@
   align-items: center;
   gap: 12px;
   font-weight: 600;
-  color: #ff6b35;
+  color: var(--accent);
   flex: 1;
   text-align: left;
 }
 
 .explainer-title svg {
-  color: #ff6b35;
+  color: var(--accent);
   flex-shrink: 0;
 }
 
@@ -91,20 +91,20 @@
 /* Content */
 .explainer-content {
   padding: 20px;
-  background: #0f172a;
+  background: var(--background);
 }
 
 /* Summary Section */
 .summary-section {
   margin-bottom: 24px;
   padding-bottom: 20px;
-  border-bottom: 1px solid #2d3e4f;
+  border-bottom: 1px solid var(--border);
 }
 
 .summary-section h4 {
   font-size: 12px;
   text-transform: uppercase;
-  color: #ff6b35;
+  color: var(--accent);
   margin-bottom: 12px;
   font-weight: 700;
   letter-spacing: 0.5px;
@@ -114,11 +114,11 @@
   margin: 0;
   font-size: 13px;
   line-height: 1.6;
-  color: #cbd5e1;
+  color: var(--text-secondary);
 }
 
 .summary-text strong {
-  color: #ff6b35;
+  color: var(--accent);
   font-weight: 600;
 }
 
@@ -165,7 +165,7 @@
 .factor-name {
   font-size: 13px;
   font-weight: 700;
-  color: #e2e8f0;
+  color: var(--text-primary);
 }
 
 .factor-explanation {
@@ -176,11 +176,11 @@
   margin: 0;
   font-size: 13px;
   line-height: 1.6;
-  color: #cbd5e1;
+  color: var(--text-secondary);
 }
 
 .factor-explanation strong {
-  color: #ff6b35;
+  color: var(--accent);
   font-weight: 600;
 }
 
@@ -231,12 +231,12 @@
 .penalty-name {
   font-size: 13px;
   font-weight: 600;
-  color: #e2e8f0;
+  color: var(--text-primary);
 }
 
 .penalty-detail {
   font-size: 12px;
-  color: #cbd5e1;
+  color: var(--text-secondary);
   margin-top: 2px;
   display: flex;
   align-items: center;
@@ -257,7 +257,7 @@
 .penalties-explanation {
   margin: 12px 0 0 0;
   font-size: 12px;
-  color: #cbd5e1;
+  color: var(--text-secondary);
   line-height: 1.5;
   font-style: italic;
 }
@@ -281,7 +281,7 @@
   margin: 8px 0;
   font-size: 13px;
   line-height: 1.5;
-  color: #cbd5e1;
+  color: var(--text-secondary);
   position: relative;
   padding-left: 16px;
 }
@@ -303,7 +303,7 @@
 .methodology-section {
   padding: 16px;
   background: rgba(14, 165, 233, 0.08);
-  border: 1px solid #ff6b35;
+  border: 1px solid var(--accent);
   border-radius: 6px;
 }
 
@@ -316,7 +316,7 @@
   margin: 12px 0;
   font-family: "Courier New", monospace;
   font-size: 12px;
-  color: #ff6b35;
+  color: var(--accent);
   overflow-x: auto;
   line-height: 1.4;
   word-break: break-all;
@@ -325,7 +325,7 @@
 .formula-explanation {
   margin: 12px 0 0 0;
   font-size: 12px;
-  color: #cbd5e1;
+  color: var(--text-secondary);
   line-height: 1.6;
 }
 
@@ -354,4 +354,109 @@
     flex-direction: column;
     gap: 4px;
   }
+}
+
+/* ============= LIGHT THEME ============= */
+[data-theme="light"] .score-explainer {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border-color: #e2e8f0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .score-explainer-empty {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: #dc2626;
+  color: #dc2626;
+}
+
+[data-theme="light"] .explainer-header {
+  background: rgba(2, 132, 199, 0.08);
+  border-bottom-color: #e2e8f0;
+  color: #1e293b;
+}
+
+[data-theme="light"] .explainer-header:hover {
+  background: rgba(2, 132, 199, 0.12);
+}
+
+[data-theme="light"] .explainer-title {
+  color: var(--accent);
+}
+
+[data-theme="light"] .score-badge {
+  background: rgba(2, 132, 199, 0.08);
+}
+
+[data-theme="light"] .explainer-content {
+  background: #f8fafc;
+}
+
+[data-theme="light"] .summary-section {
+  border-bottom-color: #e2e8f0;
+}
+
+[data-theme="light"] .summary-section h4 {
+  color: var(--accent);
+}
+
+[data-theme="light"] .summary-text {
+  color: #475569;
+}
+
+[data-theme="light"] .summary-text strong {
+  color: var(--accent);
+}
+
+[data-theme="light"] .factor-section.primary {
+  background: rgba(16, 185, 129, 0.08);
+  border-left-color: #059669;
+}
+
+[data-theme="light"] .factor-section.primary .factor-label {
+  color: #059669;
+}
+
+[data-theme="light"] .factor-section.secondary {
+  background: rgba(245, 158, 11, 0.08);
+  border-left-color: #d97706;
+}
+
+[data-theme="light"] .factor-section.secondary .factor-label {
+  color: #d97706;
+}
+
+[data-theme="light"] .factor-name {
+  color: #1e293b;
+}
+
+[data-theme="light"] .factor-explanation p {
+  color: #475569;
+}
+
+[data-theme="light"] .factor-explanation strong {
+  color: var(--accent);
+}
+
+[data-theme="light"] .penalties-section {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: #dc2626;
+}
+
+[data-theme="light"] .section-header {
+  color: #dc2626;
+}
+
+[data-theme="light"] .methodology-section {
+  background: rgba(2, 132, 199, 0.08);
+  border-color: var(--accent);
+}
+
+[data-theme="light"] .formula {
+  background: #f1f5f9;
+  border-color: #e2e8f0;
+  color: var(--accent);
+}
+
+[data-theme="light"] .formula-explanation {
+  color: #475569;
 }
