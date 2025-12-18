@@ -1,7 +1,7 @@
-// src/App.js - SOC-Style Sidebar + Top Bar Layout
+// src/App.js - Tamil Nadu Police Cyber Crime Wing Portal
+// Government-style layout matching tn.gov.in / tnpolice.gov.in
 import React, { useState } from "react";
 import { BrowserRouter, Routes, Route, useNavigate, useLocation } from "react-router-dom";
-import { LayoutDashboard, GitBranch, Activity, FileText, RefreshCw, Menu, X, Eye, Briefcase, Search, Sun, Moon } from "lucide-react";
 import { AppProvider, useAppContext } from "./AppContext";
 import Dashboard from "./Dashboard";
 import PathsDashboard from "./PathsDashboard";
@@ -9,170 +9,182 @@ import AnalysisPage from "./AnalysisPage";
 import ReportPage from "./ReportPage";
 import InvestigationPage from "./InvestigationPage";
 import ForensicPage from "./ForensicPage";
-import Breadcrumb from "./Breadcrumb";
-import TamilNaduBrand from "./TamilNaduBrand";
 import PoliceLogin from "./PoliceLogin";
+import "./App.css";
 
 // ============================================================================
-// SIDEBAR NAVIGATION COMPONENT
+// GOVERNMENT HEADER COMPONENT
+// Tamil Nadu Police official header with emblem and title
 // ============================================================================
 
-function SideNavigation() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [isCollapsed, setIsCollapsed] = useState(false);
-
-  const isActive = (path) => location.pathname === path;
-
-  const navSections = [
-    {
-      title: "INVESTIGATION",
-      items: [
-        { path: "/investigation", label: "Workflow", Icon: Briefcase },
-        { path: "/dashboard", label: "Dashboard", Icon: LayoutDashboard },
-        { path: "/paths", label: "Paths", Icon: GitBranch },
-        { path: "/analysis", label: "Analysis", Icon: Activity },
-      ],
-    },
-    {
-      title: "FORENSICS",
-      items: [
-        { path: "/forensic", label: "Evidence Correlation", Icon: Search },
-      ],
-    },
-    {
-      title: "REPORTING",
-      items: [
-        { path: "/report", label: "Reports", Icon: FileText },
-      ],
-    },
-  ];
-
+function GovernmentHeader({ userInfo, onLogout }) {
   return (
-    <aside style={styles.sidebar(isCollapsed)}>
-      <div style={styles.sidebarHeader}>
-        <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          style={styles.collapseBtn}
-          title={isCollapsed ? "Expand" : "Collapse"}
-        >
-          {isCollapsed ? (
-            <Menu size={20} stroke="currentColor" fill="none" />
-          ) : (
-            <X size={20} stroke="currentColor" fill="none" />
-          )}
-        </button>
-        {!isCollapsed && <h1 style={styles.brandTitle}>TOR UNVEIL</h1>}
-      </div>
-
-      {navSections.map((section) => (
-        <div key={section.title} style={styles.sidebarSection}>
-          {!isCollapsed && <div style={styles.sectionTitle}>{section.title}</div>}
-          {section.items.map((item) => (
-            <button
-              key={item.path}
-              style={{
-                ...styles.sidebarBtn,
-                ...(isActive(item.path) ? styles.sidebarbtnActive : {}),
-              }}
-              onClick={() => navigate(item.path)}
-              title={item.label}
-            >
-              <item.Icon 
-                size={20} 
-                strokeWidth={1.5} 
-                stroke="currentColor"
-                fill="none"
-                style={{ flexShrink: 0 }}
-              />
-              {!isCollapsed && <span style={{ marginLeft: "12px" }}>{item.label}</span>}
-            </button>
-          ))}
+    <header className="govt-header">
+      <div className="govt-header-content">
+        {/* Left: Emblem and Title */}
+        <div className="govt-header-left">
+          <div className="govt-emblem">
+            {/* Tamil Nadu Police Emblem Placeholder */}
+            <div className="emblem-circle">
+              <span className="emblem-text">TN</span>
+              <span className="emblem-subtext">POLICE</span>
+            </div>
+          </div>
+          <div className="govt-title-block">
+            <h1 className="govt-title">TOR???Unveil</h1>
+            <p className="govt-subtitle">Cyber Crime Wing, Tamil Nadu Police</p>
+            <p className="govt-dept">??????????????? ????????????????????? ??????????????????, ??????????????????????????? ???????????????????????????</p>
+          </div>
         </div>
-      ))}
-    </aside>
+
+        {/* Right: User info and logout */}
+        <div className="govt-header-right">
+          {userInfo && (
+            <div className="govt-user-info">
+              <span className="user-label">Officer ID:</span>
+              <span className="user-id">{userInfo.loginId}</span>
+              <button className="govt-logout-btn" onClick={onLogout}>
+                Logout
+              </button>
+            </div>
+          )}
+          <div className="govt-date">
+            {new Date().toLocaleDateString('en-IN', {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            })}
+          </div>
+        </div>
+      </div>
+    </header>
   );
 }
 
 // ============================================================================
-// TOP BAR COMPONENT
+// LEFT NAVIGATION SIDEBAR
+// Government-style vertical navigation - always visible
 // ============================================================================
 
-function TopBar() {
-  const { selectedRelay, selectedPath, darkMode, toggleTheme } = useAppContext();
-  const [caseId, setCaseId] = useState("CASE-2025-001");
-  const [isEditingCase, setIsEditingCase] = useState(false);
+function LeftNavigation() {
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const handleRefresh = () => {
-    window.location.reload();
-  };
+  const isActive = (path) => location.pathname === path;
+
+  const navItems = [
+    { path: "/", label: "Dashboard", icon: "???" },
+    { path: "/investigation", label: "Investigations", icon: "???" },
+    { path: "/forensic", label: "Evidence Upload", icon: "???" },
+    { path: "/analysis", label: "Analysis", icon: "???" },
+    { path: "/report", label: "Forensic Report", icon: "???" },
+    { path: "/paths", label: "Path Analysis", icon: "???" },
+  ];
 
   return (
-    <header style={styles.topbar}>
-      <div style={styles.topbarLeft}>
-        <div style={styles.caseSection}>
-          <span style={styles.caseLabel}>Case ID:</span>
-          {isEditingCase ? (
-            <input
-              style={styles.caseInput}
-              value={caseId}
-              onChange={(e) => setCaseId(e.target.value)}
-              onBlur={() => setIsEditingCase(false)}
-              onKeyDown={(e) => e.key === "Enter" && setIsEditingCase(false)}
-              autoFocus
-            />
-          ) : (
-            <span
-              style={styles.caseId}
-              onClick={() => setIsEditingCase(true)}
-              title="Click to edit"
+    <nav className="govt-sidebar">
+      <div className="sidebar-title">MAIN MENU</div>
+      <ul className="sidebar-nav-list">
+        {navItems.map((item) => (
+          <li key={item.path}>
+            <button
+              className={`sidebar-nav-item ${isActive(item.path) ? 'active' : ''}`}
+              onClick={() => navigate(item.path)}
             >
-              {caseId}
-            </span>
-          )}
-        </div>
-        {selectedRelay && (
-          <div style={styles.selectedTag}>
-            <Eye size={14} strokeWidth={2} stroke="currentColor" fill="none" />
-            <span style={{fontFamily: "'Courier New', monospace", fontSize: "11px"}}>
-              {selectedRelay.nickname || selectedRelay.fingerprint.substring(0, 8)}
-            </span>
-          </div>
-        )}
-        {selectedPath && (
-          <div style={styles.selectedTag}>
-            <Eye size={14} strokeWidth={2} stroke="currentColor" fill="none" />
-            <span style={{fontSize: "11px"}}>
-              {selectedPath.entry.nickname} → {selectedPath.exit.nickname}
-            </span>
-          </div>
-        )}
+              <span className="nav-icon">{item.icon}</span>
+              <span className="nav-label">{item.label}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+      
+      <div className="sidebar-section">
+        <div className="sidebar-section-title">QUICK LINKS</div>
+        <ul className="sidebar-links">
+          <li><a href="https://tnpolice.gov.in" target="_blank" rel="noopener noreferrer">TN Police Portal</a></li>
+          <li><a href="https://cybercrime.gov.in" target="_blank" rel="noopener noreferrer">National Cyber Crime</a></li>
+          <li><a href="https://tn.gov.in" target="_blank" rel="noopener noreferrer">TN Government</a></li>
+        </ul>
       </div>
+    </nav>
+  );
+}
 
-      <div style={styles.topbarRight}>
-        <span style={styles.timestamp}>
-          {new Date().toLocaleString()}
-        </span>
-        <button
-          style={styles.toolbarBtn}
-          onClick={toggleTheme}
-          title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-        >
-          {darkMode ? (
-            <Sun size={18} strokeWidth={1.5} stroke="currentColor" fill="none" />
-          ) : (
-            <Moon size={18} strokeWidth={1.5} stroke="currentColor" fill="none" />
-          )}
-        </button>
-        <button
-          style={styles.toolbarBtn}
-          onClick={handleRefresh}
-          title="Refresh data"
-        >
-          <RefreshCw size={18} strokeWidth={1.5} stroke="currentColor" fill="none" />
-        </button>
+// ============================================================================
+// GOVERNMENT FOOTER
+// Official footer with disclaimers
+// ============================================================================
+
+function GovernmentFooter() {
+  return (
+    <footer className="govt-footer">
+      <div className="footer-content">
+        <div className="footer-main">
+          <div className="footer-org">
+            <strong>Government of Tamil Nadu</strong>
+            <span>Cyber Crime Wing, Chennai</span>
+          </div>
+          <div className="footer-contact">
+            <span>Cyber Crime Helpline: 1930</span>
+            <span>Email: cybercrime@tnpolice.gov.in</span>
+          </div>
+        </div>
+        <div className="footer-disclaimer">
+          <strong>DISCLAIMER:</strong> This system is for authorized Tamil Nadu Police personnel only. 
+          Unauthorized access is prohibited and punishable under the Information Technology Act, 2000. 
+          All activities are logged and monitored. Analysis results are probabilistic and must not be 
+          used as sole evidence for legal proceedings.
+        </div>
+        <div className="footer-copyright">
+          ?? {new Date().getFullYear()} Tamil Nadu Police. All Rights Reserved.
+        </div>
       </div>
-    </header>
+    </footer>
+  );
+}
+
+// ============================================================================
+// CASE ID BAR
+// Secondary toolbar for case management
+// ============================================================================
+
+function CaseIdBar() {
+  const { selectedRelay } = useAppContext();
+  const [caseId, setCaseId] = useState("CASE-2025-001");
+  const [isEditing, setIsEditing] = useState(false);
+
+  return (
+    <div className="case-bar">
+      <div className="case-bar-left">
+        <label className="case-label">Case Reference:</label>
+        {isEditing ? (
+          <input
+            type="text"
+            className="case-input"
+            value={caseId}
+            onChange={(e) => setCaseId(e.target.value)}
+            onBlur={() => setIsEditing(false)}
+            onKeyDown={(e) => e.key === 'Enter' && setIsEditing(false)}
+            autoFocus
+          />
+        ) : (
+          <span className="case-id" onClick={() => setIsEditing(true)}>
+            {caseId}
+          </span>
+        )}
+        {selectedRelay && (
+          <span className="selected-relay">
+            Selected Relay: {selectedRelay.nickname || selectedRelay.fingerprint?.substring(0, 8)}
+          </span>
+        )}
+      </div>
+      <div className="case-bar-right">
+        <span className="timestamp">
+          Last Updated: {new Date().toLocaleTimeString('en-IN')}
+        </span>
+      </div>
+    </div>
   );
 }
 
@@ -181,7 +193,6 @@ function TopBar() {
 // ============================================================================
 
 function AppContent() {
-  // Initialize login state from localStorage
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
     const saved = localStorage.getItem("tor-unveil-logged-in");
     return saved === "true";
@@ -194,7 +205,6 @@ function AppContent() {
   const handleLoginSuccess = (loginData) => {
     setUserInfo(loginData);
     setIsLoggedIn(true);
-    // Persist login state to localStorage
     localStorage.setItem("tor-unveil-logged-in", "true");
     localStorage.setItem("tor-unveil-user-info", JSON.stringify(loginData));
   };
@@ -202,7 +212,6 @@ function AppContent() {
   const handleLogout = () => {
     setIsLoggedIn(false);
     setUserInfo(null);
-    // Clear login state from localStorage
     localStorage.removeItem("tor-unveil-logged-in");
     localStorage.removeItem("tor-unveil-user-info");
   };
@@ -212,26 +221,29 @@ function AppContent() {
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100vh", width: "100vw" }}>
-      <TamilNaduBrand userInfo={userInfo} onLogout={handleLogout} />
-      <div style={styles.appContainer}>
-        <SideNavigation />
-        <div style={styles.mainContent}>
-          <TopBar />
-          <Breadcrumb />
-          <div style={styles.pageContainer}>
+    <div className="govt-app-container">
+      <GovernmentHeader userInfo={userInfo} onLogout={handleLogout} />
+      
+      <div className="govt-main-layout">
+        <LeftNavigation />
+        
+        <main className="govt-main-content">
+          <CaseIdBar />
+          <div className="page-content">
             <Routes>
+              <Route path="/" element={<Dashboard />} />
               <Route path="/investigation" element={<InvestigationPage />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/paths" element={<PathsDashboard />} />
               <Route path="/analysis" element={<AnalysisPage />} />
               <Route path="/forensic" element={<ForensicPage />} />
               <Route path="/report" element={<ReportPage />} />
-              <Route path="/" element={<InvestigationPage />} />
             </Routes>
           </div>
-        </div>
+        </main>
       </div>
+      
+      <GovernmentFooter />
     </div>
   );
 }
@@ -245,218 +257,3 @@ export default function App() {
     </BrowserRouter>
   );
 }
-
-// ============================================================================
-// STYLING OBJECT - SOC CONSOLE COLORS & LAYOUT
-// ============================================================================
-
-const styles = {
-  appContainer: {
-    flex: 1,
-    height: "auto",
-    background: "var(--background)",
-    color: "var(--text-primary)",
-    fontFamily: "'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-    display: "flex",
-    overflow: "hidden",
-    margin: 0,
-    padding: 0,
-  },
-
-  // ========== SIDEBAR ==========
-  sidebar: (isCollapsed) => ({
-    width: isCollapsed ? "70px" : "240px",
-    height: "100vh",
-    background: "var(--sidebar-bg)",
-    borderRight: "2px solid var(--accent-border)",
-    padding: "12px 0",
-    display: "flex",
-    flexDirection: "column",
-    transition: "width 0.3s ease",
-    boxShadow: "var(--shadow)",
-    zIndex: 100,
-    overflowY: "auto",
-  }),
-
-  sidebarHeader: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: "12px 12px",
-    borderBottom: "1px solid var(--border)",
-    marginBottom: "8px",
-  },
-
-  collapseBtn: {
-    background: "none",
-    border: "none",
-    color: "var(--accent)",
-    cursor: "pointer",
-    padding: "6px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    transition: "color 0.2s ease",
-  },
-
-  brandTitle: {
-    fontSize: "13px",
-    fontWeight: "700",
-    background: "linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%)",
-    backgroundClip: "text",
-    WebkitBackgroundClip: "text",
-    WebkitTextFillColor: "transparent",
-    margin: "0",
-    letterSpacing: "1px",
-    flex: 1,
-    textAlign: "center",
-  },
-
-  sidebarSection: {
-    padding: "8px 0",
-    marginBottom: "12px",
-    borderBottom: "1px solid var(--border)",
-  },
-
-  sectionTitle: {
-    fontSize: "10px",
-    fontWeight: "700",
-    color: "var(--text-muted)",
-    padding: "8px 16px",
-    textTransform: "uppercase",
-    letterSpacing: "0.5px",
-  },
-
-  sidebarBtn: {
-    background: "none",
-    border: "none",
-    color: "var(--text-secondary)",
-    padding: "12px 12px",
-    margin: "0 6px",
-    borderRadius: "6px",
-    cursor: "pointer",
-    fontSize: "13px",
-    fontWeight: "500",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "flex-start",
-    transition: "all 0.25s ease",
-    textAlign: "left",
-  },
-
-  sidebarbtnActive: {
-    background: "var(--accent-light)",
-    color: "var(--accent)",
-    borderLeft: "3px solid var(--accent)",
-    paddingLeft: "9px",
-  },
-
-  // ========== MAIN CONTENT ==========
-  mainContent: {
-    flex: 1,
-    display: "flex",
-    flexDirection: "column",
-    overflow: "hidden",
-  },
-
-  // ========== TOP BAR ==========
-  topbar: {
-    background: "var(--topbar-bg)",
-    borderBottom: "2px solid var(--accent-border)",
-    padding: "12px 20px",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    boxShadow: "var(--shadow)",
-    flexShrink: 0,
-  },
-
-  topbarLeft: {
-    display: "flex",
-    alignItems: "center",
-    gap: "20px",
-  },
-
-  caseSection: {
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-  },
-
-  caseLabel: {
-    fontSize: "11px",
-    fontWeight: "700",
-    color: "var(--text-muted)",
-    textTransform: "uppercase",
-  },
-
-  caseId: {
-    fontSize: "12px",
-    fontWeight: "600",
-    color: "var(--accent)",
-    cursor: "pointer",
-    padding: "4px 8px",
-    borderRadius: "4px",
-    transition: "background 0.2s ease",
-  },
-
-  caseInput: {
-    background: "var(--input-bg)",
-    border: "1px solid var(--accent-border)",
-    color: "var(--accent)",
-    padding: "4px 8px",
-    borderRadius: "4px",
-    fontSize: "12px",
-    fontWeight: "600",
-    outline: "none",
-  },
-
-  selectedTag: {
-    display: "flex",
-    alignItems: "center",
-    gap: "6px",
-    fontSize: "11px",
-    color: "var(--text-secondary)",
-    background: "var(--card-bg)",
-    padding: "4px 10px",
-    borderRadius: "4px",
-    border: "1px solid var(--accent-border)",
-  },
-
-  topbarRight: {
-    display: "flex",
-    alignItems: "center",
-    gap: "12px",
-  },
-
-  timestamp: {
-    fontSize: "11px",
-    color: "var(--text-muted)",
-    whiteSpace: "nowrap",
-  },
-
-  toolbarBtn: {
-    background: "var(--accent-light)",
-    border: "1px solid var(--accent-border)",
-    color: "var(--accent)",
-    width: "36px",
-    height: "36px",
-    borderRadius: "6px",
-    cursor: "pointer",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    transition: "all 0.2s ease",
-  },
-
-  // ========== PAGE CONTAINER ==========
-  pageContainer: {
-    flex: 1,
-    overflow: "auto",
-    padding: "12px",
-    background: "var(--background)",
-    margin: 0,
-    height: "calc(100vh - 64px)",
-  },
-};
-
