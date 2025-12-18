@@ -1,129 +1,381 @@
-/* ReportPage.css */
+/* ReportPage.css ??? PHASE-2 FINAL FORENSIC REPORT
+ * Tamil Nadu Police Cyber Crime Wing - Official Government Report
+ * Design: White background, black text, document-style, print-friendly
+ */
 
-.report-container {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 20px;
+/* ========== MAIN CONTAINER ========== */
+.report-page {
+  padding: 20px 24px;
+  background: #f5f7fa;
+  min-height: 100%;
 }
 
-.report-banner {
-  background: var(--card-bg);
-  border: 2px solid var(--accent);
-  border-radius: 8px;
-  padding: 20px;
+/* ========== SCREEN-ONLY CONTROLS ========== */
+.report-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 20px;
-  font-size: 18px;
-  font-weight: bold;
-  color: var(--accent);
+  flex-wrap: wrap;
+  gap: 16px;
 }
 
-.report-section {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 20px;
+.report-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-family: "Segoe UI", Arial, sans-serif;
 }
 
-.report-field {
+.report-breadcrumb .crumb {
+  color: #0b3c5d;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.report-breadcrumb .crumb:hover {
+  color: #094056;
+}
+
+.report-breadcrumb .crumb.active {
+  color: #333;
+  text-decoration: none;
+  cursor: default;
+  font-weight: 600;
+}
+
+.report-breadcrumb .separator {
+  color: #999;
+}
+
+.export-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-export {
+  background: #0b3c5d;
+  color: #fff;
+  border: 1px solid #0b3c5d;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.btn-export:hover {
+  background: #094056;
+}
+
+.btn-export-secondary {
+  background: #fff;
+  color: #0b3c5d;
+  border: 1px solid #0b3c5d;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.btn-export-secondary:hover {
+  background: #e8f4fc;
+}
+
+/* ========== LOADING/ERROR STATES ========== */
+.report-loading,
+.report-error {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  background: #fff;
+  border: 1px solid #d0d5dd;
+}
+
+.loading-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid #d0d5dd;
+  border-top-color: #0b3c5d;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.report-loading p {
+  font-size: 14px;
+  color: #555;
+  margin: 0;
+}
+
+.report-error p {
+  color: #dc3545;
+  margin: 0 0 16px 0;
+}
+
+.report-error button {
+  background: #0b3c5d;
+  color: #fff;
+  border: none;
+  padding: 8px 20px;
+  cursor: pointer;
+}
+
+/* ========== REPORT DOCUMENT ========== */
+.report-document {
+  background: #fff;
+  border: 1px solid #d0d5dd;
+  padding: 40px 50px;
+  max-width: 850px;
+  margin: 0 auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  font-family: "Times New Roman", Times, serif;
+  font-size: 12pt;
+  line-height: 1.6;
+  color: #000;
+}
+
+/* ========== REPORT HEADER ========== */
+.report-header {
+  text-align: center;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #000;
+}
+
+.header-emblem {
+  margin-bottom: 16px;
+}
+
+.emblem-placeholder {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  border: 2px solid #000;
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.header-title h1 {
+  font-size: 18pt;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.header-title h2 {
+  font-size: 14pt;
+  font-weight: 400;
+  margin: 0 0 8px 0;
+}
+
+.header-subtitle {
+  font-size: 11pt;
+  font-style: italic;
+  margin: 0;
+  color: #333;
+}
+
+.header-meta {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+
+.meta-item {
+  text-align: left;
+}
+
+.meta-label {
+  font-weight: 700;
+  font-size: 10pt;
+}
+
+.meta-value {
+  font-size: 10pt;
+  margin-left: 8px;
+}
+
+/* ========== REPORT SECTIONS ========== */
+.report-section {
+  margin-bottom: 28px;
+  page-break-inside: avoid;
+}
+
+.section-number {
+  display: inline;
+  font-size: 12pt;
+  font-weight: 700;
+  margin: 0 8px 0 0;
+}
+
+.section-title {
+  display: inline;
+  font-size: 12pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  text-decoration: underline;
+  margin: 0 0 12px 0;
+}
+
+.section-content {
+  margin-top: 12px;
+  text-align: justify;
+}
+
+.section-content p {
+  margin: 0 0 12px 0;
+  text-indent: 2em;
+}
+
+.section-content p:first-child {
+  text-indent: 0;
+}
+
+/* ========== DISCLAIMER SECTION ========== */
+.disclaimer-section {
+  border: 1px solid #000;
+  padding: 16px;
+  background: #fafafa;
+}
+
+.disclaimer-content {
+  font-size: 10pt;
+}
+
+.disclaimer-content p {
+  text-indent: 0;
+}
+
+/* ========== REPORT FOOTER ========== */
+.report-footer {
+  margin-top: 40px;
+  padding-top: 20px;
+}
+
+.footer-line {
+  border-top: 1px solid #000;
   margin-bottom: 12px;
 }
 
-.report-field label {
-  font-weight: bold;
-  color: var(--text-secondary);
+.footer-content {
+  text-align: center;
+  font-size: 9pt;
+  color: #333;
 }
 
-.report-field code {
-  background: var(--background);
-  padding: 8px;
-  border-radius: 4px;
-  font-family: monospace;
-  color: var(--accent);
-  word-break: break-all;
+.footer-content p {
+  margin: 0 0 4px 0;
 }
 
-.report-disclaimer {
-  background: rgba(127, 29, 29, 0.2);
-  border: 2px solid #fca5a5;
-  border-radius: 8px;
-  padding: 16px;
-  margin-top: 20px;
-  font-size: 13px;
-  color: #fef2f2;
+.footer-page {
+  margin-top: 8px !important;
+  font-style: italic;
 }
 
-/* ============= LIGHT THEME ============= */
-[data-theme="light"] .report-page {
-  background: #e8eef4;
+/* ========== BACK BUTTON ========== */
+.report-actions {
+  max-width: 850px;
+  margin: 20px auto 0;
+  text-align: left;
 }
 
-[data-theme="light"] .report-container {
-  background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-}
-
-[data-theme="light"] .report-banner {
-  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-  border: 3px solid #3b82f6;
-  color: #1d4ed8;
-}
-
-[data-theme="light"] .report-banner-header {
-  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-  border: 3px solid #3b82f6;
-  color: #0369a1;
-}
-
-[data-theme="light"] .report-section {
-  background: #ffffff;
-  border: 2px solid #cbd5e1;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-}
-
-[data-theme="light"] .report-section-box {
-  background: #ffffff;
-  border: 2px solid #cbd5e1;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-}
-
-[data-theme="light"] .report-section-box h3 {
-  color: #0369a1;
-  font-weight: 700;
-}
-
-[data-theme="light"] .report-field label {
-  color: #0f172a;
+.btn-back {
+  background: #fff;
+  color: #0b3c5d;
+  border: 1px solid #0b3c5d;
+  padding: 10px 24px;
+  font-size: 14px;
   font-weight: 600;
+  cursor: pointer;
+  font-family: "Segoe UI", Arial, sans-serif;
 }
 
-[data-theme="light"] .report-field code {
-  background: #f1f5f9;
-  border: 2px solid #cbd5e1;
-  color: #0369a1;
-  font-weight: 600;
+.btn-back:hover {
+  background: #e8f4fc;
 }
 
-[data-theme="light"] .report-disclaimer {
-  background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%);
-  border: 2px solid #ef4444;
-  color: #7f1d1d;
+/* ========== RESPONSIVE ========== */
+@media (max-width: 900px) {
+  .report-document {
+    padding: 24px;
+    margin: 0;
+  }
+  
+  .header-meta {
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+  }
+  
+  .report-controls {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
 
-[data-theme="light"] .report-empty-state {
-  background: #ffffff;
-  border: 2px solid #cbd5e1;
-  color: #1e293b;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+/* ========== PRINT STYLES ========== */
+.no-print {
+  /* Will be hidden in print */
 }
 
-[data-theme="light"] .report-empty-state h2 {
-  color: #0369a1;
-}
-
-[data-theme="light"] .report-empty-state p {
-  color: #475569;
+@media print {
+  @page {
+    size: A4;
+    margin: 20mm;
+  }
+  
+  body {
+    background: #fff !important;
+  }
+  
+  .report-page {
+    background: #fff;
+    padding: 0;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+  
+  .report-document {
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    max-width: none;
+  }
+  
+  .report-section {
+    page-break-inside: avoid;
+  }
+  
+  .disclaimer-section {
+    background: #fff;
+  }
+  
+  .report-header {
+    border-bottom: 2px solid #000;
+  }
+  
+  .footer-line {
+    border-top: 1px solid #000;
+  }
 }

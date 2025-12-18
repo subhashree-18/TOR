@@ -8,7 +8,8 @@ import PathsDashboard from "./PathsDashboard";
 import AnalysisPage from "./AnalysisPage";
 import ReportPage from "./ReportPage";
 import InvestigationPage from "./InvestigationPage";
-import ForensicPage from "./ForensicPage";
+import ForensicAnalysis from "./ForensicAnalysis";
+import ForensicUpload from "./ForensicUpload";
 import PoliceLogin from "./PoliceLogin";
 import "./App.css";
 
@@ -236,7 +237,8 @@ function AppContent() {
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/paths" element={<PathsDashboard />} />
               <Route path="/analysis" element={<AnalysisPage />} />
-              <Route path="/forensic" element={<ForensicPage />} />
+              <Route path="/forensic" element={<ForensicAnalysis />} />
+              <Route path="/upload" element={<ForensicUpload />} />
               <Route path="/report" element={<ReportPage />} />
             </Routes>
           </div>

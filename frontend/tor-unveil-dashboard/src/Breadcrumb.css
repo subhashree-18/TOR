@@ -1,99 +1,141 @@
-/* Breadcrumb.css - Investigation Context Navigation */
+/* Breadcrumb.css ??? PHASE-2 GOVERNMENT NAVIGATION
+ * Tamil Nadu Police Cyber Crime Wing
+ * Design: Text-only, horizontal, clear current step indication
+ */
 
-.breadcrumb-container {
-  background: linear-gradient(90deg, var(--card-bg) 0%, var(--background) 100%);
-  border-bottom: 1px solid var(--border);
+/* ========== MAIN CONTAINER ========== */
+.breadcrumb-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 12px 20px;
-  margin-bottom: 12px;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-.breadcrumb-trail {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  max-width: 1400px;
-  margin: 0 auto;
+  background: #fff;
+  border-bottom: 1px solid #d0d5dd;
+  font-family: "Segoe UI", Arial, sans-serif;
   flex-wrap: wrap;
+  gap: 12px;
 }
 
-.breadcrumb-item {
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  font-size: 13px;
-  font-weight: 500;
-  padding: 6px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s ease;
+/* ========== BREADCRUMB LIST ========== */
+.breadcrumb-list {
   display: flex;
   align-items: center;
-  gap: 6px;
-  white-space: nowrap;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex-wrap: wrap;
+  gap: 0;
 }
 
-.breadcrumb-item:hover {
-  background: rgba(6, 182, 212, 0.1);
-  color: var(--accent-hover);
+/* ========== BREADCRUMB ITEM ========== */
+.breadcrumb-item {
+  display: flex;
+  align-items: center;
 }
 
-.breadcrumb-item.active {
-  color: var(--accent);
-  background: rgba(14, 165, 233, 0.1);
-  font-weight: 600;
-  border: 1px solid rgba(14, 165, 233, 0.2);
+/* ========== BREADCRUMB STEP ========== */
+.breadcrumb-step {
+  font-size: 13px;
+  font-weight: 400;
+  padding: 4px 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
 }
 
-.breadcrumb-icon {
-  opacity: 0.8;
+/* Available (can navigate) */
+.breadcrumb-step.available {
+  color: #0b3c5d;
+  text-decoration: underline;
 }
 
+.breadcrumb-step.available:hover {
+  color: #094056;
+  background: #e8f4fc;
+}
+
+.breadcrumb-step.available:focus {
+  outline: 2px solid #0b3c5d;
+  outline-offset: 2px;
+}
+
+/* Completed steps */
+.breadcrumb-step.completed {
+  color: #0b3c5d;
+  text-decoration: underline;
+}
+
+.breadcrumb-step.completed:hover {
+  color: #094056;
+  background: #e8f4fc;
+}
+
+/* Current step */
+.breadcrumb-step.current {
+  color: #333;
+  font-weight: 700;
+  background: #f5f7fa;
+  border: 1px solid #d0d5dd;
+  text-decoration: none;
+  cursor: default;
+}
+
+/* Disabled steps */
+.breadcrumb-step.disabled {
+  color: #999;
+  cursor: not-allowed;
+  text-decoration: none;
+}
+
+.breadcrumb-step.disabled:hover {
+  background: transparent;
+}
+
+/* ========== SEPARATOR ========== */
 .breadcrumb-separator {
-  color: #475569;
-  margin: 0 2px;
-  flex-shrink: 0;
+  margin: 0 6px;
+  color: #999;
+  font-size: 14px;
+  font-weight: 400;
 }
 
+/* ========== CASE ID INDICATOR ========== */
+.breadcrumb-case-id {
+  font-size: 12px;
+  color: #555;
+  background: #f5f7fa;
+  border: 1px solid #d0d5dd;
+  padding: 4px 12px;
+  font-weight: 500;
+}
+
+/* ========== RESPONSIVE ========== */
 @media (max-width: 768px) {
-  .breadcrumb-container {
+  .breadcrumb-nav {
     padding: 10px 12px;
+    flex-direction: column;
+    align-items: flex-start;
   }
-
-  .breadcrumb-item {
+  
+  .breadcrumb-step {
     font-size: 12px;
-    padding: 4px 8px;
+    padding: 3px 6px;
   }
+  
+  .breadcrumb-separator {
+    margin: 0 3px;
+    font-size: 12px;
+  }
+  
+  .breadcrumb-case-id {
+    font-size: 11px;
+    margin-top: 4px;
+  }
+}
 
-  .breadcrumb-icon {
+/* ========== PRINT STYLES ========== */
+@media print {
+  .breadcrumb-nav {
     display: none;
   }
-}
-
-/* ============= LIGHT THEME ============= */
-[data-theme="light"] .breadcrumb-container {
-  background: linear-gradient(90deg, #ffffff 0%, #f1f5f9 100%);
-  border-bottom: 2px solid #cbd5e1;
-}
-
-[data-theme="light"] .breadcrumb-item {
-  color: #475569;
-}
-
-[data-theme="light"] .breadcrumb-item:hover {
-  background: rgba(3, 105, 161, 0.12);
-  color: #0369a1;
-}
-
-[data-theme="light"] .breadcrumb-item.active {
-  color: #0369a1;
-  background: rgba(3, 105, 161, 0.12);
-  border: 1px solid rgba(3, 105, 161, 0.3);
-  font-weight: 700;
-}
-
-[data-theme="light"] .breadcrumb-separator {
-  color: #94a3b8;
 }

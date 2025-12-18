@@ -1,402 +1,245 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { useAppContext } from "./AppContext";
-import { Copy, CheckCircle, X } from "lucide-react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./Dashboard.css";
-import CountryLegend from "./CountryLegend";
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-} from "recharts";
 
-const API_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
+/**
+ * Dashboard.js — PHASE-1 ENTRY SCREEN (POLICE RECORDS STYLE)
+ * Tamil Nadu Police Cyber Crime Wing - Case Management System
+ * 
+ * Design: Government records system - table layout, borders, monochrome with navy accents
+ * No cards, no charts - pure tabular data display
+ */
 
-// Semantic colors
-const SEMANTIC_COLORS = {
-  entryNode: "#3b82f6",     // Blue
-  middleNode: "#f59e0b",    // Amber
-  exitNode: "#ef4444",      // Red
-  highConfidence: "#10b981", // Green
-  medConfidence: "#f59e0b",  // Amber
-  lowConfidence: "#ef4444",  // Red
-};
+// Sample case data - in production, this would come from backend API
+const SAMPLE_CASES = [
+  {
+    caseId: "TN/CYB/2024/001234",
+    caseType: "Dark Web",
+    evidenceStatus: "Uploaded",
+    analysisStatus: "Completed",
+    confidenceLevel: "High",
+    lastUpdated: "18-12-2024 14:32"
+  },
+  {
+    caseId: "TN/CYB/2024/001235",
+    caseType: "Cyber Crime",
+    evidenceStatus: "Uploaded",
+    analysisStatus: "In Progress",
+    confidenceLevel: "Medium",
+    lastUpdated: "18-12-2024 11:15"
+  },
+  {
+    caseId: "TN/CYB/2024/001236",
+    caseType: "Financial",
+    evidenceStatus: "Pending",
+    analysisStatus: "Not Started",
+    confidenceLevel: "Low",
+    lastUpdated: "17-12-2024 16:45"
+  },
+  {
+    caseId: "TN/CYB/2024/001237",
+    caseType: "Dark Web",
+    evidenceStatus: "Uploaded",
+    analysisStatus: "In Progress",
+    confidenceLevel: "Medium",
+    lastUpdated: "17-12-2024 09:22"
+  },
+  {
+    caseId: "TN/CYB/2024/001238",
+    caseType: "Cyber Crime",
+    evidenceStatus: "Uploaded",
+    analysisStatus: "Completed",
+    confidenceLevel: "High",
+    lastUpdated: "16-12-2024 18:10"
+  },
+  {
+    caseId: "TN/CYB/2024/001239",
+    caseType: "Financial",
+    evidenceStatus: "Uploaded",
+    analysisStatus: "Completed",
+    confidenceLevel: "High",
+    lastUpdated: "16-12-2024 14:55"
+  },
+  {
+    caseId: "TN/CYB/2024/001240",
+    caseType: "Dark Web",
+    evidenceStatus: "Pending",
+    analysisStatus: "Not Started",
+    confidenceLevel: "Low",
+    lastUpdated: "15-12-2024 10:30"
+  },
+  {
+    caseId: "TN/CYB/2024/001241",
+    caseType: "Cyber Crime",
+    evidenceStatus: "Uploaded",
+    analysisStatus: "In Progress",
+    confidenceLevel: "Medium",
+    lastUpdated: "15-12-2024 08:45"
+  }
+];
 
 export default function Dashboard() {
-  const { selectRelay, selectedRelay, darkMode } = useAppContext();
-  const [relays, setRelays] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [countryData, setCountryData] = useState([]);
-  const [error, setError] = useState(null);
-  const [copiedFp, setCopiedFp] = useState(null);
-  const [drawerRelay, setDrawerRelay] = useState(null); // For left-side panel
-  const [showAllCountries, setShowAllCountries] = useState(false);
+  const navigate = useNavigate();
+  const [cases] = useState(SAMPLE_CASES);
+  const [selectedCase, setSelectedCase] = useState(null);
 
-  // Theme-aware chart colors
-  const chartColors = {
-    grid: darkMode ? "#334155" : "#e2e8f0",
-    axis: darkMode ? "#94a3b8" : "#475569",
-    tooltipBg: darkMode ? "#1e293b" : "#ffffff",
-    tooltipBorder: darkMode ? "#0ea5e9" : "#0369a1",
-    bar: darkMode ? "#0ea5e9" : "#0369a1",
+  const handleRowClick = (caseItem) => {
+    setSelectedCase(caseItem.caseId === selectedCase ? null : caseItem.caseId);
   };
 
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
+  const handleViewCase = (caseItem) => {
+    // Navigate to investigation page with case details
+    navigate("/investigation", { state: { caseId: caseItem.caseId } });
+  };
 
-      const response = await axios.get(`${API_URL}/relays?limit=1000`);
-      const data = response.data?.data || [];
-      setRelays(data);
+  const handleRegisterNewCase = () => {
+    navigate("/investigation");
+  };
 
-      if (!data.length) throw new Error("No relay data received");
-
-      // build country count chart
-      const counts = {};
-      data.forEach((relay) => {
-        const c = relay.country || "Unknown";
-        counts[c] = (counts[c] || 0) + 1;
-      });
-
-      // Remove India (IN) from the data
-      const countriesWithoutIndia = { ...counts };
-      delete countriesWithoutIndia["IN"];
-
-      let formatted = Object.keys(countriesWithoutIndia)
-        .map((c) => ({ country: c, count: countriesWithoutIndia[c] }))
-        .sort((a, b) => b.count - a.count);
-
-      // Limit to top 15 by default, but allow showing all
-      const displayData = showAllCountries ? formatted : formatted.slice(0, 15);
-
-      setCountryData(displayData);
-    } catch (err) {
-      console.error("Error loading data:", err);
-      setError("Failed to load data from backend");
-    } finally {
-      setLoading(false);
+  // Status badge styling helper
+  const getEvidenceStatusClass = (status) => {
+    switch (status) {
+      case "Uploaded": return "status-uploaded";
+      case "Pending": return "status-pending";
+      default: return "";
     }
   };
 
-  const refresh = async () => {
-    try {
-      await axios.get(`${API_URL}/relays/fetch`);
-      await loadData();
-    } catch (err) {
-      setError("Failed to refresh TOR data");
+  const getAnalysisStatusClass = (status) => {
+    switch (status) {
+      case "Completed": return "status-completed";
+      case "In Progress": return "status-in-progress";
+      case "Not Started": return "status-not-started";
+      default: return "";
     }
   };
 
-  const copyToClipboard = (text, id) => {
-    navigator.clipboard.writeText(text);
-    setCopiedFp(id);
-    setTimeout(() => setCopiedFp(null), 2000);
-  };
-  
-  useEffect(() => {
-    loadData();
-  }, [showAllCountries]);
-
-  const handleSelectRelay = (relay) => {
-    setDrawerRelay(relay); // Open left-side drawer instead of navigating
+  const getConfidenceClass = (level) => {
+    switch (level) {
+      case "High": return "confidence-high";
+      case "Medium": return "confidence-medium";
+      case "Low": return "confidence-low";
+      default: return "";
+    }
   };
 
-  const handleInvestigateRelay = (relay) => {
-    selectRelay(relay); // This will navigate to timeline
-    setDrawerRelay(null); // Close drawer
+  const getCaseTypeClass = (type) => {
+    switch (type) {
+      case "Dark Web": return "type-darkweb";
+      case "Cyber Crime": return "type-cybercrime";
+      case "Financial": return "type-financial";
+      default: return "";
+    }
   };
 
   return (
-    <div className="dashboard-container">
-      <div className="explanation-banner">
-        <h2>Investigation Overview</h2>
-        <p>
-          <strong>Purpose:</strong> Overview of TOR network relays and their geographic distribution. 
-          Select a relay to investigate its activity timeline and potential network correlations.
-        </p>
+    <div className="records-dashboard">
+      {/* Page Header */}
+      <div className="records-header">
+        <div className="header-left">
+          <h1 className="page-title">Case Records</h1>
+          <p className="page-subtitle">Cyber Crime Investigation Management System</p>
+        </div>
+        <div className="header-right">
+          <button className="btn-register" onClick={handleRegisterNewCase}>
+            + Register New Case
+          </button>
+        </div>
       </div>
 
-      <header className="dashboard-header">
-        <h1>TOR Unveil - Network Relay Analysis</h1>
-        <button className="refresh-btn" onClick={refresh} disabled={loading}>
-          {loading ? "Loading..." : "Refresh Data"}
-        </button>
-      </header>
-
-      {error && (
-        <div className="error-banner">
-          <span style={{marginRight: "8px"}}>Error</span>
-          <span>{error}</span>
+      {/* Summary Bar */}
+      <div className="summary-bar">
+        <div className="summary-item">
+          <span className="summary-label">Total Cases:</span>
+          <span className="summary-value">{cases.length}</span>
         </div>
-      )}
-
-      {loading ? (
-        <div className="loading-state">
-          <div className="spinner"></div>
-          <p>Loading relay data...</p>
+        <div className="summary-item">
+          <span className="summary-label">Pending Evidence:</span>
+          <span className="summary-value">{cases.filter(c => c.evidenceStatus === "Pending").length}</span>
         </div>
-      ) : (
-        <>
-          <div className="relay-stats">
-            <div className="stat-card">
-              <div className="stat-value">{relays.length}</div>
-              <div className="stat-label">Total Relays Indexed</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-value">{countryData.length}</div>
-              <div className="stat-label">Countries Represented</div>
-            </div>
-          </div>
+        <div className="summary-item">
+          <span className="summary-label">Analysis In Progress:</span>
+          <span className="summary-value">{cases.filter(c => c.analysisStatus === "In Progress").length}</span>
+        </div>
+        <div className="summary-item">
+          <span className="summary-label">Completed:</span>
+          <span className="summary-value">{cases.filter(c => c.analysisStatus === "Completed").length}</span>
+        </div>
+      </div>
 
-          {selectedRelay && (
-            <div className="selected-relay-banner">
-              <div className="banner-header">Under Investigation</div>
-              <div className="relay-info-compact">
-                <div className="relay-fp">
-                  <span className="label">Fingerprint</span>
-                  <code 
-                    className="fp-value"
-                    onClick={() => copyToClipboard(selectedRelay.fingerprint, "main")}
-                    title="Click to copy full fingerprint"
-                  >
-                    {selectedRelay.fingerprint}
-                  </code>
-                  {copiedFp === "main" && <span className="copy-indicator"><CheckCircle size={14} style={{display: "inline", marginRight: "4px"}} />Copied</span>}
-                </div>
-                <div className="info-row">
-                  <span><strong>Nickname:</strong> {selectedRelay.nickname || "N/A"}</span>
-                  <span><strong>Country:</strong> {selectedRelay.country}</span>
-                  <span><strong>Role:</strong> {selectedRelay.is_exit ? "Exit" : "Entry/Guard"}</span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          <CountryLegend countryData={countryData} isExpanded={false} />
-
-          <div className="section">
-            <div className="section-header">
-              <div>
-                <h3 className="section-title">Geographic Distribution</h3>
-                <p className="section-description">
-                  Distribution of TOR relays across participating countries.
-                  {!showAllCountries && countryData.length > 15 && (
-                    <> (Top 15 of {countryData.length} shown) </>
-                  )}
-                </p>
-              </div>
-              {countryData.length > 15 && (
-                <button
-                  className="toggle-countries-btn"
-                  onClick={() => setShowAllCountries(!showAllCountries)}
-                >
-                  {showAllCountries ? "Show Top 15" : "Show All Countries"}
-                </button>
-              )}
-            </div>
-            <div className="chart-container">
-              <ResponsiveContainer width="100%" height={350}>
-                <BarChart data={countryData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
-                  <XAxis dataKey="country" stroke={chartColors.axis} />
-                  <YAxis stroke={chartColors.axis} />
-                  <Tooltip 
-                    contentStyle={{ 
-                      background: chartColors.tooltipBg, 
-                      border: `1px solid ${chartColors.tooltipBorder}`,
-                      borderRadius: "6px",
-                      color: darkMode ? "#e2e8f0" : "#1e293b"
-                    }}
-                  />
-                  <Bar 
-                    dataKey="count" 
-                    fill={chartColors.bar} 
-                    radius={[8, 8, 0, 0]}
-                    isAnimationActive={true}
-                  >
-                    {countryData.map((entry, idx) => (
-                      <Cell 
-                        key={`cell-${idx}`} 
-                        fill={chartColors.bar}
-                      />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          <div className="section">
-            <h3 className="section-title">Select a Relay to Investigate</h3>
-            <p className="section-description">
-              Choose any relay below to begin investigation. You'll be able to view its activity timeline and potential network paths.
-            </p>
-            <div className="table-responsive">
-              <table className="relays-table">
-                <thead>
-                  <tr>
-                    <th>Fingerprint</th>
-                    <th>Nickname</th>
-                    <th>Country</th>
-                    <th>Role</th>
-                    <th>Bandwidth</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {relays.slice(0, 30).map((relay, i) => (
-                    <tr 
-                      key={i}
-                      className={selectedRelay?.fingerprint === relay.fingerprint ? "selected" : ""}
-                      title={relay.nickname}
-                    >
-                      <td className="fp-cell">
-                        <div className="fp-container">
-                          <code 
-                            className="fp-full"
-                            onClick={() => copyToClipboard(relay.fingerprint, `fp-${i}`)}
-                            title="Click to copy full fingerprint"
-                          >
-                            {relay.fingerprint}
-                          </code>
-                          <button
-                            className="fp-copy-btn"
-                            onClick={() => copyToClipboard(relay.fingerprint, `fp-${i}`)}
-                            title="Copy fingerprint"
-                            aria-label="Copy fingerprint"
-                          >
-                            <Copy size={14} strokeWidth={2} stroke="currentColor" fill="none" />
-                          </button>
-                          {copiedFp === `fp-${i}` && <span className="copy-badge"><CheckCircle size={14} style={{display: "inline", marginRight: "4px"}} />Copied</span>}
-                        </div>
-                      </td>
-                      <td className="nickname-cell">{relay.nickname || "—"}</td>
-                      <td className="country-cell">{relay.country}</td>
-                      <td>
-                        <div className="role-tags">
-                          {relay.is_exit && <span className="role-tag exit">Exit</span>}
-                          {relay.is_guard && <span className="role-tag guard">Guard</span>}
-                          {!relay.is_exit && !relay.is_guard && <span className="role-tag middle">Middle</span>}
-                        </div>
-                      </td>
-                      <td className="bandwidth">
-                        {(relay.advertised_bandwidth / 1_000_000).toFixed(1)} Mbps
-                      </td>
-                      <td>
-                        <button 
-                          className="investigate-btn"
-                          onClick={() => handleSelectRelay(relay)}
-                        >
-                          ▶ Investigate
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* Left-Side Drawer for Relay Details */}
-      {drawerRelay && (
-        <>
-          <div 
-            className="drawer-overlay" 
-            onClick={() => setDrawerRelay(null)}
-          ></div>
-          <div className="drawer-panel">
-            <div className="drawer-header">
-              <h2>Relay Details</h2>
-              <button 
-                className="drawer-close-btn"
-                onClick={() => setDrawerRelay(null)}
-                title="Close"
+      {/* Case Records Table */}
+      <div className="records-table-container">
+        <table className="records-table">
+          <thead>
+            <tr>
+              <th className="th-serial">S.No</th>
+              <th className="th-caseid">Case ID</th>
+              <th className="th-casetype">Case Type</th>
+              <th className="th-evidence">Evidence Status</th>
+              <th className="th-analysis">Analysis Status</th>
+              <th className="th-confidence">Confidence Level</th>
+              <th className="th-updated">Last Updated</th>
+              <th className="th-action">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {cases.map((caseItem, index) => (
+              <tr 
+                key={caseItem.caseId}
+                className={`case-row ${selectedCase === caseItem.caseId ? "row-selected" : ""}`}
+                onClick={() => handleRowClick(caseItem)}
               >
-                <X size={24} />
-              </button>
-            </div>
-            
-            <div className="drawer-content">
-              <div className="detail-section">
-                <h3>Fingerprint</h3>
-                <code className="fp-block">{drawerRelay.fingerprint}</code>
-                <button 
-                  className="copy-button"
-                  onClick={() => copyToClipboard(drawerRelay.fingerprint, "drawer")}
-                >
-                  <Copy size={16} />
-                  {copiedFp === "drawer" ? "Copied!" : "Copy"}
-                </button>
-              </div>
-
-              <div className="detail-section">
-                <h3>Basic Information</h3>
-                <div className="detail-row">
-                  <span className="label">Nickname:</span>
-                  <span className="value">{drawerRelay.nickname || "N/A"}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="label">Country:</span>
-                  <span className="value">{drawerRelay.country}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="label">Role:</span>
-                  <span className="value">
-                    {drawerRelay.is_exit ? "Exit Node" : drawerRelay.is_guard ? "Guard Node" : "Middle Node"}
+                <td className="td-serial">{index + 1}</td>
+                <td className="td-caseid">
+                  <code>{caseItem.caseId}</code>
+                </td>
+                <td className="td-casetype">
+                  <span className={`type-badge ${getCaseTypeClass(caseItem.caseType)}`}>
+                    {caseItem.caseType}
                   </span>
-                </div>
-              </div>
+                </td>
+                <td className="td-evidence">
+                  <span className={`status-badge ${getEvidenceStatusClass(caseItem.evidenceStatus)}`}>
+                    {caseItem.evidenceStatus}
+                  </span>
+                </td>
+                <td className="td-analysis">
+                  <span className={`status-badge ${getAnalysisStatusClass(caseItem.analysisStatus)}`}>
+                    {caseItem.analysisStatus}
+                  </span>
+                </td>
+                <td className="td-confidence">
+                  <span className={`confidence-badge ${getConfidenceClass(caseItem.confidenceLevel)}`}>
+                    {caseItem.confidenceLevel}
+                  </span>
+                </td>
+                <td className="td-updated">{caseItem.lastUpdated}</td>
+                <td className="td-action">
+                  <button 
+                    className="btn-view"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleViewCase(caseItem);
+                    }}
+                  >
+                    View
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
-              <div className="detail-section">
-                <h3>Network Metrics</h3>
-                <div className="detail-row">
-                  <span className="label">Bandwidth:</span>
-                  <span className="value">{(drawerRelay.advertised_bandwidth / 1_000_000).toFixed(2)} Mbps</span>
-                </div>
-                <div className="detail-row">
-                  <span className="label">Uptime:</span>
-                  <span className="value">{(drawerRelay.uptime || 0).toFixed(0)} seconds</span>
-                </div>
-              </div>
-
-              <div className="detail-section">
-                <h3>Operational Details</h3>
-                <div className="detail-row">
-                  <span className="label">Platform:</span>
-                  <span className="value">{drawerRelay.platform || "Unknown"}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="label">Contact:</span>
-                  <span className="value">{drawerRelay.contact || "Not provided"}</span>
-                </div>
-              </div>
-
-              <div className="drawer-actions">
-                <button 
-                  className="action-btn investigate-btn"
-                  onClick={() => handleInvestigateRelay(drawerRelay)}
-                >
-                  Begin Investigation
-                </button>
-                <button 
-                  className="action-btn secondary-btn"
-                  onClick={() => setDrawerRelay(null)}
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
+      {/* Table Footer */}
+      <div className="records-footer">
+        <div className="footer-info">
+          Showing {cases.length} of {cases.length} records
+        </div>
+        <div className="footer-note">
+          * Click on a row to select. Click "View" to open case details.
+        </div>
+      </div>
     </div>
   );
 }

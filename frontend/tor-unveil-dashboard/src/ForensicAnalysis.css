@@ -1,629 +1,468 @@
-.forensic-analysis-container {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  padding: 20px;
-  background: var(--card-bg);
-  border-radius: 8px;
-  border: 1px solid var(--accent-border);
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  color: var(--text-primary);
+/* ForensicAnalysis.css ??? PHASE-2 DEEP DIVE
+ * Tamil Nadu Police Cyber Crime Wing - Hypothesis Evidence Explanation
+ * Design: Text-heavy, report-style layout, official investigation note style
+ */
+
+/* ========== MAIN CONTAINER ========== */
+.forensic-analysis-page {
+  padding: 20px 24px;
+  background: #f5f7fa;
+  min-height: 100%;
 }
 
-/* Empty State */
-.forensic-analysis-container.empty {
-  justify-content: center;
+/* ========== BREADCRUMB ========== */
+.forensic-breadcrumb {
+  display: flex;
   align-items: center;
-  min-height: 400px;
-}
-
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 15px;
-  text-align: center;
-  padding: 40px 20px;
-  color: var(--text-muted);
-}
-
-.empty-icon {
-  color: var(--accent);
-  opacity: 0.5;
-}
-
-.empty-state h3 {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  margin: 0;
-}
-
-.empty-state p {
-  font-size: 14px;
-  max-width: 400px;
-  margin: 0;
-}
-
-/* Header */
-.analysis-header {
-  display: flex;
-  flex-direction: column;
   gap: 8px;
+  font-size: 13px;
+  font-family: "Segoe UI", Arial, sans-serif;
+  margin-bottom: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid #d0d5dd;
+  flex-wrap: wrap;
+}
+
+.forensic-breadcrumb .crumb {
+  color: #0b3c5d;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.forensic-breadcrumb .crumb:hover {
+  color: #094056;
+}
+
+.forensic-breadcrumb .crumb.active {
+  color: #333;
+  text-decoration: none;
+  cursor: default;
+  font-weight: 600;
+}
+
+.forensic-breadcrumb .separator {
+  color: #999;
+}
+
+/* ========== PAGE HEADER ========== */
+.forensic-header {
+  margin-bottom: 20px;
   padding-bottom: 12px;
-  border-bottom: 1px solid var(--accent-border);
+  border-bottom: 2px solid #0b3c5d;
 }
 
-.analysis-header h2 {
+.forensic-title {
   font-size: 22px;
-  font-weight: 600;
-  color: var(--accent);
+  font-weight: 700;
+  color: #0b3c5d;
+  margin: 0 0 4px 0;
+  font-family: "Segoe UI", Arial, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.forensic-subtitle {
+  font-size: 13px;
+  color: #555;
   margin: 0;
+  font-family: "Segoe UI", Arial, sans-serif;
 }
 
-.analysis-header p {
-  font-size: 14px;
-  color: var(--text-secondary);
-  margin: 0;
+.forensic-subtitle code {
+  font-family: "Consolas", monospace;
+  background: #e8f4fc;
+  padding: 2px 6px;
+  border: 1px solid #0b3c5d;
+  color: #0b3c5d;
 }
 
-/* Correlation Summary */
-.correlation-summary {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 15px;
-  padding: 15px 0;
+/* ========== REPORT PREAMBLE ========== */
+.report-preamble {
+  background: #fff;
+  border: 1px solid #0b3c5d;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #333;
 }
 
-.summary-stat {
-  background: var(--accent-light);
-  border: 1px solid var(--accent-border);
-  border-radius: 6px;
-  padding: 15px;
+.report-preamble p {
+  margin: 0 0 12px 0;
+}
+
+.report-preamble p:last-child {
+  margin-bottom: 0;
+}
+
+.report-preamble strong {
+  color: #0b3c5d;
+}
+
+/* ========== LOADING STATE ========== */
+.forensic-loading {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  text-align: center;
-}
-
-.stat-label {
-  font-size: 12px;
-  color: var(--accent);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.stat-value {
-  font-size: 28px;
-  font-weight: 700;
-  color: #10b981;
-}
-
-/* Legal Warning */
-.legal-warning {
-  display: flex;
-  gap: 12px;
-  padding: 15px;
-  background: #1f2937;
-  border: 1px solid #f59e0b;
-  border-radius: 6px;
-  color: #fbbf24;
-}
-
-.legal-warning svg {
-  flex-shrink: 0;
-  color: #f59e0b;
-}
-
-.legal-warning div {
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-.legal-warning strong {
-  color: #fbbf24;
-}
-
-/* Paths List */
-.paths-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.path-card {
-  background: #0f3460;
-  border: 1px solid var(--accent);
-  border-radius: 6px;
-  overflow: hidden;
-  transition: all 0.3s;
-}
-
-.path-card:hover {
-  border-color: #10b981;
-  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
-}
-
-.path-card.expanded {
-  border-color: #10b981;
-}
-
-/* Path Header */
-.path-header {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  padding: 15px;
-  cursor: pointer;
-  background: linear-gradient(90deg, #0f3460 0%, transparent 100%);
-  transition: background 0.2s;
-}
-
-.path-header:hover {
-  background: linear-gradient(90deg, #1a4d3e 0%, transparent 100%);
-}
-
-.path-rank {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--accent);
-  min-width: 30px;
-  text-align: center;
-}
-
-/* Path Flow */
-.path-flow {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex: 1;
-  min-width: 0;
-  overflow-x: auto;
-  padding: 5px 0;
-}
-
-.node {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 8px 12px;
-  border-radius: 4px;
-  flex-shrink: 0;
-  min-width: 120px;
-}
-
-.node-label {
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.node-value {
-  font-size: 12px;
-  font-weight: 500;
-  word-break: break-word;
-}
-
-.entry-node {
-  background: #1a3d4a;
-  border: 1px solid var(--accent);
-  color: var(--accent);
-}
-
-.middle-node {
-  background: #3d2a1a;
-  border: 1px solid #f59e0b;
-  color: #fbbf24;
-}
-
-.exit-node {
-  background: #3d1a1a;
-  border: 1px solid #ef4444;
-  color: #fca5a5;
-}
-
-.flow-arrow {
-  color: var(--accent);
-  font-weight: 700;
-  flex-shrink: 0;
-}
-
-/* Path Meta */
-.path-meta {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  flex-shrink: 0;
-}
-
-.confidence-indicator {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 100px;
-}
-
-.confidence-bar {
-  width: 60px;
-  height: 6px;
-  background: #1a1a2e;
-  border-radius: 3px;
-  overflow: hidden;
-  border: 1px solid var(--accent);
-}
-
-.confidence-fill {
-  height: 100%;
-  transition: width 0.3s;
-}
-
-.confidence-text {
-  font-size: 12px;
-  font-weight: 600;
-  color: #e0e0e0;
-  min-width: 35px;
-}
-
-/* Risk Badge */
-.risk-badge {
-  padding: 4px 10px;
-  border-radius: 4px;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  white-space: nowrap;
-}
-
-.risk-badge.risk-high {
-  background: #7f1d1d;
-  color: #fca5a5;
-  border: 1px solid #ef4444;
-}
-
-.risk-badge.risk-medium {
-  background: #7c2d12;
-  color: #fdba74;
-  border: 1px solid #f59e0b;
-}
-
-.risk-badge.risk-low {
-  background: #064e3b;
-  color: #86efac;
-  border: 1px solid #10b981;
-}
-
-/* Expand Button */
-.expand-button {
-  background: transparent;
-  border: none;
-  color: var(--accent);
-  cursor: pointer;
-  padding: 4px;
-  display: flex;
   align-items: center;
   justify-content: center;
-  transition: color 0.2s;
-  flex-shrink: 0;
+  padding: 60px 20px;
+  background: #fff;
+  border: 1px solid #d0d5dd;
 }
 
-.expand-button:hover {
-  color: #10b981;
+.loading-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid #d0d5dd;
+  border-top-color: #0b3c5d;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 16px;
 }
 
-/* Path Details */
-.path-details {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  padding: 15px;
-  background: #0a2e4a;
-  border-top: 1px solid var(--accent);
-  animation: slideDown 0.3s ease-out;
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    max-height: 0;
-  }
-  to {
-    opacity: 1;
-    max-height: 1000px;
-  }
-}
-
-/* Detail Section */
-.detail-section {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 12px;
-  background: #0f3460;
-  border-radius: 4px;
-  border-left: 3px solid var(--accent);
-}
-
-.detail-section h4 {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--accent);
-  margin: 0;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.detail-section.limitations {
-  border-left-color: #f59e0b;
-}
-
-.detail-section.limitations h4 {
-  color: #f59e0b;
-}
-
-.detail-section.court-use {
-  border-left-color: #10b981;
-}
-
-.detail-section.court-use h4 {
-  color: #10b981;
-}
-
-/* Evidence Text */
-.evidence-text {
-  font-size: 13px;
-  color: #b0b0b0;
-  line-height: 1.6;
+.forensic-loading p {
+  font-size: 14px;
+  color: #555;
   margin: 0;
 }
 
-/* Evidence Metrics */
-.evidence-metrics {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 10px;
+/* ========== ERROR STATE ========== */
+.forensic-error {
+  padding: 24px;
+  background: #fff;
+  border: 1px solid #dc3545;
+  text-align: center;
 }
 
-.metric {
+.forensic-error p {
+  color: #dc3545;
+  margin: 0 0 16px 0;
+}
+
+.forensic-error button {
+  background: #0b3c5d;
+  color: #fff;
+  border: none;
+  padding: 8px 20px;
+  cursor: pointer;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+/* ========== NO DATA ========== */
+.no-data {
+  padding: 40px 20px;
+  background: #fff;
+  border: 1px solid #d0d5dd;
+  text-align: center;
+}
+
+.no-data p {
+  margin: 0;
+  font-size: 14px;
+  color: #666;
+}
+
+/* ========== HYPOTHESES ACCORDION ========== */
+.hypotheses-accordion {
+  margin-bottom: 24px;
+}
+
+.hypothesis-panel {
+  border: 1px solid #0b3c5d;
+  margin-bottom: 12px;
+  background: #fff;
+}
+
+.hypothesis-panel:last-child {
+  margin-bottom: 0;
+}
+
+/* Accordion Header */
+.hypothesis-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px;
-  background: #1a1a2e;
-  border-radius: 3px;
-  font-size: 13px;
+  padding: 14px 18px;
+  background: #d4e5f7;
+  cursor: pointer;
+  user-select: none;
+  border-bottom: 1px solid transparent;
 }
 
-.metric-label {
-  color: #808080;
+.hypothesis-panel.expanded .hypothesis-header {
+  border-bottom-color: #0b3c5d;
 }
 
-.metric-value {
-  font-weight: 600;
-  color: var(--accent);
+.hypothesis-header:hover {
+  background: #c5daf0;
 }
 
-/* Reasoning List */
-.reasoning-list {
+.header-left {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.reasoning-item {
-  display: flex;
-  gap: 10px;
-  align-items: flex-start;
-  font-size: 13px;
-  color: #b0b0b0;
-  line-height: 1.5;
-}
-
-.reasoning-icon {
-  color: #10b981;
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
-/* Limitations List */
-.detail-section.limitations ul {
-  margin: 0;
-  padding-left: 20px;
-  list-style: none;
-}
-
-.detail-section.limitations li {
-  font-size: 13px;
-  color: #b0b0b0;
-  line-height: 1.5;
-  position: relative;
-  padding-left: 20px;
-}
-
-.detail-section.limitations li::before {
-  content: "⚠️";
-  position: absolute;
-  left: 0;
-}
-
-/* Court Use Text */
-.detail-section.court-use p {
-  font-size: 13px;
-  color: #b0b0b0;
-  line-height: 1.6;
-  margin: 0;
-}
-
-/* Findings Summary */
-.findings-summary {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 15px;
-  background: #0f3460;
-  border: 1px solid #10b981;
-  border-radius: 6px;
-}
-
-.findings-summary h3 {
-  font-size: 15px;
-  font-weight: 600;
-  color: #10b981;
-  margin: 0;
-}
-
-.summary-text p {
-  font-size: 13px;
-  color: #b0b0b0;
-  line-height: 1.6;
-  margin: 8px 0;
-}
-
-.summary-text strong {
-  color: var(--accent);
-}
-
-/* Export Section */
-.export-section {
-  display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding: 15px;
-  background: #064e3b;
-  border: 1px solid #10b981;
-  border-radius: 6px;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
-.export-button {
-  padding: 10px 20px;
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  border: none;
-  color: white;
+.hypothesis-rank {
+  font-weight: 700;
+  font-size: 14px;
+  color: #0b3c5d;
+  font-family: "Segoe UI", Arial, sans-serif;
+  text-transform: uppercase;
+}
+
+.hypothesis-path {
+  font-size: 13px;
+  color: #333;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.expand-indicator {
+  font-size: 12px;
+  color: #0b3c5d;
+  font-weight: 700;
+}
+
+/* ========== CONFIDENCE BADGE ========== */
+.confidence-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 1px solid;
+}
+
+.confidence-badge.confidence-high {
+  background: #e6f4ea;
+  color: #1e7e34;
+  border-color: #1e7e34;
+}
+
+.confidence-badge.confidence-medium {
+  background: #fff3cd;
+  color: #856404;
+  border-color: #856404;
+}
+
+.confidence-badge.confidence-low {
+  background: #fdf2f2;
+  color: #dc3545;
+  border-color: #dc3545;
+}
+
+/* ========== ACCORDION CONTENT ========== */
+.hypothesis-content {
+  padding: 20px;
+}
+
+/* ========== EVIDENCE SECTIONS ========== */
+.evidence-section {
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.evidence-section:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.section-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0b3c5d;
+  margin: 0 0 10px 0;
+  font-family: "Segoe UI", Arial, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.section-text {
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.7;
+  color: #333;
+  text-align: justify;
+}
+
+.section-text p {
+  margin: 0;
+}
+
+/* Limiting Factors Section - Highlighted */
+.limiting-section {
+  background: #fdf8e8;
+  border: 1px solid #d9a441;
+  padding: 16px;
+  margin-left: -20px;
+  margin-right: -20px;
+  margin-bottom: -20px;
+  border-bottom: none;
+  border-left: none;
+  border-right: none;
+}
+
+.limiting-section .section-label {
+  color: #856404;
+}
+
+.limiting-text {
+  color: #6d4c00;
+}
+
+/* ========== REPORT FOOTER ========== */
+.report-footer {
+  background: #f0f4f8;
+  border: 1px solid #d0d5dd;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-size: 12px;
+  color: #555;
+}
+
+.report-footer p {
+  margin: 0;
+}
+
+.report-footer strong {
+  color: #333;
+}
+
+/* ========== ACTIONS ========== */
+.forensic-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-primary {
+  background: #0b3c5d;
+  color: #fff;
+  border: 1px solid #0b3c5d;
+  padding: 12px 28px;
   font-size: 14px;
   font-weight: 600;
-  border-radius: 4px;
   cursor: pointer;
-  transition: all 0.3s;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: "Segoe UI", Arial, sans-serif;
 }
 
-.export-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+.btn-primary:hover {
+  background: #094056;
+  border-color: #094056;
 }
 
-.export-note {
-  font-size: 12px;
-  color: #86efac;
-  margin: 0;
+.btn-secondary {
+  background: #fff;
+  color: #0b3c5d;
+  border: 1px solid #0b3c5d;
+  padding: 12px 28px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: "Segoe UI", Arial, sans-serif;
 }
 
-/* Responsive */
-@media (max-width: 1024px) {
-  .path-flow {
-    flex-wrap: wrap;
-  }
-
-  .node {
-    min-width: 100px;
-  }
+.btn-secondary:hover {
+  background: #e8f4fc;
 }
 
+/* ========== RESPONSIVE ========== */
 @media (max-width: 768px) {
-  .forensic-analysis-container {
-    padding: 15px;
+  .forensic-analysis-page {
+    padding: 16px;
   }
-
-  .path-header {
+  
+  .hypothesis-header {
     flex-direction: column;
-    gap: 10px;
+    align-items: flex-start;
+    gap: 12px;
   }
-
-  .path-flow {
-    width: 100%;
-  }
-
-  .path-meta {
+  
+  .header-right {
     width: 100%;
     justify-content: space-between;
   }
-
-  .correlation-summary {
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  
+  .forensic-actions {
+    flex-direction: column;
+  }
+  
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+    text-align: center;
+  }
+  
+  .limiting-section {
+    margin-left: -16px;
+    margin-right: -16px;
+    margin-bottom: -16px;
   }
 }
 
-/* ===== LIGHT THEME COMPREHENSIVE ENHANCEMENTS ===== */
-[data-theme="light"] .forensic-analysis-container {
-  background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
-  border: 2px solid #cbd5e1;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-}
-
-[data-theme="light"] .analysis-header h2 {
-  color: #0369a1;
-  font-weight: 700;
-}
-
-[data-theme="light"] .summary-stat {
-  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-  border: 2px solid #3b82f6;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-}
-
-[data-theme="light"] .summary-stat .stat-label {
-  color: #0f172a;
-  font-weight: 600;
-}
-
-[data-theme="light"] .summary-stat .stat-value {
-  color: #0369a1;
-  font-weight: 700;
-}
-
-[data-theme="light"] .correlation-path {
-  background: #ffffff;
-  border: 2px solid #cbd5e1;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-}
-
-[data-theme="light"] .correlation-path:hover {
-  border-color: #0369a1;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-}
-
-[data-theme="light"] .path-score {
-  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
-  border: 2px solid #10b981;
-}
-
-[data-theme="light"] .node.entry {
-  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-  border: 2px solid #2563eb;
-}
-
-[data-theme="light"] .node.middle {
-  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-  border: 2px solid #d97706;
-}
-
-[data-theme="light"] .node.exit {
-  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-  border: 2px solid #dc2626;
-}
-
-[data-theme="light"] .node .node-ip {
-  color: #0f172a;
-  font-weight: 600;
-}
-
-[data-theme="light"] .node .node-label {
-  color: #475569;
-}
-
-[data-theme="light"] .export-section {
-  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
-  border: 2px solid #10b981;
+/* ========== PRINT STYLES ========== */
+@media print {
+  .forensic-analysis-page {
+    background: #fff;
+    padding: 0;
+  }
+  
+  .forensic-breadcrumb,
+  .forensic-actions {
+    display: none;
+  }
+  
+  .hypothesis-panel {
+    border: 1px solid #000;
+    page-break-inside: avoid;
+    margin-bottom: 20px;
+  }
+  
+  .hypothesis-header {
+    background: #f0f0f0;
+    border-bottom: 1px solid #000;
+  }
+  
+  /* Force expand all for print */
+  .hypothesis-content {
+    display: block !important;
+  }
+  
+  .expand-indicator {
+    display: none;
+  }
+  
+  .confidence-badge {
+    border: 1px solid #000;
+    background: #fff;
+    color: #000;
+  }
+  
+  .limiting-section {
+    background: #f5f5f5;
+    border: 1px solid #000;
+  }
+  
+  .report-preamble,
+  .report-footer {
+    border: 1px solid #000;
+    background: #fff;
+  }
 }
