@@ -26,18 +26,39 @@ export default function ReportPage() {
       content += "---------------\n";
       content += `Entry: ${selectedPath.entry.nickname} (${selectedPath.entry.fingerprint})\n`;
       content += `Middle: ${selectedPath.middle.nickname} (${selectedPath.middle.fingerprint})\n`;
-      content += `Exit: ${selectedPath.exit.nickname} (${selectedPath.exit.fingerprint})\n`;
-      content += `Score: ${(selectedPath.score * 100).toFixed(1)}%\n`;
-      content += `Confidence: ${selectedPath.score >= 0.8 ? "HIGH" : selectedPath.score >= 0.5 ? "MEDIUM" : "LOW"}\n\n`;
+      content += `Exit: ${selectedPath.exit.nickname} (${selectedPath.exit.fingerprint})\n\n`;
 
       if (selectedPath.components) {
-        content += "SCORE COMPONENTS\n";
-        content += "----------------\n";
-        content += `Uptime: ${(selectedPath.components.uptime_score * 100).toFixed(1)}%\n`;
-        content += `Bandwidth: ${(selectedPath.components.bandwidth_score * 100).toFixed(1)}%\n`;
-        content += `Role: ${(selectedPath.components.role_score * 100).toFixed(1)}%\n`;
-        content += `AS Penalty: ${(selectedPath.components.as_penalty * 100).toFixed(1)}%\n`;
-        content += `Country Penalty: ${(selectedPath.components.country_penalty * 100).toFixed(1)}%\n\n`;
+        content += "TEMPORAL ALIGNMENT\n";
+        content += "------------------\n";
+        const temporal = selectedPath.components.temporal || {};
+        content += `Overlap Days: ${(temporal.overlap_days || 0).toFixed(1)}\n`;
+        content += `Concurrent Relays: ${temporal.concurrent_relays ? "Yes" : "No"}\n\n`;
+        
+        content += "RELAY STABILITY\n";
+        content += "---------------\n";
+        const stability = selectedPath.components.stability || {};
+        content += `Entry Uptime: ${(stability.entry_uptime_days || 0).toFixed(1)} days\n`;
+        content += `Middle Uptime: ${(stability.middle_uptime_days || 0).toFixed(1)} days\n`;
+        content += `Exit Uptime: ${(stability.exit_uptime_days || 0).toFixed(1)} days\n`;
+        content += `Avg Uptime: ${(stability.avg_uptime || 0).toFixed(1)} days\n\n`;
+        
+        content += "BANDWIDTH CHARACTERISTICS\n";
+        content += "------------------------\n";
+        const bandwidth = selectedPath.components.bandwidth || {};
+        content += `Entry Bandwidth: ${(bandwidth.entry_bandwidth_mbps || 0).toFixed(2)} Mbps\n`;
+        content += `Middle Bandwidth: ${(bandwidth.middle_bandwidth_mbps || 0).toFixed(2)} Mbps\n`;
+        content += `Exit Bandwidth: ${(bandwidth.exit_bandwidth_mbps || 0).toFixed(2)} Mbps\n`;
+        content += `Balance: ${bandwidth.bandwidth_balance}\n\n`;
+        
+        content += "DIVERSITY ANALYSIS\n";
+        content += "------------------\n";
+        const diversity = selectedPath.components.diversity || {};
+        const as_div = diversity.as_diversity || {};
+        const geo_div = diversity.geographic_diversity || {};
+        content += `Entry-Exit Same AS: ${as_div.entry_exit_same_as ? "Yes (Risk)" : "No"}\n`;
+        content += `Entry-Exit Same Country: ${geo_div.entry_exit_same_country ? "Yes (Risk)" : "No"}\n`;
+        content += `All Independent: ${diversity.family_diversity?.all_independent ? "Yes" : "No"}\n\n`;
       }
     }
 
@@ -107,8 +128,22 @@ export default function ReportPage() {
       csv += `Path.Entry,"${selectedPath.entry.nickname}"\n`;
       csv += `Path.Middle,"${selectedPath.middle.nickname}"\n`;
       csv += `Path.Exit,"${selectedPath.exit.nickname}"\n`;
-      csv += `Path.Score,"${(selectedPath.score * 100).toFixed(1)}%"\n`;
-      csv += `Path.Confidence,"${selectedPath.score >= 0.8 ? "HIGH" : selectedPath.score >= 0.5 ? "MEDIUM" : "LOW"}"\n`;
+      
+      const temporal = selectedPath.components?.temporal || {};
+      csv += `Temporal.OverlapDays,"${(temporal.overlap_days || 0).toFixed(1)}"\n`;
+      csv += `Temporal.ConcurrentRelays,"${temporal.concurrent_relays ? "Yes" : "No"}"\n`;
+      
+      const stability = selectedPath.components?.stability || {};
+      csv += `Stability.AvgUptime,"${(stability.avg_uptime || 0).toFixed(1)} days"\n`;
+      csv += `Stability.MinUptime,"${(stability.min_uptime || 0).toFixed(1)} days"\n`;
+      
+      const bandwidth = selectedPath.components?.bandwidth || {};
+      csv += `Bandwidth.AvgMbps,"${(bandwidth.avg_bandwidth_mbps || 0).toFixed(2)}"\n`;
+      csv += `Bandwidth.Balance,"${bandwidth.bandwidth_balance}"\n`;
+      
+      const diversity = selectedPath.components?.diversity || {};
+      csv += `Diversity.SameAS,"${diversity.as_diversity?.entry_exit_same_as ? "Yes" : "No"}"\n`;
+      csv += `Diversity.SameCountry,"${diversity.geographic_diversity?.entry_exit_same_country ? "Yes" : "No"}"\n`;
     }
 
     csv += `Disclaimer,"Probabilistic results only. Not proof."\n`;
@@ -195,11 +230,23 @@ export default function ReportPage() {
                   <small>{selectedPath.exit.country}</small>
                 </div>
               </div>
+              
               <div style={styles.field}>
-                <label>Plausibility Score:</label>
-                <span style={{ color: selectedPath.score > 0.8 ? "#10b981" : "#f59e0b" }}>
-                  {(selectedPath.score * 100).toFixed(1)}%
-                </span>
+                <label>Temporal Alignment:</label>
+                <code>{(selectedPath.components?.temporal?.overlap_days || 0).toFixed(1)} days concurrent</code>
+              </div>
+              
+              <div style={styles.field}>
+                <label>Relay Stability:</label>
+                <code>Min: {(selectedPath.components?.stability?.min_uptime || 0).toFixed(1)} days, Avg: {(selectedPath.components?.stability?.avg_uptime || 0).toFixed(1)} days</code>
+              </div>
+              
+              <div style={styles.field}>
+                <label>Diversity Analysis:</label>
+                <code>
+                  AS-Diverse: {selectedPath.components?.diversity?.as_diversity?.entry_exit_same_as ? "No (Risk)" : "Yes"}, 
+                  Geo-Diverse: {selectedPath.components?.diversity?.geographic_diversity?.entry_exit_same_country ? "No (Risk)" : "Yes"}
+                </code>
               </div>
               
               {/* Score Explanation with full audit trail */}

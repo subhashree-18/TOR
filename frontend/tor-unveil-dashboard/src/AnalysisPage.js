@@ -191,24 +191,40 @@ export default function AnalysisPage() {
           
           <div className="score-section">
             <div className="score-display">
-              <div className="score-value">{(selectedPath.score * 100).toFixed(0)}%</div>
-              <div className="score-label">Confidence Score</div>
+              <div className="score-value">{(selectedPath.components?.temporal?.overlap_days || 0).toFixed(1)}</div>
+              <div className="score-label">Days Temporal Overlap</div>
               <div className="confidence-level">
-                {selectedPath.score >= 0.8 ? "HIGH" : selectedPath.score >= 0.5 ? "MEDIUM" : "LOW"}
+                {selectedPath.components?.temporal?.concurrent_relays ? "Concurrent Active" : "Sequential"}
               </div>
             </div>
             {selectedPath.components && (
               <div className="components-breakdown">
-                <h4>Score Components</h4>
+                <h4>Component Analysis</h4>
                 <div className="components-list">
-                  {Object.entries(selectedPath.components).map(([key, value]) => (
-                    <div key={key} className="component-row">
-                      <span className="component-label">{key}</span>
-                      <span className="component-value">
-                        {typeof value === "number" ? value.toFixed(3) : value}
-                      </span>
-                    </div>
-                  ))}
+                  <div className="component-row">
+                    <span className="component-label">Temporal Alignment</span>
+                    <span className="component-value">{(selectedPath.components.temporal?.overlap_days || 0).toFixed(1)} days</span>
+                  </div>
+                  <div className="component-row">
+                    <span className="component-label">Avg Uptime</span>
+                    <span className="component-value">{(selectedPath.components.stability?.avg_uptime || 0).toFixed(1)} days</span>
+                  </div>
+                  <div className="component-row">
+                    <span className="component-label">Avg Bandwidth</span>
+                    <span className="component-value">{(selectedPath.components.bandwidth?.avg_bandwidth_mbps || 0).toFixed(2)} Mbps</span>
+                  </div>
+                  <div className="component-row">
+                    <span className="component-label">AS Diversity</span>
+                    <span className="component-value">
+                      {selectedPath.components.diversity?.as_diversity?.entry_exit_same_as ? "Risk - Same" : "Good - Different"}
+                    </span>
+                  </div>
+                  <div className="component-row">
+                    <span className="component-label">Geographic Diversity</span>
+                    <span className="component-value">
+                      {selectedPath.components.diversity?.geographic_diversity?.entry_exit_same_country ? "Risk - Same" : "Good - Different"}
+                    </span>
+                  </div>
                 </div>
               </div>
             )}

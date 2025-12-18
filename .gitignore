@@ -113,3 +113,44 @@ dmypy.json
 *.pem
 *.key
 
+# -------------------
+# Additional Python
+# -------------------
+*.pyc
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+.ruff_cache/
+
+# -------------------
+# Jupyter Notebooks
+# -------------------
+.ipynb_checkpoints/
+*.ipynb
+
+# -------------------
+# Testing
+# -------------------
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+htmlcov/
+
+# -------------------
+# MongoDB data (local)
+# -------------------
+mongo-data/
+data/db/
+
+# -------------------
+# Temporary files
+# -------------------
+*.tmp
+*.temp
+*.bak
+*~

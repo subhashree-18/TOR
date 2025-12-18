@@ -1,6 +1,6 @@
 # backend/app/main.py
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Response
 from pymongo import MongoClient
 import os
 from fastapi.middleware.cors import CORSMiddleware
@@ -19,9 +19,34 @@ from .fetcher import fetch_and_store_relays
 from .correlator import generate_candidate_paths, top_candidate_paths
 from .pcap_analyzer import analyze_pcap_file
 from .auth import router as auth_router
+from .probabilistic_paths import (
+    generate_probabilistic_paths,
+    ProbabilisticPathInference,
+)
+from .disclaimer import (
+    DISCLAIMER_SHORT,
+    DISCLAIMER_MEDIUM,
+    DISCLAIMER_FULL,
+    DISCLAIMER_API,
+    add_disclaimer_to_response,
+    get_api_disclaimer,
+    get_methodology_disclosure,
+    create_forensic_report_disclaimer,
+    RESPONSE_HEADER_DISCLAIMER,
+    DisclaimedResponse,
+)
 from typing import List, Dict, Any, Optional
 
-app = FastAPI(title="TOR Unveil API", version="2.0")
+app = FastAPI(
+    title="TOR Unveil API",
+    version="2.0",
+    description=(
+        "Forensic correlation analysis for TOR network investigations. "
+        "This API performs probabilistic analysis using metadata and lawful evidence. "
+        "It does not de-anonymize TOR users."
+    ),
+)
+
 
 # ---------------------------------------------------------
 # INCLUDE AUTH ROUTES
@@ -58,6 +83,43 @@ if not logger.handlers:
     handler.setFormatter(formatter)
     logger.addHandler(handler)
     logger.setLevel(logging.INFO)
+
+
+# ---------------------------------------------------------
+# DISCLAIMER ENDPOINTS
+# ---------------------------------------------------------
+
+@app.get("/disclaimer", tags=["Legal"])
+async def get_disclaimer(level: str = "medium"):
+    """
+    Get legal and ethical disclaimer.
+    
+    This system performs probabilistic forensic correlation using metadata
+    and lawful network evidence. It does not de-anonymize TOR users.
+    
+    Args:
+        level: Detail level ("short", "medium", "full")
+        
+    Returns:
+        Disclaimer information with legal notices
+    """
+    return get_api_disclaimer(level)
+
+
+@app.get("/methodology", tags=["Legal"])
+async def get_methodology():
+    """
+    Get methodology disclosure for transparency.
+    
+    Provides detailed information about the analysis techniques,
+    data sources, and limitations of this forensic system.
+    
+    Returns:
+        Methodology disclosure document
+    """
+    methodology = get_methodology_disclosure()
+    methodology["_disclaimer"] = DISCLAIMER_SHORT
+    return methodology
 
 
 # ---------------------------------------------------------
@@ -476,7 +538,7 @@ def india_analytics():
         },
         "paths_involving_india": {
             "count": len(indian_paths),
-            "high_confidence": len([p for p in indian_paths if p.get("score", 0) > 0.8])
+            "count_with_temporal_alignment": len([p for p in indian_paths if p.get("components", {}).get("temporal", {}).get("overlap_days", 0) > 0])
         },
         "total_relays_indexed": total_relays
     }
@@ -917,7 +979,13 @@ async def forensic_upload(file: UploadFile = File(...)):
             "message": (
                 f"✓ Forensic upload complete: {len(events)} events parsed, "
                 f"{len(overlapping_paths)} potentially correlated TOR paths found."
-            )
+            ),
+            "_disclaimer": DISCLAIMER_SHORT,
+            "_forensic_notice": (
+                "This analysis uses metadata correlation only. Results represent "
+                "statistical associations requiring independent verification. "
+                "No user de-anonymization is performed."
+            ),
         }
         
         logger.info(f"forensic_upload: SUCCESS - {response['message']}")
@@ -993,7 +1061,9 @@ def api_generate_paths(
                 "exits": exits,
                 "top_k": top_k
             },
-            "paths": top
+            "paths": top,
+            "_disclaimer": DISCLAIMER_SHORT,
+            "_notice": "Results are probabilistic correlations, not definitive identifications. Verification required.",
         }
         
         log_endpoint_response("GET /paths/generate", "success", count=len(top))
@@ -1006,6 +1076,167 @@ def api_generate_paths(
         raise HTTPException(
             status_code=500,
             detail="Path generation failed. Please verify relays are indexed."
+        )
+
+
+@app.get("/paths/inference")
+def api_probabilistic_paths(
+    guards: int = 30,
+    middles: int = 80,
+    exits: int = 30,
+    top_k: int = 20,
+    max_paths: int = 500,
+):
+    """Generate probabilistic inference results for TOR path analysis.
+    
+    PROBABILISTIC INFERENCE API
+    ===========================
+    
+    This endpoint returns structured probabilistic inference results instead of
+    simple scores. The response includes:
+    
+    1. **Entry Candidates**: Ranked list of potential entry nodes with:
+       - Fingerprint and nickname
+       - Posterior probability (Bayesian inference)
+       - Derived confidence level
+       - Evidence breakdown for visualization
+       - Relay metadata (country, bandwidth, flags)
+    
+    2. **Sample Paths**: Top paths with full entry inference attached
+    
+    3. **Aggregate Statistics**: Distribution stats for visualization
+       - Posterior distribution (mean, max, min, std_dev)
+       - Total observations and entropy
+    
+    4. **Inference Metadata**: Algorithm details and weights
+    
+    Parameters:
+    -----------
+    guards : int
+        Number of guard relay candidates (default 30, max 100)
+    middles : int
+        Number of middle relay candidates (default 80, max 200)
+    exits : int
+        Number of exit relay candidates (default 30, max 100)
+    top_k : int
+        Number of top entry candidates to return (default 20, max 100)
+    max_paths : int
+        Maximum paths to analyze for inference (default 500, max 2000)
+    
+    Returns:
+    --------
+    {
+        "status": "success",
+        "entry_candidates": [
+            {
+                "fingerprint": "ABC123...",
+                "nickname": "MyGuard",
+                "prior_probability": 0.001234,
+                "posterior_probability": 0.025678,
+                "likelihood_ratio": 20.8,
+                "confidence": 0.72,
+                "confidence_level": "high",
+                "evidence": {
+                    "time_overlap": 0.85,
+                    "time_overlap_label": "strong",
+                    "traffic_similarity": 0.72,
+                    ...
+                },
+                "country": "DE",
+                "bandwidth_mbps": 45.2,
+                "rank": 1,
+                ...
+            },
+            ...
+        ],
+        "paths": [...],
+        "aggregate_stats": {...},
+        "inference_metadata": {...}
+    }
+    
+    Example:
+    --------
+    curl "http://localhost:8000/paths/inference?top_k=10&guards=50"
+    """
+    start_time = datetime.datetime.utcnow()
+    
+    try:
+        # Validate and normalize parameters
+        guards = validate_limit_parameter(guards, default=30, min_val=1, max_val=100)
+        middles = validate_limit_parameter(middles, default=80, min_val=1, max_val=200)
+        exits = validate_limit_parameter(exits, default=30, min_val=1, max_val=100)
+        top_k = validate_limit_parameter(top_k, default=20, min_val=1, max_val=100)
+        max_paths = validate_limit_parameter(max_paths, default=500, min_val=10, max_val=2000)
+        
+        log_endpoint_call(
+            "GET /paths/inference",
+            guards=guards, middles=middles, exits=exits, top_k=top_k, max_paths=max_paths
+        )
+        
+        # Fetch relay candidates from database
+        guards_data = list(db.relays.find(
+            {"is_guard": True, "running": True}
+        ).sort("advertised_bandwidth", -1).limit(guards))
+        
+        middles_data = list(db.relays.find(
+            {"is_guard": False, "is_exit": False, "running": True}
+        ).sort("advertised_bandwidth", -1).limit(middles))
+        
+        exits_data = list(db.relays.find(
+            {"is_exit": True, "running": True}
+        ).sort("advertised_bandwidth", -1).limit(exits))
+        
+        if not guards_data:
+            raise HTTPException(
+                status_code=404,
+                detail="No guard relays found. Please run /relays/fetch first."
+            )
+        
+        # Generate probabilistic inference results
+        result = generate_probabilistic_paths(
+            guards=guards_data,
+            middles=middles_data,
+            exits=exits_data,
+            top_k=top_k,
+            max_paths=max_paths,
+        )
+        
+        elapsed = (datetime.datetime.utcnow() - start_time).total_seconds()
+        
+        response = {
+            "status": "success",
+            "query_time_seconds": round(elapsed, 3),
+            "parameters": {
+                "guards": guards,
+                "middles": middles,
+                "exits": exits,
+                "top_k": top_k,
+                "max_paths": max_paths,
+            },
+            **result.to_dict(),
+            "_disclaimer": DISCLAIMER_SHORT,
+            "_notice": "Results are probabilistic correlations based on metadata analysis. Independent verification required.",
+            "_methodology": "Bayesian inference with evidence metrics (temporal, traffic, stability correlation)",
+        }
+        
+        log_endpoint_response(
+            "GET /paths/inference",
+            "success",
+            entry_candidates=len(result.entry_candidates),
+            paths=len(result.paths),
+        )
+        
+        return response
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"GET /paths/inference failed: {str(e)}")
+        import traceback
+        logger.error(traceback.format_exc())
+        raise HTTPException(
+            status_code=500,
+            detail=f"Probabilistic inference failed: {str(e)}"
         )
 
 
@@ -1039,7 +1270,9 @@ def api_top_paths(limit: int = 100):
             "count": len(top),
             "limit": limit,
             "query_time_seconds": round(elapsed, 3),
-            "paths": top
+            "paths": top,
+            "_disclaimer": DISCLAIMER_SHORT,
+            "_notice": "Path scores represent correlation probability, not certainty.",
         }
         
         log_endpoint_response("GET /paths/top", "success", count=len(top))
@@ -1147,8 +1380,8 @@ def api_timeline(limit: int = 500, start: Optional[str] = None, end: Optional[st
             })
 
     # --- Path events ---
-    # Paths stored in db.path_candidates include 'generated_at'
-    path_cursor = db.path_candidates.find({}, {"_id": 0, "id": 1, "entry": 1, "exit": 1, "score": 1, "generated_at": 1}).limit(limit)
+    # Paths stored in db.path_candidates include 'generated_at' and components
+    path_cursor = db.path_candidates.find({}, {"_id": 0, "id": 1, "entry": 1, "exit": 1, "components": 1, "generated_at": 1}).limit(limit)
     for p in path_cursor:
         ga = _to_dt(p.get("generated_at"))
         if not ga:
@@ -1247,9 +1480,14 @@ def build_report_pdf(path_candidate: dict) -> bytes:
     
     # Report Metadata
     draw_text(f"Path ID: {path_candidate.get('id', 'N/A')}", 10)
-    draw_text(f"Plausibility Score: {path_candidate.get('score', 0.0):.1%}", 10)
-    confidence_level = "HIGH" if path_candidate.get('score', 0) >= 0.8 else ("MEDIUM" if path_candidate.get('score', 0) >= 0.5 else "LOW")
-    draw_text(f"Confidence Level: {confidence_level}", 10)
+    
+    # Extract component metrics for display
+    components = path_candidate.get('components', {})
+    temporal = components.get('temporal', {})
+    stability = components.get('stability', {})
+    bandwidth = components.get('bandwidth', {})
+    diversity = components.get('diversity', {})
+    
     y_position -= 6
     
     # Executive Summary
@@ -1262,9 +1500,10 @@ def build_report_pdf(path_candidate: dict) -> bytes:
     draw_text("", 10)
     draw_text("KEY FINDINGS:", 10, 10)
     draw_text("The entry → middle → exit relay configuration identified herein exhibits", 10, 20)
-    draw_text(f"a correlation score of {path_candidate.get('score', 0.0):.1%}, indicating {confidence_level.lower()} confidence", 10, 20)
-    draw_text("that these relays were temporally and topologically compatible for routing a", 10, 20)
-    draw_text("single TOR connection.", 10, 20)
+    overlap_days = temporal.get('overlap_days', 0)
+    draw_text(f"a temporal alignment window of {overlap_days:.1f} days with concurrent relay uptime,", 10, 20)
+    draw_text("based on correlation of metadata indicators including uptime intervals,", 10, 20)
+    draw_text("bandwidth patterns, and relay characteristics.", 10, 20)
     y_position -= 6
     
     check_page_break()
