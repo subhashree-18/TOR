@@ -40,30 +40,53 @@ export default function ReportPage() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [reportData, setReportData] = useState({
-    case_summary: "",
-    evidence_details: "",
-    correlation_findings: "",
-    confidence_assessment: "",
-    legal_disclaimer: ""
-  });
+  const [reportData, setReportData] = useState(null);
+  const [accessDenied, setAccessDenied] = useState(false);
+
+  // Route guard: Check if analysis is complete before allowing report access
+  useEffect(() => {
+    const checkReportAccess = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/api/investigations/${encodeURIComponent(caseId)}`);
+        const caseData = response.data;
+        
+        if (!caseData.analysis || caseData.analysis.status !== "COMPLETED") {
+          setAccessDenied(true);
+          setLoading(false);
+          return;
+        }
+      } catch (error) {
+        console.error("Access check failed:", error);
+        setAccessDenied(true);
+        setLoading(false);
+        return;
+      }
+    };
+    
+    checkReportAccess();
+  }, [caseId]);
 
   // Fetch report data from backend
   useEffect(() => {
+    if (accessDenied) return;
+    
     const fetchReport = async () => {
       try {
         setLoading(true);
         setError(null);
 
+        // Fetch report data including backend disclaimer
         const response = await axios.get(
           `${API_URL}/api/report/${encodeURIComponent(caseId)}`
         );
 
-        if (response.data) {
+        if (response.data && response.data.legal_disclaimer) {
           setReportData(response.data);
+        } else {
+          throw new Error("Report data incomplete or missing disclaimer");
         }
       } catch (err) {
-        console.warn("Backend not available, using generated report:", err.message);
+        console.warn("Backend not available or incomplete data, using fallback:", err.message);
 
         // Generate report from backend data when direct endpoint unavailable
         setReportData({
@@ -115,7 +138,7 @@ LIMITATIONS OF ANALYSIS:
 1. This analysis is based on metadata correlation only. No traffic content was examined or decrypted.
 2. The TOR network is designed to provide anonymity. This analysis does not break TOR anonymity.
 3. Correlation findings indicate plausibility, not certainty. Multiple alternative explanations may exist.
-4. Confidence scores reflect statistical alignment, not proof of use.
+4. Confidence assessments reflect statistical alignment, not proof of use.
 
 EVIDENTIARY CONSIDERATIONS:
 This report should be considered as technical investigative support material. Findings should be corroborated with additional evidence including but not limited to: device forensics, witness statements, financial records, and other investigative data before being presented as evidence.
@@ -178,6 +201,32 @@ Government of Tamil Nadu`
     window.URL.revokeObjectURL(url);
   };
 
+  // Handle access denied state
+  if (accessDenied) {
+    return (
+      <div className="report-page">
+        <h2>🔒 Forensic Report Access Restricted</h2>
+        <div className="access-denied">
+          <h3>Authorization Required</h3>
+          <p>
+            Forensic report generation is only accessible after correlation analysis has been completed.
+          </p>
+          <p>
+            Please ensure that the correlation analysis has been initiated and completed from the Investigation dashboard before attempting to generate the final report.
+          </p>
+          <div className="action-buttons">
+            <button onClick={() => navigate(`/investigation/${caseId}`)} className="primary">
+              Return to Investigation
+            </button>
+            <button onClick={() => navigate('/dashboard')} className="secondary">
+              Go to Dashboard
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="report-page">
       {/* Screen-only controls */}
@@ -214,17 +263,17 @@ Government of Tamil Nadu`
         </div>
       ) : (
         <div className="report-document" ref={reportRef}>
-          {/* Report Header */}
-          <header className="report-header">
+          {/* Official Header */}
+          <header className="official-report-header">
             <div className="header-emblem">
               <div className="emblem-placeholder">
                 <span>GOVT OF</span>
                 <span>TAMIL NADU</span>
               </div>
             </div>
-            <div className="header-title">
-              <h1>FORENSIC INVESTIGATION REPORT</h1>
-              <h2>Tamil Nadu Police ??? Cyber Crime Wing</h2>
+            <div className="header-organization">
+              <h1>Cyber Crime Wing, Tamil Nadu Police</h1>
+              <h2>FORENSIC INVESTIGATION REPORT</h2>
               <p className="header-subtitle">TOR Network Traffic Correlation Analysis</p>
             </div>
             <div className="header-meta">
@@ -298,13 +347,16 @@ Government of Tamil Nadu`
             </div>
           </section>
 
-          {/* Report Footer */}
-          <footer className="report-footer">
+          {/* Official Footer */}
+          <footer className="official-report-footer">
             <div className="footer-line"></div>
             <div className="footer-content">
-              <p>This document is computer-generated and valid without signature.</p>
-              <p>Tamil Nadu Police ??? Cyber Crime Wing ??? Government of Tamil Nadu</p>
-              <p className="footer-page">Page 1 of 1</p>
+              <p className="footer-disclaimer">Generated for investigative assistance. Not for public disclosure.</p>
+              <p className="footer-organization">Cyber Crime Wing, Tamil Nadu Police ??? Government of Tamil Nadu</p>
+              <p className="footer-confidential">This document is computer-generated and valid without signature.</p>
+            </div>
+            <div className="footer-page">
+              <span>Page <span className="page-number">1</span> of <span className="total-pages">1</span></span>
             </div>
           </footer>
         </div>

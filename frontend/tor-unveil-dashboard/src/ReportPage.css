@@ -86,6 +86,110 @@
   background: #e8f4fc;
 }
 
+/* ========== PRINT STYLES ========== */
+@media print {
+  /* Hide screen-only elements */
+  .no-print,
+  .report-controls,
+  .export-buttons,
+  .report-breadcrumb,
+  .report-actions,
+  .btn-back,
+  .report-loading,
+  .report-error {
+    display: none !important;
+  }
+  
+  /* Page setup */
+  @page {
+    size: A4;
+    margin: 20mm;
+    counter-increment: page;
+    
+    @top-left {
+      content: "Cyber Crime Wing, Tamil Nadu Police";
+      font-size: 10px;
+      color: #666;
+    }
+    
+    @top-right {
+      content: "Case: " attr(data-case-id);
+      font-size: 10px;
+      color: #666;
+    }
+    
+    @bottom-center {
+      content: "Generated for investigative assistance. Not for public disclosure.";
+      font-size: 9px;
+      color: #666;
+      text-align: center;
+    }
+    
+    @bottom-right {
+      content: "Page " counter(page);
+      font-size: 10px;
+      color: #666;
+    }
+  }
+  
+  /* Document styling for print */
+  .report-page {
+    padding: 0;
+    background: white !important;
+  }
+  
+  .report-document {
+    background: white !important;
+    box-shadow: none !important;
+    border: none !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  /* Header styling for print */
+  .official-report-header {
+    page-break-inside: avoid;
+    margin-bottom: 30px !important;
+  }
+  
+  /* Section styling for print */
+  .report-section {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  
+  .section-title {
+    page-break-after: avoid;
+  }
+  
+  /* Footer styling for print */
+  .official-report-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    page-break-inside: avoid;
+  }
+  
+  /* Force black text for printing */
+  * {
+    color: black !important;
+    background: white !important;
+  }
+  
+  /* Preserve header organization styling */
+  .header-organization h1,
+  .header-organization h2 {
+    color: black !important;
+  }
+  
+  /* Page numbers */
+  .page-number::before {
+    content: counter(page);
+  }
+}
+
 /* ========== LOADING/ERROR STATES ========== */
 .report-loading,
 .report-error {
@@ -145,12 +249,29 @@
   color: #000;
 }
 
-/* ========== REPORT HEADER ========== */
-.report-header {
+/* ========== OFFICIAL REPORT HEADER ========== */
+.official-report-header {
   text-align: center;
   margin-bottom: 30px;
   padding-bottom: 20px;
   border-bottom: 2px solid #000;
+}
+
+.header-organization h1 {
+  font-size: 18pt;
+  font-weight: bold;
+  margin: 0 0 8px 0;
+  color: #000;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.header-organization h2 {
+  font-size: 16pt;
+  font-weight: bold;
+  margin: 0 0 4px 0;
+  color: #000;
+  text-transform: uppercase;
 }
 
 .header-emblem {
@@ -265,30 +386,41 @@
   text-indent: 0;
 }
 
-/* ========== REPORT FOOTER ========== */
-.report-footer {
+/* ========== OFFICIAL REPORT FOOTER ========== */
+.official-report-footer {
   margin-top: 40px;
   padding-top: 20px;
-}
-
-.footer-line {
-  border-top: 1px solid #000;
-  margin-bottom: 12px;
+  text-align: center;
 }
 
 .footer-content {
   text-align: center;
-  font-size: 9pt;
-  color: #333;
+  font-size: 10pt;
 }
 
-.footer-content p {
+.footer-disclaimer {
+  font-weight: bold;
+  color: #000;
+  margin: 0 0 8px 0;
+  text-transform: uppercase;
+}
+
+.footer-organization {
+  color: #000;
   margin: 0 0 4px 0;
+  font-style: italic;
+}
+
+.footer-confidential {
+  color: #666;
+  font-size: 9pt;
+  margin: 0 0 8px 0;
 }
 
 .footer-page {
-  margin-top: 8px !important;
-  font-style: italic;
+  margin-top: 12px;
+  font-size: 9pt;
+  color: #666;
 }
 
 /* ========== BACK BUTTON ========== */
@@ -333,10 +465,6 @@
 }
 
 /* ========== PRINT STYLES ========== */
-.no-print {
-  /* Will be hidden in print */
-}
-
 @media print {
   @page {
     size: A4;

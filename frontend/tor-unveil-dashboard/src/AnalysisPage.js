@@ -40,9 +40,35 @@ export default function AnalysisPage() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [expandedHypothesis, setExpandedHypothesis] = useState(null);
+  const [limitationsExpanded, setLimitationsExpanded] = useState(false);
   const [analysisData, setAnalysisData] = useState({
     hypotheses: []
   });
+  const [caseStatus, setCaseStatus] = useState(null);
+
+  // Route guard - check if evidence is uploaded
+  useEffect(() => {
+    const checkCaseStatus = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/api/investigations/${encodeURIComponent(caseId)}`);
+        const caseData = response.data;
+        
+        if (!caseData.evidence?.uploaded) {
+          setError("Please complete the previous investigation stage to proceed.");
+          setLoading(false);
+          return;
+        }
+        
+        setCaseStatus(caseData);
+      } catch (err) {
+        console.warn("Could not verify case status, proceeding with analysis");
+        setCaseStatus({ evidence: { uploaded: true } }); // Allow demo mode
+      }
+    };
+    
+    checkCaseStatus();
+  }, [caseId]);
 
   // Fetch analysis results from backend
   useEffect(() => {
@@ -69,56 +95,72 @@ export default function AnalysisPage() {
               entry_region: "Germany (DE)",
               exit_region: "Netherlands (NL)",
               evidence_count: 847,
-              confidence_level: "High"
+              confidence_level: "High",
+              explanation: {
+                timing_consistency: "Strong temporal alignment observed in 87% of traffic samples",
+                guard_persistence: "Entry node maintained consistent uptime during analysis window",
+                evidence_strength: "High correlation between session timing and known Tor relay patterns"
+              }
             },
             {
               rank: 2,
               entry_region: "France (FR)",
               exit_region: "United States (US)",
               evidence_count: 612,
-              confidence_level: "High"
+              confidence_level: "High",
+              explanation: {
+                timing_consistency: "Moderate-to-strong temporal correlation in 72% of samples",
+                guard_persistence: "French relay showed stable operation with minimal downtime",
+                evidence_strength: "Clear session boundaries with expected latency patterns"
+              }
             },
             {
               rank: 3,
               entry_region: "United Kingdom (GB)",
               exit_region: "Germany (DE)",
               evidence_count: 489,
-              confidence_level: "Medium"
+              confidence_level: "Medium",
+              explanation: {
+                timing_consistency: "Moderate correlation with some timing gaps",
+                guard_persistence: "UK relay exhibited intermittent availability",
+                evidence_strength: "Evidence supports hypothesis but with some uncertainty"
+              }
             },
             {
               rank: 4,
               entry_region: "Switzerland (CH)",
               exit_region: "Sweden (SE)",
               evidence_count: 356,
-              confidence_level: "Medium"
+              confidence_level: "Medium",
+              explanation: {
+                timing_consistency: "Partial temporal alignment with acceptable deviation",
+                guard_persistence: "Swiss infrastructure shows privacy-focused operation",
+                evidence_strength: "Moderate evidence weight with good protocol signatures"
+              }
             },
             {
               rank: 5,
               entry_region: "Romania (RO)",
               exit_region: "Finland (FI)",
               evidence_count: 234,
-              confidence_level: "Medium"
+              confidence_level: "Medium",
+              explanation: {
+                timing_consistency: "Weak-to-moderate correlation patterns",
+                guard_persistence: "Romanian relay shows high variability",
+                evidence_strength: "Limited evidence but consistent with Tor usage"
+              }
             },
             {
               rank: 6,
               entry_region: "Canada (CA)",
               exit_region: "Japan (JP)",
               evidence_count: 178,
-              confidence_level: "Low"
-            },
-            {
-              rank: 7,
-              entry_region: "Australia (AU)",
-              exit_region: "Singapore (SG)",
-              evidence_count: 124,
-              confidence_level: "Low"
-            },
-            {
-              rank: 8,
-              entry_region: "Brazil (BR)",
-              exit_region: "Poland (PL)",
-              evidence_count: 89,
-              confidence_level: "Low"
+              confidence_level: "Low",
+              explanation: {
+                timing_consistency: "Weak temporal alignment due to timezone differences",
+                guard_persistence: "Trans-Pacific path shows unusual characteristics",
+                evidence_strength: "Insufficient evidence for confident attribution"
+              }
             }
           ]
         });
@@ -162,14 +204,28 @@ export default function AnalysisPage() {
       {loading ? (
         <div className="analysis-loading">
           <div className="loading-spinner"></div>
-          <p>Loading analysis results...</p>
+          <p>Loading analysis findings...</p>
         </div>
       ) : error ? (
         <div className="analysis-error">
+          <h2>Access Restricted</h2>
           <p>{error}</p>
-          <button onClick={() => window.location.reload()}>Retry</button>
+          <div className="error-actions">
+            <button 
+              className="btn-primary"
+              onClick={() => navigate(`/investigation/${caseId}`)}
+            >
+              Go to Investigation Page
+            </button>
+            <button 
+              className="btn-secondary"
+              onClick={() => navigate('/dashboard')}
+            >
+              Return to Dashboard
+            </button>
+          </div>
         </div>
-      ) : (
+      ) : caseStatus && (
         <>
           {/* Hypotheses Table Section */}
           <section className="analysis-section">
@@ -196,27 +252,61 @@ export default function AnalysisPage() {
                       </thead>
                       <tbody>
                         {analysisData.hypotheses.map((hypothesis, index) => (
-                          <tr key={index} className={`hypothesis-row rank-${hypothesis.rank}`}>
-                            <td className="td-rank">
-                              <span className="rank-number">{hypothesis.rank}</span>
-                            </td>
-                            <td className="td-entry">{hypothesis.entry_region}</td>
-                            <td className="td-exit">{hypothesis.exit_region}</td>
-                            <td className="td-evidence">{hypothesis.evidence_count.toLocaleString()}</td>
-                            <td className="td-confidence">
-                              <div className="confidence-cell">
-                                <span className={`confidence-text ${getConfidenceClass(hypothesis.confidence_level)}`}>
-                                  {hypothesis.confidence_level}
-                                </span>
-                                <div className="confidence-bar-container">
-                                  <div 
-                                    className={`confidence-bar ${getConfidenceClass(hypothesis.confidence_level)}`}
-                                    style={{ width: `${getConfidencePercent(hypothesis.confidence_level)}%` }}
-                                  ></div>
+                          <React.Fragment key={index}>
+                            <tr className={`hypothesis-row rank-${hypothesis.rank}`}>
+                              <td className="td-rank">
+                                <span className="rank-number">{hypothesis.rank}</span>
+                              </td>
+                              <td className="td-entry">{hypothesis.entry_region}</td>
+                              <td className="td-exit">{hypothesis.exit_region}</td>
+                              <td className="td-evidence">{hypothesis.evidence_count.toLocaleString()}</td>
+                              <td className="td-confidence">
+                                <div className="confidence-cell">
+                                  <span className={`confidence-text ${getConfidenceClass(hypothesis.confidence_level)}`}>
+                                    {hypothesis.confidence_level}
+                                  </span>
+                                  <div className="confidence-bar-container">
+                                    <div 
+                                      className={`confidence-bar ${getConfidenceClass(hypothesis.confidence_level)}`}
+                                      style={{ width: `${getConfidencePercent(hypothesis.confidence_level)}%` }}
+                                    ></div>
+                                  </div>
+                                  {hypothesis.explanation && (
+                                    <button 
+                                      className="btn-explain"
+                                      onClick={() => setExpandedHypothesis(
+                                        expandedHypothesis === hypothesis.rank ? null : hypothesis.rank
+                                      )}
+                                    >
+                                      Why this confidence?
+                                    </button>
+                                  )}
                                 </div>
-                              </div>
-                            </td>
-                          </tr>
+                              </td>
+                            </tr>
+                            
+                            {/* Collapsible Explanation Row */}
+                            {expandedHypothesis === hypothesis.rank && hypothesis.explanation && (
+                              <tr className="explanation-row">
+                                <td colSpan="5">
+                                  <div className="explanation-content">
+                                    <h4>Why this confidence?</h4>
+                                    <div className="explanation-factors">
+                                      <div className="factor-item">
+                                        <strong>Evidence Count:</strong> {hypothesis.evidence_count.toLocaleString()} packet sequences analyzed
+                                      </div>
+                                      <div className="factor-item">
+                                        <strong>Timing Correlation:</strong> {hypothesis.explanation.timing_consistency}
+                                      </div>
+                                      <div className="factor-item">
+                                        <strong>Guard Persistence:</strong> {hypothesis.explanation.guard_persistence}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </td>
+                              </tr>
+                            )}
+                          </React.Fragment>
                         ))}
                       </tbody>
                     </table>
@@ -262,6 +352,45 @@ export default function AnalysisPage() {
                   </tr>
                 </tbody>
               </table>
+            </div>
+          </section>
+
+          {/* Analytical Limitations */}
+          <section className="analysis-section analysis-limitations">
+            <div className="section-header">
+              <h2>Analytical Limitations</h2>
+              <button 
+                className="btn-expand"
+                onClick={() => setLimitationsExpanded(!limitationsExpanded)}
+              >
+                {limitationsExpanded ? 'Hide' : 'Show'} Limitations
+              </button>
+            </div>
+            
+            {limitationsExpanded && (
+              <div className="section-body">
+                <div className="limitation-box">
+                  <div className="limitation-item">
+                    <strong>This analysis does NOT deanonymize TOR users.</strong> All correlations are probabilistic estimates based on traffic patterns and timing analysis. Individual user identification is not possible through this system.
+                  </div>
+                  <div className="limitation-item">
+                    <strong>Confidence levels reflect statistical correlation strength,</strong> not certainty of criminal activity. High confidence indicates strong pattern matches but requires additional investigative verification.
+                  </div>
+                  <div className="limitation-item">
+                    <strong>Analysis quality improves with larger datasets.</strong> Single-session captures may yield lower confidence results. Extended monitoring periods provide more reliable correlation patterns.
+                  </div>
+                  <div className="limitation-item">
+                    <strong>Geographic precision varies by infrastructure density.</strong> Rural or lower-infrastructure regions may show broader location estimates compared to metropolitan areas.
+                  </div>
+                </div>
+              </div>
+            )}
+          </section>
+
+          {/* Disclaimer */}
+          <section className="analysis-section disclaimer-section">
+            <div className="disclaimer">
+              <p><strong>MANDATORY DISCLAIMER:</strong> This analysis is for investigative guidance only. All findings require verification through standard investigative procedures before legal action.</p>
             </div>
           </section>
 

@@ -1,45 +1,53 @@
-/* Dashboard.css ??? POLICE RECORDS STYLE
- * Tamil Nadu Police Cyber Crime Wing - Case Management System
- * Design: Government records system - monochrome with navy accents
- * No cards, no charts, no shadows, no gradients - pure tabular layout
+/**
+ * Dashboard.css ??? CASE REGISTRY STYLES
+ * Tamil Nadu Police Cyber Crime Wing
+ * Government records style - flat, tables, no animations
  */
 
-/* ========== MAIN CONTAINER ========== */
+/* ===== MAIN CONTAINER ===== */
 .records-dashboard {
-  padding: 20px 24px;
+  padding: 0;
   background: #f5f7fa;
   min-height: 100%;
 }
 
-/* ========== PAGE HEADER ========== */
+/* ===== DEMO BANNER ===== */
+.demo-banner {
+  background: #d9a441;
+  color: #1a1a1a;
+  text-align: center;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ===== PAGE HEADER ===== */
 .records-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  padding-bottom: 16px;
+  padding: 16px 20px;
   border-bottom: 2px solid #0b3c5d;
-  margin-bottom: 16px;
+  background: #fff;
 }
 
-.header-left {
-  flex: 1;
-}
+.header-left { flex: 1; }
 
 .page-title {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
   color: #0b3c5d;
   margin: 0 0 4px 0;
-  font-family: "Segoe UI", Arial, sans-serif;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .page-subtitle {
-  font-size: 13px;
+  font-size: 12px;
   color: #555;
   margin: 0;
-  font-family: "Segoe UI", Arial, sans-serif;
 }
 
 .header-right {
@@ -47,44 +55,86 @@
   align-items: center;
 }
 
-/* ========== REGISTER BUTTON ========== */
 .btn-register {
   background: #0b3c5d;
   color: #fff;
-  border: 1px solid #0b3c5d;
-  padding: 10px 20px;
+  border: none;
+  padding: 10px 18px;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  font-family: "Segoe UI", Arial, sans-serif;
   text-transform: uppercase;
   letter-spacing: 0.3px;
 }
 
 .btn-register:hover {
   background: #094056;
-  border-color: #094056;
 }
 
-.btn-register:active {
-  background: #072d3d;
+/* ===== NEXT ACTION SECTION ===== */
+.next-action-section {
+  margin: 16px 20px;
+  border: 2px solid #0b3c5d;
+  background: #fff;
 }
 
-/* ========== SUMMARY BAR ========== */
+.next-action-header {
+  background: #0b3c5d;
+  color: #fff;
+  padding: 10px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.next-action-content {
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.next-action-message {
+  flex: 1;
+  font-size: 14px;
+  color: #1a1a1a;
+  margin: 0;
+  min-width: 200px;
+}
+
+.btn-next-action {
+  background: #0b3c5d;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.btn-next-action:hover {
+  background: #094056;
+}
+
+/* ===== SUMMARY BAR ===== */
 .summary-bar {
   display: flex;
   flex-wrap: wrap;
-  gap: 0;
-  border: 1px solid #0b3c5d;
+  margin: 0 20px 16px;
+  border: 1px solid #d1d5db;
   background: #fff;
-  margin-bottom: 20px;
 }
 
 .summary-item {
   flex: 1;
-  min-width: 150px;
-  padding: 12px 16px;
-  border-right: 1px solid #d0d5dd;
+  min-width: 140px;
+  padding: 12px 14px;
+  border-right: 1px solid #d1d5db;
   text-align: center;
 }
 
@@ -94,51 +144,105 @@
 
 .summary-label {
   display: block;
-  font-size: 11px;
+  font-size: 10px;
   color: #555;
   text-transform: uppercase;
   letter-spacing: 0.3px;
   margin-bottom: 4px;
-  font-family: "Segoe UI", Arial, sans-serif;
 }
 
 .summary-value {
-  display: block;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
   color: #0b3c5d;
-  font-family: "Segoe UI", Arial, sans-serif;
 }
 
-/* ========== RECORDS TABLE CONTAINER ========== */
+/* ===== LOADING / ERROR / EMPTY STATES ===== */
+.loading-state,
+.error-state,
+.empty-state {
+  margin: 20px;
+  padding: 40px 20px;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  text-align: center;
+}
+
+.loading-state p {
+  font-size: 14px;
+  color: #555;
+  margin: 0;
+}
+
+.error-state p {
+  font-size: 14px;
+  color: #7a1f1f;
+  margin: 0 0 16px 0;
+}
+
+.btn-retry {
+  background: #0b3c5d;
+  color: #fff;
+  border: none;
+  padding: 8px 20px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.empty-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0b3c5d;
+  margin: 0 0 8px 0;
+}
+
+.empty-message {
+  font-size: 13px;
+  color: #555;
+  margin: 0 0 16px 0;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.btn-register-empty {
+  background: #0b3c5d;
+  color: #fff;
+  border: none;
+  padding: 10px 24px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+
+/* ===== RECORDS TABLE ===== */
 .records-table-container {
+  margin: 0 20px;
   border: 1px solid #0b3c5d;
   background: #fff;
   overflow-x: auto;
 }
 
-/* ========== RECORDS TABLE ========== */
 .records-table {
   width: 100%;
   border-collapse: collapse;
-  font-family: "Segoe UI", Arial, sans-serif;
   font-size: 13px;
 }
 
-/* Table Header */
 .records-table thead {
   background: #0b3c5d;
 }
 
 .records-table th {
-  padding: 12px 14px;
+  padding: 10px 12px;
   text-align: left;
   font-weight: 600;
   color: #fff;
-  text-transform: uppercase;
   font-size: 11px;
-  letter-spacing: 0.5px;
-  border-right: 1px solid #1a5276;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  border-right: 1px solid rgba(255,255,255,0.2);
   white-space: nowrap;
 }
 
@@ -146,173 +250,109 @@
   border-right: none;
 }
 
-/* Column widths */
-.th-serial { width: 60px; text-align: center; }
-.th-caseid { width: 180px; }
-.th-casetype { width: 120px; }
-.th-evidence { width: 130px; }
-.th-analysis { width: 130px; }
-.th-confidence { width: 120px; }
-.th-updated { width: 150px; }
-.th-action { width: 80px; text-align: center; }
-
-/* Table Body */
-.records-table tbody tr {
-  border-bottom: 1px solid #d0d5dd;
-  cursor: pointer;
-  transition: background 0.15s ease;
-}
-
-.records-table tbody tr:hover {
-  background: #e8f4fc;
-}
-
-.records-table tbody tr.row-selected {
-  background: #d4e8f7;
-  border-left: 3px solid #0b3c5d;
-}
-
 .records-table td {
-  padding: 11px 14px;
-  color: #333;
-  border-right: 1px solid #e5e7eb;
+  padding: 10px 12px;
+  border-bottom: 1px solid #e5e7eb;
+  color: #1a1a1a;
   vertical-align: middle;
 }
 
-.records-table td:last-child {
-  border-right: none;
+.case-row {
+  cursor: pointer;
 }
 
-/* Serial Number */
-.td-serial {
-  text-align: center;
-  font-weight: 600;
-  color: #555;
-}
-
-/* Case ID */
-.td-caseid code {
-  font-family: "Consolas", "Courier New", monospace;
-  font-size: 12px;
-  color: #0b3c5d;
+.case-row:hover {
   background: #f0f4f8;
-  padding: 4px 8px;
-  border: 1px solid #d0d5dd;
 }
 
-/* ========== TYPE BADGES ========== */
-.type-badge {
-  display: inline-block;
-  padding: 4px 10px;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  border: 1px solid;
+.case-row.row-selected {
+  background: #e8f4fc;
+  border-left: 3px solid #0b3c5d;
 }
 
-.type-darkweb {
-  background: #2d2d2d;
-  color: #fff;
-  border-color: #2d2d2d;
+.td-caseid code {
+  font-family: "Consolas", monospace;
+  font-size: 12px;
+  background: #f5f7fa;
+  padding: 2px 6px;
+  border: 1px solid #d1d5db;
 }
 
-.type-cybercrime {
-  background: #0b3c5d;
-  color: #fff;
-  border-color: #0b3c5d;
-}
-
-.type-financial {
-  background: #7a1f1f;
-  color: #fff;
-  border-color: #7a1f1f;
-}
-
-/* ========== STATUS BADGES ========== */
+/* Status Badges */
 .status-badge {
   display: inline-block;
-  padding: 4px 10px;
+  padding: 3px 8px;
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.3px;
-  border: 1px solid;
-}
-
-/* Evidence Status */
-.status-uploaded {
-  background: #e6f4ea;
-  color: #1e7e34;
-  border-color: #1e7e34;
 }
 
 .status-pending {
-  background: #fff3cd;
-  color: #856404;
-  border-color: #856404;
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fcd34d;
 }
 
-/* Analysis Status */
+.status-uploaded {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #6ee7b7;
+}
+
 .status-completed {
-  background: #e6f4ea;
-  color: #1e7e34;
-  border-color: #1e7e34;
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #6ee7b7;
 }
 
 .status-in-progress {
-  background: #e3f2fd;
-  color: #1565c0;
-  border-color: #1565c0;
+  background: #dbeafe;
+  color: #1e40af;
+  border: 1px solid #93c5fd;
 }
 
 .status-not-started {
-  background: #f5f5f5;
-  color: #666;
-  border-color: #999;
+  background: #f3f4f6;
+  color: #4b5563;
+  border: 1px solid #d1d5db;
 }
 
-/* ========== CONFIDENCE BADGES ========== */
+/* Confidence Badges */
 .confidence-badge {
   display: inline-block;
-  padding: 4px 10px;
+  padding: 3px 8px;
   font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  border: 1px solid;
+  font-weight: 600;
 }
 
 .confidence-high {
-  background: #1e7e34;
-  color: #fff;
-  border-color: #1e7e34;
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #6ee7b7;
 }
 
 .confidence-medium {
-  background: #d9a441;
-  color: #000;
-  border-color: #c49536;
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fcd34d;
 }
 
 .confidence-low {
-  background: #dc3545;
-  color: #fff;
-  border-color: #dc3545;
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
 }
 
-/* ========== VIEW BUTTON ========== */
+/* View Button */
 .btn-view {
   background: #fff;
   color: #0b3c5d;
   border: 1px solid #0b3c5d;
-  padding: 6px 14px;
+  padding: 4px 12px;
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
   text-transform: uppercase;
-  letter-spacing: 0.3px;
-  font-family: "Segoe UI", Arial, sans-serif;
 }
 
 .btn-view:hover {
@@ -320,111 +360,54 @@
   color: #fff;
 }
 
-/* ========== TABLE FOOTER ========== */
+/* ===== TABLE FOOTER ===== */
 .records-footer {
+  margin: 12px 20px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
-  background: #fff;
-  border: 1px solid #0b3c5d;
-  border-top: none;
-  font-size: 12px;
-  color: #555;
-  font-family: "Segoe UI", Arial, sans-serif;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .footer-info {
-  font-weight: 600;
+  font-size: 12px;
+  color: #555;
 }
 
 .footer-note {
-  font-style: italic;
+  font-size: 11px;
   color: #777;
+  font-style: italic;
 }
 
-/* ========== RESPONSIVE ========== */
-@media (max-width: 1024px) {
-  .records-dashboard {
-    padding: 16px;
-  }
-  
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
   .records-header {
     flex-direction: column;
     gap: 12px;
   }
   
-  .header-right {
-    width: 100%;
-  }
-  
-  .btn-register {
-    width: 100%;
-    text-align: center;
-  }
-  
-  .summary-bar {
+  .next-action-content {
     flex-direction: column;
+    align-items: flex-start;
   }
   
   .summary-item {
-    border-right: none;
-    border-bottom: 1px solid #d0d5dd;
-  }
-  
-  .summary-item:last-child {
-    border-bottom: none;
+    min-width: 100px;
   }
 }
 
-@media (max-width: 768px) {
-  .records-table {
-    font-size: 12px;
-  }
-  
-  .records-table th,
-  .records-table td {
-    padding: 8px 10px;
-  }
-  
-  .records-footer {
-    flex-direction: column;
-    gap: 8px;
-    text-align: center;
-  }
-}
-
-/* ========== PRINT STYLES ========== */
+/* ===== PRINT ===== */
 @media print {
-  .records-dashboard {
-    background: #fff;
-    padding: 0;
-  }
-  
+  .demo-banner,
   .btn-register,
+  .btn-next-action,
   .btn-view {
     display: none;
   }
   
-  .records-table {
-    border: 1px solid #000;
-  }
-  
-  .records-table th {
-    background: #f0f0f0;
-    color: #000;
-    border: 1px solid #000;
-  }
-  
-  .records-table td {
-    border: 1px solid #000;
-  }
-  
-  .type-badge,
-  .status-badge,
-  .confidence-badge {
-    border: 1px solid #000;
-    background: #fff;
-    color: #000;
+  .records-dashboard {
+    padding: 0;
   }
 }

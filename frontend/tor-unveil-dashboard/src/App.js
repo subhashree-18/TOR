@@ -22,7 +22,6 @@ import React, { useState, useEffect, useCallback } from "react";
 import { BrowserRouter, Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { AppProvider, useAppContext } from "./AppContext";
 import Dashboard from "./Dashboard";
-import PathsDashboard from "./PathsDashboard";
 import AnalysisPage from "./AnalysisPage";
 import ReportPage from "./ReportPage";
 import InvestigationPage from "./InvestigationPage";
@@ -388,7 +387,6 @@ function AppContent() {
               <Route path="/report/:caseId" element={<ReportPage />} />
               
               {/* Legacy routes for compatibility */}
-              <Route path="/paths" element={<PathsDashboard />} />
               <Route path="/forensic" element={<ForensicAnalysis />} />
               <Route path="/upload" element={<ForensicUpload />} />
             </Routes>

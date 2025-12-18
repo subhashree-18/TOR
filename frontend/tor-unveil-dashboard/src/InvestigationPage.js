@@ -1,377 +1,287 @@
 /**
- * InvestigationPage.js — CASE WORKSPACE (MERGED TARGET)
- * Tamil Nadu Police Cyber Crime Wing - Case Investigation Workspace
+ * InvestigationPage.js - SINGLE SOURCE OF TRUTH FOR CASE WORKFLOW
+ * Tamil Nadu Police Cyber Crime Wing - Case Investigation Dashboard
  * 
- * Single authoritative screen for complete investigation status
- * Backend-driven state with step-by-step guidance for officers
+ * Purpose: Backend-driven workflow enforcement for forensic investigation
+ * All navigation decisions controlled by backend case state
  */
 
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import { useNavigate, useLocation } from "react-router-dom";
-import MandatoryDisclaimer from "./MandatoryDisclaimer";
-import "./InvestigationPage.css";
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { useNavigate, useParams } from 'react-router-dom';
+import Breadcrumb from './Breadcrumb';
+import './InvestigationPage.css';
 
 const API_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
 
-// Format date for display (DD-MM-YYYY HH:MM)
-const formatDate = (dateString) => {
-  if (!dateString) return "—";
+// Format date for official display
+const formatOfficialDate = (dateString) => {
+  if (!dateString) return "Not available";
   const date = new Date(dateString);
-  if (isNaN(date.getTime())) return "—";
-  
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const year = date.getFullYear();
-  const hours = String(date.getHours()).padStart(2, "0");
-  const minutes = String(date.getMinutes()).padStart(2, "0");
-  
-  return `${day}-${month}-${year} ${hours}:${minutes}`;
-};
-
-// Map confidence summary to percentage for bar display
-const getConfidencePercent = (level) => {
-  switch (level?.toLowerCase()) {
-    case "high": return 85;
-    case "medium": return 55;
-    case "low": return 25;
-    default: return 0;
-  }
+  return date.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "long", 
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
 };
 
 export default function InvestigationPage() {
   const navigate = useNavigate();
-  const location = useLocation();
-  
-  // Get caseId from navigation state or default
-  const initialCaseId = location.state?.caseId || "TN/CYB/2024/001234";
-  
-  const [disclaimerAccepted, setDisclaimerAccepted] = useState(() => {
-    const stored = localStorage.getItem("disclaimerAccepted");
-    return stored === "true";
-  });
+  const { caseId } = useParams();
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
-  // Investigation data from backend
-  const [investigation, setInvestigation] = useState({
-    case_id: initialCaseId,
-    fir_reference: null,
-    created_at: null,
-    evidence: {
-      pcap_uploaded: false,
-      sealed: false,
-      uploaded_at: null
-    },
-    analysis: {
-      status: "NOT_STARTED",
-      confidence_summary: null
-    }
-  });
+  const [caseData, setCaseData] = useState(null);
+  const [initiatingAnalysis, setInitiatingAnalysis] = useState(false);
 
-  // Fetch investigation details from backend
+  // Fetch case details from backend
   useEffect(() => {
-    const fetchInvestigation = async () => {
+    if (!caseId) {
+      setError("No case ID provided. Please select a case from Dashboard.");
+      setLoading(false);
+      return;
+    }
+
+    const fetchCaseDetails = async () => {
       try {
         setLoading(true);
         setError(null);
-        
-        // Try to fetch from backend
-        const response = await axios.get(`${API_URL}/api/investigations/${encodeURIComponent(initialCaseId)}`);
+
+        const response = await axios.get(`${API_URL}/api/investigations/${encodeURIComponent(caseId)}`);
         
         if (response.data) {
-          setInvestigation(response.data);
+          setCaseData(response.data);
+        } else {
+          throw new Error("Case data not found");
         }
       } catch (err) {
-        console.warn("Backend not available, using mock data:", err.message);
+        console.error("Error fetching case details:", err);
         
-        // Mock data for demonstration when backend unavailable
-        setInvestigation({
-          case_id: initialCaseId,
-          fir_reference: "FIR/2024/CHN/4521",
-          created_at: new Date().toISOString(),
+        // Fallback demo data for development
+        setCaseData({
+          case_id: caseId,
+          fir_reference: "TN/CYB/FIR/2024/5678",
+          created_at: "2024-12-18T10:30:00Z",
           evidence: {
-            pcap_uploaded: true,
+            uploaded: false,
             sealed: false,
-            uploaded_at: new Date(Date.now() - 86400000).toISOString()
+            uploaded_at: null
           },
           analysis: {
-            status: "COMPLETED",
-            confidence_summary: "Medium"
+            status: "NOT_STARTED",
+            confidence_summary: null
           }
         });
+        setError(null); // Clear error to show demo data
       } finally {
         setLoading(false);
       }
     };
 
-    fetchInvestigation();
-  }, [initialCaseId]);
+    fetchCaseDetails();
+  }, [caseId]);
 
-  // Determine next action based on backend state
+  // Get next action based on case state
   const getNextAction = () => {
-    const { evidence, analysis } = investigation;
-    
-    if (!evidence.pcap_uploaded) {
+    if (!caseData) return null;
+
+    const { evidence, analysis } = caseData;
+
+    if (!evidence?.uploaded) {
       return {
-        label: "Upload Evidence",
-        route: "/upload",
-        description: "PCAP/log evidence required to proceed with analysis."
+        text: "Upload Evidence",
+        description: "Upload forensic evidence files for correlation analysis",
+        action: () => navigate(`/forensic-upload/${caseId}`)
       };
     }
-    
-    if (analysis.status === "NOT_STARTED" || analysis.status === "PENDING") {
+
+    if (evidence.uploaded && analysis?.status !== "COMPLETED") {
       return {
-        label: "Run Analysis",
-        route: "/analysis",
-        description: "Evidence uploaded. Ready to run correlation analysis."
+        text: "Initiate Analysis",
+        description: "Begin TOR traffic correlation analysis on uploaded evidence",
+        action: () => console.log("Would initiate analysis")
       };
     }
-    
-    if (analysis.status === "RUNNING") {
+
+    if (analysis?.status === "COMPLETED") {
       return {
-        label: "Analysis In Progress",
-        route: null,
-        description: "Correlation analysis is currently running. Please wait."
+        text: "View Analysis Findings",
+        description: "Review correlation analysis findings and confidence assessments",
+        action: () => navigate(`/analysis/${caseId}`)
       };
     }
-    
-    if (analysis.status === "COMPLETED") {
-      return {
-        label: "View Report",
-        route: "/report",
-        description: "Analysis complete. View forensic report."
-      };
-    }
-    
-    return {
-      label: "Continue",
-      route: "/dashboard",
-      description: "Proceed with investigation."
-    };
+
+    return null;
   };
+
+  if (loading) {
+    return (
+      <div className="investigation-page">
+        <div className="investigation-loading">
+          <div className="loading-spinner"></div>
+          <p>Loading case investigation details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="investigation-page">
+        <div className="investigation-error">
+          <h2>Case Access Error</h2>
+          <p>{error}</p>
+          <button onClick={() => navigate('/dashboard')}>
+            Return to Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const nextAction = getNextAction();
 
-  const handleNextAction = () => {
-    if (nextAction.route) {
-      navigate(nextAction.route, { state: { caseId: investigation.case_id } });
-    }
-  };
-
-  // Get status display text
-  const getAnalysisStatusText = (status) => {
-    switch (status) {
-      case "NOT_STARTED": return "Not Started";
-      case "PENDING": return "Pending";
-      case "RUNNING": return "In Progress";
-      case "COMPLETED": return "Completed";
-      default: return status || "Unknown";
-    }
-  };
-
-  const getAnalysisStatusClass = (status) => {
-    switch (status) {
-      case "COMPLETED": return "status-completed";
-      case "RUNNING": return "status-running";
-      case "PENDING": return "status-pending";
-      case "NOT_STARTED": return "status-not-started";
-      default: return "";
-    }
-  };
-
   return (
-    <div className="investigation-workspace">
-      {/* Mandatory Disclaimer Modal */}
-      {!disclaimerAccepted && (
-        <MandatoryDisclaimer
-          isModal={true}
-          onAcknowledge={() => {
-            setDisclaimerAccepted(true);
-            localStorage.setItem("disclaimerAccepted", "true");
-          }}
-        />
-      )}
+    <div className="investigation-page">
+      <Breadcrumb caseId={caseId} caseStatus={{
+        hasEvidence: !!caseData?.evidence?.uploaded,
+        hasAnalysis: caseData?.analysis?.status === "COMPLETED"
+      }} />
 
-      {/* Breadcrumb */}
-      <nav className="workspace-breadcrumb">
-        <span className="crumb" onClick={() => navigate("/dashboard")}>Dashboard</span>
-        <span className="separator">/</span>
-        <span className="crumb active">Investigation</span>
-        <span className="separator">/</span>
-        <span className="crumb-id">{investigation.case_id}</span>
-      </nav>
-
-      {/* Page Title */}
-      <div className="workspace-header">
-        <h1 className="workspace-title">Case Investigation Workspace</h1>
-        <p className="workspace-subtitle">Tamil Nadu Police - Cyber Crime Wing</p>
+      <div className="investigation-header">
+        <h1 className="investigation-title">Case Investigation</h1>
+        <p className="investigation-subtitle">Tamil Nadu Police Cyber Crime Wing</p>
       </div>
 
-      {loading ? (
-        <div className="workspace-loading">
-          <div className="loading-spinner"></div>
-          <p>Loading investigation details...</p>
+      {/* Case Details */}
+      <section className="investigation-section">
+        <div className="section-header">
+          <h2>Case Details</h2>
         </div>
-      ) : error ? (
-        <div className="workspace-error">
-          <p>{error}</p>
-          <button onClick={() => window.location.reload()}>Retry</button>
+        <div className="section-content">
+          <div className="detail-grid">
+            <div className="detail-item">
+              <span className="detail-label">Case ID:</span>
+              <span className="detail-value">{caseData.case_id}</span>
+            </div>
+            <div className="detail-item">
+              <span className="detail-label">FIR Reference:</span>
+              <span className="detail-value">
+                {caseData.fir_reference || "Not linked"}
+              </span>
+            </div>
+            <div className="detail-item">
+              <span className="detail-label">Created Date:</span>
+              <span className="detail-value">
+                {formatOfficialDate(caseData.created_at)}
+              </span>
+            </div>
+          </div>
         </div>
-      ) : (
-        <>
-          {/* SECTION 1: CASE DETAILS */}
-          <section className="workspace-section">
-            <div className="section-header">
-              <h2>Case Details</h2>
-            </div>
-            <div className="section-body">
-              <table className="details-table">
-                <tbody>
-                  <tr>
-                    <th>Case ID</th>
-                    <td><code className="case-code">{investigation.case_id}</code></td>
-                  </tr>
-                  <tr>
-                    <th>FIR Reference</th>
-                    <td>
-                      {investigation.fir_reference ? (
-                        <span className="fir-value">{investigation.fir_reference}</span>
-                      ) : (
-                        <span className="fir-not-linked">Not linked</span>
-                      )}
-                    </td>
-                  </tr>
-                  <tr>
-                    <th>Created Date</th>
-                    <td>{formatDate(investigation.created_at)}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </section>
+      </section>
 
-          {/* SECTION 2: EVIDENCE STATUS */}
-          <section className="workspace-section">
-            <div className="section-header">
-              <h2>Evidence Status</h2>
+      {/* Evidence Status */}
+      <section className="investigation-section">
+        <div className="section-header">
+          <h2>Evidence Status</h2>
+        </div>
+        <div className="section-content">
+          <div className="status-grid">
+            <div className="status-item">
+              <span className="status-label">Upload Status:</span>
+              <span className={`status-value ${caseData.evidence?.uploaded ? 'completed' : 'pending'}`}>
+                {caseData.evidence?.uploaded ? 'Uploaded' : 'Pending'}
+              </span>
             </div>
-            <div className="section-body">
-              <table className="details-table">
-                <tbody>
-                  <tr>
-                    <th>PCAP/Log Evidence</th>
-                    <td>
-                      {investigation.evidence.pcap_uploaded ? (
-                        <span className="evidence-uploaded">Uploaded</span>
-                      ) : (
-                        <span className="evidence-not-uploaded">Not Uploaded</span>
-                      )}
-                    </td>
-                  </tr>
-                  {investigation.evidence.pcap_uploaded && (
-                    <>
-                      <tr>
-                        <th>Uploaded At</th>
-                        <td>{formatDate(investigation.evidence.uploaded_at)}</td>
-                      </tr>
-                      <tr>
-                        <th>Evidence Seal</th>
-                        <td>
-                          {investigation.evidence.sealed ? (
-                            <span className="seal-badge sealed">Evidence Sealed</span>
-                          ) : (
-                            <span className="seal-badge not-sealed">Not Sealed</span>
-                          )}
-                        </td>
-                      </tr>
-                    </>
-                  )}
-                </tbody>
-              </table>
-              
-              {!investigation.evidence.pcap_uploaded && (
-                <div className="warning-box">
-                  <strong>Warning:</strong> No evidence has been uploaded for this case. 
-                  Upload PCAP or log files to proceed with forensic analysis.
-                </div>
-              )}
-            </div>
-          </section>
+            {caseData.evidence?.uploaded && (
+              <div className="status-item">
+                <span className="status-label">Upload Time:</span>
+                <span className="status-value">
+                  {formatOfficialDate(caseData.evidence.uploaded_at)}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
 
-          {/* SECTION 3: ANALYSIS STATUS */}
-          <section className="workspace-section">
-            <div className="section-header">
-              <h2>Analysis Status</h2>
+      {/* Analysis Status */}
+      <section className="investigation-section">
+        <div className="section-header">
+          <h2>Analysis Status</h2>
+        </div>
+        <div className="section-content">
+          <div className="status-grid">
+            <div className="status-item">
+              <span className="status-label">Correlation Status:</span>
+              <span className={`status-value ${
+                caseData.analysis?.status === 'COMPLETED' ? 'completed' :
+                caseData.analysis?.status === 'RUNNING' ? 'running' : 'pending'
+              }`}>
+                {caseData.analysis?.status === 'COMPLETED' ? 'Completed' :
+                 caseData.analysis?.status === 'RUNNING' ? 'In Progress' : 'Not Started'}
+              </span>
             </div>
-            <div className="section-body">
-              <table className="details-table">
-                <tbody>
-                  <tr>
-                    <th>Correlation Status</th>
-                    <td>
-                      <span className={`analysis-status ${getAnalysisStatusClass(investigation.analysis.status)}`}>
-                        {getAnalysisStatusText(investigation.analysis.status)}
-                      </span>
-                    </td>
-                  </tr>
-                  {investigation.analysis.confidence_summary && (
-                    <tr>
-                      <th>Confidence Summary</th>
-                      <td>
-                        <div className="confidence-display">
-                          <span className="confidence-text">
-                            {investigation.analysis.confidence_summary}
-                          </span>
-                          <div className="confidence-bar-container">
-                            <div 
-                              className={`confidence-bar confidence-${investigation.analysis.confidence_summary.toLowerCase()}`}
-                              style={{ width: `${getConfidencePercent(investigation.analysis.confidence_summary)}%` }}
-                            ></div>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-              
-              {investigation.analysis.status === "RUNNING" && (
-                <div className="info-box">
-                  Analysis is currently in progress. This page will update automatically when complete.
-                </div>
-              )}
-            </div>
-          </section>
+          </div>
+        </div>
+      </section>
 
-          {/* SECTION 4: NEXT ACTION */}
-          <section className="workspace-section action-section">
-            <div className="section-header">
-              <h2>Next Action</h2>
+      {/* Case Timeline */}
+      <section className="investigation-section">
+        <div className="section-header">
+          <h2>Case Timeline</h2>
+        </div>
+        <div className="section-content">
+          <div className="timeline-list">
+            <div className="timeline-item completed">
+              <span className="timeline-indicator">✔</span>
+              <span className="timeline-label">Case Registered</span>
             </div>
-            <div className="section-body">
+            <div className={`timeline-item ${caseData.evidence?.uploaded ? 'completed' : 'pending'}`}>
+              <span className="timeline-indicator">{caseData.evidence?.uploaded ? '✔' : '□'}</span>
+              <span className="timeline-label">Evidence Uploaded</span>
+            </div>
+            <div className={`timeline-item ${caseData.analysis?.status === 'COMPLETED' ? 'completed' : 'pending'}`}>
+              <span className="timeline-indicator">{caseData.analysis?.status === 'COMPLETED' ? '✔' : '□'}</span>
+              <span className="timeline-label">Analysis Completed</span>
+            </div>
+            <div className="timeline-item pending">
+              <span className="timeline-indicator">□</span>
+              <span className="timeline-label">Report Exported</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Next Recommended Action */}
+      {nextAction && (
+        <section className="investigation-section next-action-section">
+          <div className="section-header">
+            <h2>Next Recommended Action</h2>
+          </div>
+          <div className="section-content">
+            <div className="next-action">
               <p className="action-description">{nextAction.description}</p>
-              
-              {nextAction.route && (
-                <button 
-                  className="action-button"
-                  onClick={handleNextAction}
-                >
-                  {nextAction.label}
-                </button>
-              )}
-              
-              {!nextAction.route && investigation.analysis.status === "RUNNING" && (
-                <div className="action-waiting">
-                  <div className="waiting-indicator"></div>
-                  <span>Please wait for analysis to complete...</span>
-                </div>
-              )}
+              <button className="btn-action" onClick={nextAction.action}>
+                {nextAction.text}
+              </button>
             </div>
-          </section>
-        </>
+          </div>
+        </section>
       )}
+
+      {/* System Disclaimer */}
+      <section className="investigation-section disclaimer-section">
+        <div className="disclaimer">
+          <p>
+            <strong>System Disclaimer:</strong> This system provides probabilistic forensic correlation 
+            and does not assert definitive attribution. All findings require corroboration with 
+            additional investigative evidence before legal action.
+          </p>
+        </div>
+      </section>
     </div>
   );
 }

@@ -116,6 +116,11 @@ export default function ForensicUpload() {
         // Clear file input
         const fileInput = document.getElementById("evidence-file-input");
         if (fileInput) fileInput.value = "";
+        
+        // Redirect to Investigation page after successful upload
+        setTimeout(() => {
+          navigate(`/investigation/${caseId}`, { state: { caseId } });
+        }, 2000);
       }
     } catch (err) {
       console.error("Upload error:", err);
@@ -138,6 +143,11 @@ export default function ForensicUpload() {
         setSelectedFile(null);
         const fileInput = document.getElementById("evidence-file-input");
         if (fileInput) fileInput.value = "";
+        
+        // Redirect to Investigation page after successful upload (mock scenario)
+        setTimeout(() => {
+          navigate(`/investigation/${caseId}`, { state: { caseId } });
+        }, 2000);
       }
     } finally {
       setUploading(false);
@@ -174,11 +184,20 @@ export default function ForensicUpload() {
         <p className="upload-subtitle">Forensic Evidence Ingestion - Case: <code>{caseId}</code></p>
       </div>
 
-      {/* Warning Banner */}
+      {/* Legal Warning Banner */}
       <div className="legal-warning">
-        <strong>WARNING:</strong> Uploaded forensic evidence cannot be altered. 
-        All uploads are cryptographically sealed and logged for chain of custody.
+        <strong>LEGAL NOTICE:</strong> All forensic evidence uploaded to this system 
+        becomes part of the official case record and is subject to chain of custody 
+        requirements under the Indian Evidence Act, 1872.
       </div>
+
+      {/* Sealing Warning */}
+      {!isSealed && (
+        <div className="sealing-warning">
+          <strong>⚠️ IMPORTANT:</strong> Once evidence is sealed, it cannot be modified or replaced. 
+          Ensure file integrity before upload.
+        </div>
+      )}
 
       {/* Accepted Formats Section */}
       <section className="upload-section">
@@ -292,35 +311,51 @@ export default function ForensicUpload() {
             <h2>Evidence Uploaded Successfully</h2>
           </div>
           <div className="section-body">
-            <table className="result-table">
-              <tbody>
-                <tr>
-                  <th>File Name</th>
-                  <td>{uploadResult.file_name}</td>
-                </tr>
-                <tr>
-                  <th>SHA-256 Hash</th>
-                  <td>
-                    <code className="hash-value">{uploadResult.sha256_hash}</code>
-                  </td>
-                </tr>
-                <tr>
-                  <th>Upload Date & Time</th>
-                  <td>{formatDateTime(uploadResult.uploaded_at)}</td>
-                </tr>
-                <tr>
-                  <th>Status</th>
-                  <td>
-                    <span className="sealed-badge">
-                      Evidence Sealed ??? Read Only
-                    </span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+            {/* Chain of Custody Summary */}
+            <div className="custody-summary">
+              <h3>Chain of Custody Summary</h3>
+              <table className="custody-table">
+                <tbody>
+                  <tr>
+                    <th>Evidence Type</th>
+                    <td>
+                      {uploadResult.file_name?.toLowerCase().includes('.pcap') 
+                        ? 'Network Traffic Capture (PCAP)'
+                        : 'Network Log File'
+                      }
+                    </td>
+                  </tr>
+                  <tr>
+                    <th>Original File Name</th>
+                    <td>{uploadResult.file_name}</td>
+                  </tr>
+                  <tr>
+                    <th>SHA-256 Hash (Integrity Proof)</th>
+                    <td>
+                      <code className="hash-value">{uploadResult.sha256_hash}</code>
+                    </td>
+                  </tr>
+                  <tr>
+                    <th>Upload Date & Time</th>
+                    <td>{formatDateTime(uploadResult.uploaded_at)}</td>
+                  </tr>
+                  <tr>
+                    <th>Evidence Status</th>
+                    <td>
+                      <span className="sealed-badge">
+                        Sealed (Read-Only)
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
 
             <div className="immutable-notice">
-              This evidence has been cryptographically sealed. The file cannot be modified or replaced.
+              <strong>CUSTODY CONFIRMATION:</strong> This evidence has been cryptographically 
+              sealed and is now immutable. Any attempt to modify the file will be detectable 
+              through hash verification. The evidence chain of custody is preserved for 
+              legal proceedings.
             </div>
 
             <div className="result-actions">

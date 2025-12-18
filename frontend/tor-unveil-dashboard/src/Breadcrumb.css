@@ -4,7 +4,7 @@
  */
 
 /* ========== MAIN CONTAINER ========== */
-.breadcrumb-nav {
+.breadcrumb-navigation {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -44,54 +44,55 @@
 }
 
 /* Available (can navigate) */
-.breadcrumb-step.available {
+.breadcrumb-step.enabled {
   color: #0b3c5d;
   text-decoration: underline;
+  cursor: pointer;
 }
 
-.breadcrumb-step.available:hover {
+.breadcrumb-step.enabled:hover {
   color: #094056;
-  background: #e8f4fc;
+  background-color: #f5f7fa;
 }
 
-.breadcrumb-step.available:focus {
-  outline: 2px solid #0b3c5d;
-  outline-offset: 2px;
-}
-
-/* Completed steps */
-.breadcrumb-step.completed {
-  color: #0b3c5d;
-  text-decoration: underline;
-}
-
-.breadcrumb-step.completed:hover {
-  color: #094056;
-  background: #e8f4fc;
-}
-
-/* Current step */
-.breadcrumb-step.current {
+/* Current active step */
+.breadcrumb-step.active {
   color: #333;
-  font-weight: 700;
-  background: #f5f7fa;
-  border: 1px solid #d0d5dd;
+  font-weight: 600;
   text-decoration: none;
   cursor: default;
 }
 
-/* Disabled steps */
+/* Disabled (not yet accessible) */
 .breadcrumb-step.disabled {
   color: #999;
-  cursor: not-allowed;
   text-decoration: none;
+  cursor: not-allowed;
+  position: relative;
 }
 
-.breadcrumb-step.disabled:hover {
-  background: transparent;
+/* Disabled hint tooltip */
+.disabled-hint {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #333;
+  color: #fff;
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 3px;
+  white-space: nowrap;
+  z-index: 10;
+  margin-top: 4px;
+  display: none;
 }
 
-/* ========== SEPARATOR ========== */
+.breadcrumb-step.disabled:hover .disabled-hint {
+  display: block;
+}
+
+/* ========== BREADCRUMB SEPARATOR ========== */
 .breadcrumb-separator {
   margin: 0 6px;
   color: #999;
@@ -111,7 +112,7 @@
 
 /* ========== RESPONSIVE ========== */
 @media (max-width: 768px) {
-  .breadcrumb-nav {
+  .breadcrumb-navigation {
     padding: 10px 12px;
     flex-direction: column;
     align-items: flex-start;
@@ -135,7 +136,7 @@
 
 /* ========== PRINT STYLES ========== */
 @media print {
-  .breadcrumb-nav {
+  .breadcrumb-navigation {
     display: none;
   }
 }

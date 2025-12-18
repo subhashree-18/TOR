@@ -100,6 +100,35 @@
   color: #0b3c5d;
 }
 
+/* ========== INVESTIGATION INTRO ========== */
+.investigation-intro {
+  background-color: #f8f9fa;
+  border: 1px solid #e1e5e9;
+  padding: 20px;
+  margin: 20px 0;
+  border-radius: 4px;
+}
+
+.investigation-intro h2 {
+  margin: 0 0 15px 0;
+  color: #0b3c5d;
+  font-size: 16px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.investigation-intro p {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #333;
+}
+
+.investigation-intro p:last-child {
+  margin-bottom: 0;
+}
+
 /* ========== LOADING STATE ========== */
 .forensic-loading {
   display: flex;
@@ -269,6 +298,45 @@
   padding: 20px;
 }
 
+/* ========== CONTENT SECTIONS ========== */
+.hypothesis-content {
+  padding: 20px;
+  background: #fff;
+  border-top: 1px solid #0b3c5d;
+}
+
+/* Subsection Titles */
+.subsection-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0b3c5d;
+  margin: 0 0 15px 0;
+  font-family: "Segoe UI", Arial, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #0b3c5d;
+  padding-bottom: 5px;
+}
+
+.observations-section {
+  margin-bottom: 25px;
+}
+
+.uncertainty-section {
+  background: #fdf8e8;
+  border: 1px solid #d9a441;
+  padding: 20px;
+  margin: 0 -20px -20px -20px;
+  border-left: none;
+  border-right: none;
+  border-bottom: none;
+}
+
+.uncertainty-section .subsection-title {
+  color: #856404;
+  border-bottom-color: #856404;
+}
+
 /* ========== EVIDENCE SECTIONS ========== */
 .evidence-section {
   margin-bottom: 20px;
@@ -284,12 +352,10 @@
 
 .section-label {
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
   color: #0b3c5d;
-  margin: 0 0 10px 0;
+  margin: 0 0 8px 0;
   font-family: "Segoe UI", Arial, sans-serif;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
 }
 
 .section-text {

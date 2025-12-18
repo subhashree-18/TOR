@@ -24,9 +24,35 @@ export default function ForensicAnalysis() {
   const [analysisDetails, setAnalysisDetails] = useState({
     hypotheses: []
   });
+  const [accessDenied, setAccessDenied] = useState(false);
+
+  // Route guard: Check if analysis is complete before allowing access
+  useEffect(() => {
+    const checkAnalysisAccess = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/api/investigations/${encodeURIComponent(caseId)}`);
+        const caseData = response.data;
+        
+        if (!caseData.analysis || caseData.analysis.status !== "COMPLETED") {
+          setAccessDenied(true);
+          setLoading(false);
+          return;
+        }
+      } catch (error) {
+        console.error("Access check failed:", error);
+        setAccessDenied(true);
+        setLoading(false);
+        return;
+      }
+    };
+    
+    checkAnalysisAccess();
+  }, [caseId]);
 
   // Fetch detailed hypothesis explanations from backend
   useEffect(() => {
+    if (accessDenied) return;
+    
     const fetchDetails = async () => {
       try {
         setLoading(true);
@@ -112,8 +138,36 @@ export default function ForensicAnalysis() {
       }
     };
 
-    fetchDetails();
-  }, [caseId]);
+    if (!accessDenied) {
+      fetchDetails();
+    }
+  }, [caseId, accessDenied]);
+
+  // Handle access denied state
+  if (accessDenied) {
+    return (
+      <div className="analysis-page">
+        <h2>🔒 Analysis Details Access Restricted</h2>
+        <div className="access-denied">
+          <h3>Authorization Required</h3>
+          <p>
+            Detailed forensic analysis is only accessible after correlation analysis has been completed.
+          </p>
+          <p>
+            Please ensure that the correlation analysis has been initiated and completed from the Investigation dashboard before attempting to access forensic details.
+          </p>
+          <div className="action-buttons">
+            <button onClick={() => navigate(`/investigation/${caseId}`)} className="primary">
+              Return to Investigation
+            </button>
+            <button onClick={() => navigate('/dashboard')} className="secondary">
+              Go to Dashboard
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Toggle accordion
   const toggleHypothesis = (rank) => {
@@ -147,6 +201,23 @@ export default function ForensicAnalysis() {
       <div className="forensic-header">
         <h1 className="forensic-title">Hypothesis Evidence Explanation</h1>
         <p className="forensic-subtitle">Case Reference: <code>{caseId}</code></p>
+        
+        {/* Investigation Note Introduction */}
+        <div className="investigation-intro">
+          <h2>Investigation Overview</h2>
+          <p>
+            This technical analysis provides detailed examination of correlation hypotheses 
+            identified through TOR traffic pattern analysis. Each hypothesis represents a 
+            potential entry-exit relay pairing based on packet timing signatures, session 
+            overlap patterns, and protocol consistency markers.
+          </p>
+          <p>
+            The following analysis is prepared for investigative assessment and presents 
+            technical evidence factors supporting each correlation. Confidence levels reflect 
+            statistical correlation strength and should be considered alongside investigative 
+            context and additional evidence sources.
+          </p>
+        </div>
       </div>
 
       {/* Report Preamble */}
@@ -180,7 +251,7 @@ export default function ForensicAnalysis() {
           <div className="hypotheses-accordion">
             {analysisDetails.hypotheses.length === 0 ? (
               <div className="no-data">
-                <p>No hypothesis details available. Run correlation analysis first.</p>
+                <p>No hypothesis details available. Initiate correlation analysis first.</p>
               </div>
             ) : (
               analysisDetails.hypotheses.map((hypothesis) => (
@@ -212,35 +283,39 @@ export default function ForensicAnalysis() {
                   {/* Accordion Content */}
                   {expandedHypothesis === hypothesis.rank && (
                     <div className="hypothesis-content">
-                      {/* Timing Correlation */}
-                      <div className="evidence-section">
-                        <h3 className="section-label">1. Timing Correlation</h3>
-                        <div className="section-text">
-                          <p>{hypothesis.timing_correlation}</p>
+                      {/* Key Observations */}
+                      <div className="observations-section">
+                        <h3 className="subsection-title">Key Observations</h3>
+                        
+                        <div className="evidence-section">
+                          <h4 className="section-label">Timing Correlation</h4>
+                          <div className="section-text">
+                            <p>{hypothesis.timing_correlation}</p>
+                          </div>
+                        </div>
+
+                        <div className="evidence-section">
+                          <h4 className="section-label">Session Overlap Analysis</h4>
+                          <div className="section-text">
+                            <p>{hypothesis.session_overlap}</p>
+                          </div>
+                        </div>
+
+                        <div className="evidence-section">
+                          <h4 className="section-label">Evidence Consistency</h4>
+                          <div className="section-text">
+                            <p>{hypothesis.evidence_consistency}</p>
+                          </div>
                         </div>
                       </div>
 
-                      {/* Session Overlap */}
-                      <div className="evidence-section">
-                        <h3 className="section-label">2. Session Overlap Analysis</h3>
-                        <div className="section-text">
-                          <p>{hypothesis.session_overlap}</p>
-                        </div>
-                      </div>
-
-                      {/* Evidence Consistency */}
-                      <div className="evidence-section">
-                        <h3 className="section-label">3. Evidence Consistency</h3>
-                        <div className="section-text">
-                          <p>{hypothesis.evidence_consistency}</p>
-                        </div>
-                      </div>
-
-                      {/* Limiting Factors */}
-                      <div className="evidence-section limiting-section">
-                        <h3 className="section-label">4. Limiting Factors / Uncertainty</h3>
-                        <div className="section-text limiting-text">
-                          <p>{hypothesis.limiting_factors}</p>
+                      {/* Uncertainty Factors */}
+                      <div className="uncertainty-section">
+                        <h3 className="subsection-title">Uncertainty Factors</h3>
+                        <div className="evidence-section limiting-section">
+                          <div className="section-text limiting-text">
+                            <p>{hypothesis.limiting_factors}</p>
+                          </div>
                         </div>
                       </div>
                     </div>

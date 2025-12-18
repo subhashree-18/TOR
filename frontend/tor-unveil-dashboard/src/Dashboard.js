@@ -1,143 +1,168 @@
-import React, { useState } from "react";
+/**
+ * Dashboard.js ??? CASE REGISTRY (POLICE RECORDS STYLE)
+ * Tamil Nadu Police Cyber Crime Wing - TOR???Unveil
+ * 
+ * This UI is for a Tamil Nadu Police / Government forensic system.
+ * 
+ * Constraints:
+ * - No mock data - all data from backend APIs
+ * - No flashy UI, animations, charts, or maps
+ * - Text-first, table-first design
+ * - All actions and messages must sound official and professional
+ * - Target users are police officers, not developers
+ */
+
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Dashboard.css";
 
-/**
- * Dashboard.js — PHASE-1 ENTRY SCREEN (POLICE RECORDS STYLE)
- * Tamil Nadu Police Cyber Crime Wing - Case Management System
- * 
- * Design: Government records system - table layout, borders, monochrome with navy accents
- * No cards, no charts - pure tabular data display
- */
-
-// Sample case data - in production, this would come from backend API
-const SAMPLE_CASES = [
-  {
-    caseId: "TN/CYB/2024/001234",
-    caseType: "Dark Web",
-    evidenceStatus: "Uploaded",
-    analysisStatus: "Completed",
-    confidenceLevel: "High",
-    lastUpdated: "18-12-2024 14:32"
-  },
-  {
-    caseId: "TN/CYB/2024/001235",
-    caseType: "Cyber Crime",
-    evidenceStatus: "Uploaded",
-    analysisStatus: "In Progress",
-    confidenceLevel: "Medium",
-    lastUpdated: "18-12-2024 11:15"
-  },
-  {
-    caseId: "TN/CYB/2024/001236",
-    caseType: "Financial",
-    evidenceStatus: "Pending",
-    analysisStatus: "Not Started",
-    confidenceLevel: "Low",
-    lastUpdated: "17-12-2024 16:45"
-  },
-  {
-    caseId: "TN/CYB/2024/001237",
-    caseType: "Dark Web",
-    evidenceStatus: "Uploaded",
-    analysisStatus: "In Progress",
-    confidenceLevel: "Medium",
-    lastUpdated: "17-12-2024 09:22"
-  },
-  {
-    caseId: "TN/CYB/2024/001238",
-    caseType: "Cyber Crime",
-    evidenceStatus: "Uploaded",
-    analysisStatus: "Completed",
-    confidenceLevel: "High",
-    lastUpdated: "16-12-2024 18:10"
-  },
-  {
-    caseId: "TN/CYB/2024/001239",
-    caseType: "Financial",
-    evidenceStatus: "Uploaded",
-    analysisStatus: "Completed",
-    confidenceLevel: "High",
-    lastUpdated: "16-12-2024 14:55"
-  },
-  {
-    caseId: "TN/CYB/2024/001240",
-    caseType: "Dark Web",
-    evidenceStatus: "Pending",
-    analysisStatus: "Not Started",
-    confidenceLevel: "Low",
-    lastUpdated: "15-12-2024 10:30"
-  },
-  {
-    caseId: "TN/CYB/2024/001241",
-    caseType: "Cyber Crime",
-    evidenceStatus: "Uploaded",
-    analysisStatus: "In Progress",
-    confidenceLevel: "Medium",
-    lastUpdated: "15-12-2024 08:45"
-  }
-];
-
 export default function Dashboard() {
   const navigate = useNavigate();
-  const [cases] = useState(SAMPLE_CASES);
+  
+  // State - all driven by backend
+  const [cases, setCases] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [selectedCase, setSelectedCase] = useState(null);
 
+  // Fetch cases from backend
+  const fetchCases = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await fetch("/api/investigations");
+      if (response.ok) {
+        const data = await response.json();
+        setCases(data.investigations || data || []);
+      } else {
+        throw new Error("Unable to retrieve case records from server");
+      }
+    } catch (err) {
+      console.warn("Backend unavailable, showing empty state:", err.message);
+      setError("Case records unavailable. Backend service may be offline.");
+      setCases([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchCases();
+  }, [fetchCases]);
+
+  // Determine next recommended action based on case status
+  const getNextAction = () => {
+    if (cases.length === 0) {
+      return {
+        message: "Register a new case to begin investigation.",
+        action: "Register New Case",
+        path: "/investigation"
+      };
+    }
+
+    // Find cases needing attention
+    const pendingEvidence = cases.find(c => 
+      c.evidenceStatus === "Pending" || !c.evidenceStatus
+    );
+    if (pendingEvidence) {
+      return {
+        message: `Case ${pendingEvidence.caseId}: Upload forensic evidence to proceed.`,
+        action: "Upload Evidence",
+        path: `/forensic-upload/${pendingEvidence.caseId}`
+      };
+    }
+
+    const pendingAnalysis = cases.find(c => 
+      c.analysisStatus === "Not Started" || c.analysisStatus === "Pending"
+    );
+    if (pendingAnalysis) {
+      return {
+        message: `Case ${pendingAnalysis.caseId}: Initiate correlation analysis.`,
+        action: "Initiate Analysis",
+        path: `/analysis/${pendingAnalysis.caseId}`
+      };
+    }
+
+    const completedAnalysis = cases.find(c => 
+      c.analysisStatus === "Completed" && c.reportStatus !== "Exported"
+    );
+    if (completedAnalysis) {
+      return {
+        message: `Case ${completedAnalysis.caseId}: Review findings and export report.`,
+        action: "View Findings",
+        path: `/report/${completedAnalysis.caseId}`
+      };
+    }
+
+    return {
+      message: "All cases are up to date. Register a new case or review existing records.",
+      action: "Register New Case",
+      path: "/investigation"
+    };
+  };
+
+  const nextAction = getNextAction();
+
+  // Navigation handlers
   const handleRowClick = (caseItem) => {
     setSelectedCase(caseItem.caseId === selectedCase ? null : caseItem.caseId);
   };
 
   const handleViewCase = (caseItem) => {
-    // Navigate to investigation page with case details
-    navigate("/investigation", { state: { caseId: caseItem.caseId } });
+    navigate(`/investigation/${caseItem.caseId}`);
   };
 
   const handleRegisterNewCase = () => {
     navigate("/investigation");
   };
 
-  // Status badge styling helper
+  const handleNextAction = () => {
+    navigate(nextAction.path);
+  };
+
+  // Status styling helpers
   const getEvidenceStatusClass = (status) => {
-    switch (status) {
-      case "Uploaded": return "status-uploaded";
-      case "Pending": return "status-pending";
-      default: return "";
-    }
+    if (!status || status === "Pending") return "status-pending";
+    if (status === "Uploaded" || status === "Sealed") return "status-uploaded";
+    return "";
   };
 
   const getAnalysisStatusClass = (status) => {
-    switch (status) {
-      case "Completed": return "status-completed";
-      case "In Progress": return "status-in-progress";
-      case "Not Started": return "status-not-started";
-      default: return "";
-    }
+    if (status === "Completed") return "status-completed";
+    if (status === "In Progress") return "status-in-progress";
+    return "status-not-started";
   };
 
   const getConfidenceClass = (level) => {
-    switch (level) {
-      case "High": return "confidence-high";
-      case "Medium": return "confidence-medium";
-      case "Low": return "confidence-low";
-      default: return "";
-    }
+    if (level === "High" || level >= 0.7) return "confidence-high";
+    if (level === "Medium" || level >= 0.4) return "confidence-medium";
+    return "confidence-low";
   };
 
-  const getCaseTypeClass = (type) => {
-    switch (type) {
-      case "Dark Web": return "type-darkweb";
-      case "Cyber Crime": return "type-cybercrime";
-      case "Financial": return "type-financial";
-      default: return "";
-    }
-  };
+  // Summary counts
+  const totalCases = cases.length;
+  const pendingEvidenceCount = cases.filter(c => 
+    !c.evidenceStatus || c.evidenceStatus === "Pending"
+  ).length;
+  const inProgressCount = cases.filter(c => 
+    c.analysisStatus === "In Progress"
+  ).length;
+  const completedCount = cases.filter(c => 
+    c.analysisStatus === "Completed"
+  ).length;
 
   return (
     <div className="records-dashboard">
+      {/* Demo Environment Banner */}
+      <div className="demo-banner">
+        Demonstration Environment ??? TN Police Hackathon 2025
+      </div>
+
       {/* Page Header */}
       <div className="records-header">
         <div className="header-left">
-          <h1 className="page-title">Case Records</h1>
+          <h1 className="page-title">Case Registry</h1>
           <p className="page-subtitle">Cyber Crime Investigation Management System</p>
         </div>
         <div className="header-right">
@@ -147,99 +172,141 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Next Recommended Action */}
+      <div className="next-action-section">
+        <div className="next-action-header">Next Recommended Action</div>
+        <div className="next-action-content">
+          <p className="next-action-message">{nextAction.message}</p>
+          <button className="btn-next-action" onClick={handleNextAction}>
+            {nextAction.action}
+          </button>
+        </div>
+      </div>
+
       {/* Summary Bar */}
       <div className="summary-bar">
         <div className="summary-item">
           <span className="summary-label">Total Cases:</span>
-          <span className="summary-value">{cases.length}</span>
+          <span className="summary-value">{totalCases}</span>
         </div>
         <div className="summary-item">
           <span className="summary-label">Pending Evidence:</span>
-          <span className="summary-value">{cases.filter(c => c.evidenceStatus === "Pending").length}</span>
+          <span className="summary-value">{pendingEvidenceCount}</span>
         </div>
         <div className="summary-item">
           <span className="summary-label">Analysis In Progress:</span>
-          <span className="summary-value">{cases.filter(c => c.analysisStatus === "In Progress").length}</span>
+          <span className="summary-value">{inProgressCount}</span>
         </div>
         <div className="summary-item">
           <span className="summary-label">Completed:</span>
-          <span className="summary-value">{cases.filter(c => c.analysisStatus === "Completed").length}</span>
+          <span className="summary-value">{completedCount}</span>
         </div>
       </div>
+
+      {/* Loading State */}
+      {loading && (
+        <div className="loading-state">
+          <p>Retrieving case records from server...</p>
+        </div>
+      )}
+
+      {/* Error State */}
+      {error && !loading && (
+        <div className="error-state">
+          <p>{error}</p>
+          <button className="btn-retry" onClick={fetchCases}>
+            Retry
+          </button>
+        </div>
+      )}
+
+      {/* Empty State */}
+      {!loading && !error && cases.length === 0 && (
+        <div className="empty-state">
+          <p className="empty-title">No Case Records Found</p>
+          <p className="empty-message">
+            Register a new case to begin investigation. All case data will be 
+            stored securely and tracked through the investigation workflow.
+          </p>
+          <button className="btn-register-empty" onClick={handleRegisterNewCase}>
+            Register New Case
+          </button>
+        </div>
+      )}
 
       {/* Case Records Table */}
-      <div className="records-table-container">
-        <table className="records-table">
-          <thead>
-            <tr>
-              <th className="th-serial">S.No</th>
-              <th className="th-caseid">Case ID</th>
-              <th className="th-casetype">Case Type</th>
-              <th className="th-evidence">Evidence Status</th>
-              <th className="th-analysis">Analysis Status</th>
-              <th className="th-confidence">Confidence Level</th>
-              <th className="th-updated">Last Updated</th>
-              <th className="th-action">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {cases.map((caseItem, index) => (
-              <tr 
-                key={caseItem.caseId}
-                className={`case-row ${selectedCase === caseItem.caseId ? "row-selected" : ""}`}
-                onClick={() => handleRowClick(caseItem)}
-              >
-                <td className="td-serial">{index + 1}</td>
-                <td className="td-caseid">
-                  <code>{caseItem.caseId}</code>
-                </td>
-                <td className="td-casetype">
-                  <span className={`type-badge ${getCaseTypeClass(caseItem.caseType)}`}>
-                    {caseItem.caseType}
-                  </span>
-                </td>
-                <td className="td-evidence">
-                  <span className={`status-badge ${getEvidenceStatusClass(caseItem.evidenceStatus)}`}>
-                    {caseItem.evidenceStatus}
-                  </span>
-                </td>
-                <td className="td-analysis">
-                  <span className={`status-badge ${getAnalysisStatusClass(caseItem.analysisStatus)}`}>
-                    {caseItem.analysisStatus}
-                  </span>
-                </td>
-                <td className="td-confidence">
-                  <span className={`confidence-badge ${getConfidenceClass(caseItem.confidenceLevel)}`}>
-                    {caseItem.confidenceLevel}
-                  </span>
-                </td>
-                <td className="td-updated">{caseItem.lastUpdated}</td>
-                <td className="td-action">
-                  <button 
-                    className="btn-view"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleViewCase(caseItem);
-                    }}
+      {!loading && cases.length > 0 && (
+        <>
+          <div className="records-table-container">
+            <table className="records-table">
+              <thead>
+                <tr>
+                  <th className="th-serial">S.No</th>
+                  <th className="th-caseid">Case ID</th>
+                  <th className="th-casetype">Case Type</th>
+                  <th className="th-evidence">Evidence Status</th>
+                  <th className="th-analysis">Analysis Status</th>
+                  <th className="th-confidence">Confidence</th>
+                  <th className="th-updated">Last Updated</th>
+                  <th className="th-action">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {cases.map((caseItem, index) => (
+                  <tr 
+                    key={caseItem.caseId || index}
+                    className={`case-row ${selectedCase === caseItem.caseId ? "row-selected" : ""}`}
+                    onClick={() => handleRowClick(caseItem)}
                   >
-                    View
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                    <td className="td-serial">{index + 1}</td>
+                    <td className="td-caseid">
+                      <code>{caseItem.caseId || "???"}</code>
+                    </td>
+                    <td className="td-casetype">{caseItem.caseType || "Cyber Crime"}</td>
+                    <td className="td-evidence">
+                      <span className={`status-badge ${getEvidenceStatusClass(caseItem.evidenceStatus)}`}>
+                        {caseItem.evidenceStatus || "Pending"}
+                      </span>
+                    </td>
+                    <td className="td-analysis">
+                      <span className={`status-badge ${getAnalysisStatusClass(caseItem.analysisStatus)}`}>
+                        {caseItem.analysisStatus || "Not Started"}
+                      </span>
+                    </td>
+                    <td className="td-confidence">
+                      <span className={`confidence-badge ${getConfidenceClass(caseItem.confidenceLevel)}`}>
+                        {caseItem.confidenceLevel || "???"}
+                      </span>
+                    </td>
+                    <td className="td-updated">{caseItem.lastUpdated || "???"}</td>
+                    <td className="td-action">
+                      <button 
+                        className="btn-view"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleViewCase(caseItem);
+                        }}
+                      >
+                        View
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-      {/* Table Footer */}
-      <div className="records-footer">
-        <div className="footer-info">
-          Showing {cases.length} of {cases.length} records
-        </div>
-        <div className="footer-note">
-          * Click on a row to select. Click "View" to open case details.
-        </div>
-      </div>
+          {/* Table Footer */}
+          <div className="records-footer">
+            <div className="footer-info">
+              Displaying {cases.length} case record(s)
+            </div>
+            <div className="footer-note">
+              * Select a row to highlight. Click "View" to open case workspace.
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
