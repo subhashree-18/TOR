@@ -198,8 +198,32 @@ export default function AnalysisPage() {
       <div className="analysis-disclaimer">
         <strong>DISCLAIMER:</strong> This analysis provides probabilistic correlation 
         and does not assert definitive attribution. Results are intended as investigative 
-        leads only and must be corroborated with additional evidence.
+        intelligence only and require corroboration with additional evidence.
       </div>
+
+      {/* Correlation Method Summary */}
+      <section className="analysis-section">
+        <div className="section-header">
+          <h2>Correlation Method Summary</h2>
+        </div>
+        <div className="section-body">
+          <p className="method-description">
+            Time-based correlation of observed traffic with TOR relay activity across entry and exit nodes.
+          </p>
+        </div>
+      </section>
+
+      {/* Confidence Evolution Note */}
+      <section className="analysis-section">
+        <div className="section-header">
+          <h2>Confidence Evolution</h2>
+        </div>
+        <div className="section-body">
+          <p className="confidence-note">
+            Confidence improves as additional exit-node evidence is correlated.
+          </p>
+        </div>
+      </section>
 
       {loading ? (
         <div className="analysis-loading">
@@ -227,10 +251,10 @@ export default function AnalysisPage() {
         </div>
       ) : caseStatus && (
         <>
-          {/* Hypotheses Table Section */}
+          {/* Ranked Hypotheses Table Section */}
           <section className="analysis-section">
             <div className="section-header">
-              <h2>Correlation Hypotheses</h2>
+              <h2>Ranked Hypotheses</h2>
             </div>
             <div className="section-body">
               {analysisData.hypotheses.length === 0 ? (
@@ -244,7 +268,7 @@ export default function AnalysisPage() {
                       <thead>
                         <tr>
                           <th className="th-rank">Rank</th>
-                          <th className="th-entry">Entry Node Region</th>
+                          <th className="th-entry">Probable Entry Node Region</th>
                           <th className="th-exit">Exit Node Region</th>
                           <th className="th-evidence">Evidence Count</th>
                           <th className="th-confidence">Confidence Level</th>

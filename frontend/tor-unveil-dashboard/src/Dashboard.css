@@ -71,6 +71,59 @@
   background: #094056;
 }
 
+/* ===== SYSTEM STATUS SECTION ===== */
+.system-status-section {
+  margin: 16px 20px;
+  border: 1px solid #0b3c5d;
+  background: #fff;
+}
+
+.system-status-header {
+  background: #d4e5f7;
+  color: #0b3c5d;
+  padding: 10px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid #0b3c5d;
+}
+
+.system-status-grid {
+  padding: 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.system-status-grid .status-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border: 1px solid #d0d5dd;
+  background: #f8f9fa;
+}
+
+.system-status-grid .status-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #555;
+}
+
+.system-status-grid .status-value {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0b3c5d;
+}
+
+.system-status-grid .status-value.operational {
+  color: #1e7e34;
+  background: #e6f4ea;
+  padding: 2px 8px;
+  border: 1px solid #1e7e34;
+}
+
 /* ===== NEXT ACTION SECTION ===== */
 .next-action-section {
   margin: 16px 20px;

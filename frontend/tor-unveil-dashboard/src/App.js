@@ -32,15 +32,27 @@ import "./App.css";
 
 // ============================================================================
 // NAVIGATION WORKFLOW STEPS
-// Investigation workflow: Dashboard ??? Investigation ??? Evidence ??? Analysis ??? Report
+// Investigation workflow: Dashboard → Investigation → Evidence → Analysis → Report
+// PROTECTED PAGES ACCESSIBLE ONLY VIA INVESTIGATION WORKFLOW
 // ============================================================================
 
 const WORKFLOW_STEPS = [
-  { id: "dashboard", label: "Dashboard", path: "/", requiresCase: false },
-  { id: "investigation", label: "Investigation", path: "/investigation", requiresCase: true },
-  { id: "evidence", label: "Evidence", path: "/evidence", requiresCase: true, requiresInvestigation: true },
-  { id: "analysis", label: "Analysis", path: "/analysis", requiresCase: true, requiresEvidence: true },
-  { id: "report", label: "Report", path: "/report", requiresCase: true, requiresAnalysis: true }
+  { 
+    id: "dashboard", 
+    label: "Case Dashboard", 
+    path: "/", 
+    requiresCase: false,
+    description: "View all cases and create new investigations"
+  },
+  { 
+    id: "investigation", 
+    label: "Case Investigation", 
+    path: "/investigation", 
+    requiresCase: true,
+    description: "Single source of truth for case workflow"
+  }
+  // Evidence, Analysis, Report removed from direct navigation
+  // Only accessible via buttons in Investigation page based on case state
 ];
 
 // ============================================================================
@@ -100,15 +112,13 @@ function LeftNavigation({ caseStatus, activeCaseId }) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Determine current active step from URL
+  // Determine current active step from URL (only Dashboard and Investigation shown in nav)
   const getCurrentStep = () => {
     const path = location.pathname;
     if (path === "/" || path === "/dashboard") return "dashboard";
     if (path.includes("/investigation")) return "investigation";
-    if (path.includes("/evidence") || path.includes("/forensic-upload")) return "evidence";
-    if (path.includes("/analysis") || path.includes("/forensic-analysis")) return "analysis";
-    if (path.includes("/report")) return "report";
-    return "dashboard";
+    // Protected pages don't show as active in navigation
+    return "dashboard"; // Default fallback
   };
 
   const currentStep = getCurrentStep();
@@ -133,23 +143,13 @@ function LeftNavigation({ caseStatus, activeCaseId }) {
     return true;
   };
 
-  // Get navigation path with caseId if needed
+  // Get navigation path (only Dashboard and Investigation accessible via nav)
   const getNavigationPath = (step) => {
     if (step.id === "dashboard") return "/";
-    if (!activeCaseId) return step.path;
-    
-    switch (step.id) {
-      case "investigation":
-        return `/investigation/${activeCaseId}`;
-      case "evidence":
-        return `/forensic-upload/${activeCaseId}`;
-      case "analysis":
-        return `/analysis/${activeCaseId}`;
-      case "report":
-        return `/report/${activeCaseId}`;
-      default:
-        return step.path;
+    if (step.id === "investigation") {
+      return activeCaseId ? `/investigation/${activeCaseId}` : "/investigation";
     }
+    return step.path; // Fallback for unexpected steps
   };
 
   // Handle navigation click
@@ -363,32 +363,22 @@ function AppContent() {
         <main className="govt-main-content">
           <div className="page-content">
             <Routes>
-              {/* Dashboard - Case List */}
+              {/* Public access routes only - Workflow enforced via Investigation */}
+              
+              {/* Dashboard - Case List (Entry Point) */}
               <Route path="/" element={<Dashboard />} />
               <Route path="/dashboard" element={<Dashboard />} />
               
-              {/* Investigation - Case Details */}
+              {/* Investigation Hub - Single Source of Truth */}
               <Route path="/investigation" element={<InvestigationPage />} />
               <Route path="/investigation/:caseId" element={<InvestigationPage />} />
               
-              {/* Evidence Upload */}
-              <Route path="/evidence" element={<ForensicUpload />} />
-              <Route path="/forensic-upload" element={<ForensicUpload />} />
-              <Route path="/forensic-upload/:caseId" element={<ForensicUpload />} />
-              
-              {/* Analysis */}
-              <Route path="/analysis" element={<AnalysisPage />} />
+              {/* Protected routes with backend verification */}
+              {/* Only accessible via Investigation workflow buttons */}
+              <Route path="/evidence/:caseId" element={<ForensicUpload />} />
               <Route path="/analysis/:caseId" element={<AnalysisPage />} />
-              <Route path="/forensic-analysis" element={<ForensicAnalysis />} />
               <Route path="/forensic-analysis/:caseId" element={<ForensicAnalysis />} />
-              
-              {/* Report */}
-              <Route path="/report" element={<ReportPage />} />
               <Route path="/report/:caseId" element={<ReportPage />} />
-              
-              {/* Legacy routes for compatibility */}
-              <Route path="/forensic" element={<ForensicAnalysis />} />
-              <Route path="/upload" element={<ForensicUpload />} />
             </Routes>
           </div>
         </main>

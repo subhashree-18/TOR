@@ -154,9 +154,9 @@ export default function Dashboard() {
 
   return (
     <div className="records-dashboard">
-      {/* Demo Environment Banner */}
+      {/* Hackathon Demo Banner */}
       <div className="demo-banner">
-        Demonstration Environment ??? TN Police Hackathon 2025
+        Demonstration Prototype – TN Police Hackathon 2025
       </div>
 
       {/* Page Header */}
@@ -169,6 +169,29 @@ export default function Dashboard() {
           <button className="btn-register" onClick={handleRegisterNewCase}>
             + Register New Case
           </button>
+        </div>
+      </div>
+
+      {/* System Status Section */}
+      <div className="system-status-section">
+        <div className="system-status-header">System Status</div>
+        <div className="system-status-grid">
+          <div className="status-item">
+            <span className="status-label">TOR Data:</span>
+            <span className="status-value operational">Auto-updated</span>
+          </div>
+          <div className="status-item">
+            <span className="status-label">Correlation Engine:</span>
+            <span className="status-value operational">Ready</span>
+          </div>
+          <div className="status-item">
+            <span className="status-label">Evidence Storage:</span>
+            <span className="status-value operational">Available</span>
+          </div>
+          <div className="status-item">
+            <span className="status-label">Backend Services:</span>
+            <span className="status-value operational">Active</span>
+          </div>
         </div>
       </div>
 
@@ -246,7 +269,7 @@ export default function Dashboard() {
                   <th className="th-casetype">Case Type</th>
                   <th className="th-evidence">Evidence Status</th>
                   <th className="th-analysis">Analysis Status</th>
-                  <th className="th-confidence">Confidence</th>
+                  <th className="th-confidence">Confidence Assessment</th>
                   <th className="th-updated">Last Updated</th>
                   <th className="th-action">Action</th>
                 </tr>

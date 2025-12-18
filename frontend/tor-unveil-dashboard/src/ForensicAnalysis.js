@@ -76,27 +76,27 @@ export default function ForensicAnalysis() {
               entry_region: "Germany (DE)",
               exit_region: "Netherlands (NL)",
               confidence_level: "High",
-              timing_correlation: "Strong temporal alignment observed. The entry node activity windows (06:00-18:00 UTC) coincide with 87% of the traffic timestamps extracted from the uploaded PCAP evidence. Peak activity correlates with working hours in the suspected origin timezone (IST +5:30), suggesting deliberate timing to mask origin.",
-              session_overlap: "Session duration analysis indicates 12 distinct browsing sessions averaging 45 minutes each. Exit node relay logs show corresponding egress traffic within acceptable latency windows (200-400ms). The session patterns are consistent with interactive browsing rather than automated traffic.",
-              evidence_consistency: "847 individual packet sequences match the entry-exit pair timing profile. DNS query patterns suggest access to .onion hidden services. TLS fingerprints are consistent with Tor Browser Bundle version 12.x.",
-              limiting_factors: "Cannot definitively exclude alternative entry points through the same AS. German relay infrastructure is densely populated, creating multiple plausible entry candidates. Session timing could be coincidental with legitimate traffic patterns."
+              timing_correlation: "Strong temporal alignment observed in traffic analysis. The probable entry node activity windows (06:00-18:00 UTC) coincide with 87% of the traffic timestamps extracted from the uploaded PCAP evidence. Peak activity correlates with working hours in suspected origin timezone (IST +5:30), suggesting deliberate timing patterns to mask geographic origin.",
+              session_overlap: "Session duration analysis indicates 12 distinct browsing sessions averaging 45 minutes each. Exit node relay logs show corresponding egress traffic within acceptable latency windows (200-400ms). The session patterns are consistent with interactive browsing behavior rather than automated traffic generation.",
+              evidence_consistency: "847 individual packet sequences match the probable entry-exit pair timing profile. DNS query patterns suggest access to .onion hidden services. TLS fingerprints are consistent with Tor Browser Bundle version 12.x. Network behavior aligns with expected anonymization protocols.",
+              limiting_factors: "Analysis cannot definitively exclude alternative probable entry points through the same autonomous system. German relay infrastructure is densely populated, creating multiple plausible entry candidates. Session timing could be coincidental with legitimate privacy-focused traffic patterns."
             },
             {
               rank: 2,
               entry_region: "France (FR)",
               exit_region: "United States (US)",
               confidence_level: "High",
-              timing_correlation: "Moderate-to-strong temporal correlation. Entry node uptime overlaps with 72% of evidence timestamps. Notable gaps during 02:00-06:00 UTC which may indicate scheduled relay maintenance or deliberate avoidance patterns.",
-              session_overlap: "9 distinct sessions identified with varying durations (15-90 minutes). Exit traffic patterns suggest mixed usage including both hidden services and clearnet access via Tor. Session gaps align with relay consensus updates.",
-              evidence_consistency: "612 packet sequences correlate with this path hypothesis. HTTP header analysis indicates content consistent with dark web marketplace patterns. User-agent strings match expected Tor Browser signatures.",
-              limiting_factors: "US exit nodes are among the most common globally, reducing specificity of this correlation. French entry infrastructure serves significant legitimate privacy-focused traffic. Alternative middle relay paths could produce similar timing signatures."
+              timing_correlation: "Moderate-to-strong temporal correlation observed. Probable entry node uptime overlaps with 72% of evidence timestamps. Notable gaps during 02:00-06:00 UTC which may indicate scheduled relay maintenance or deliberate avoidance patterns.",
+              session_overlap: "9 distinct sessions identified with varying durations (15-90 minutes). Exit traffic patterns suggest mixed usage including both hidden services and clearnet access via Tor. Session gaps align with relay consensus updates, indicating systematic usage.",
+              evidence_consistency: "612 packet sequences correlate with this path hypothesis. HTTP header analysis indicates content consistent with dark web marketplace patterns. User-agent strings match expected Tor Browser signatures, supporting attribution confidence.",
+              limiting_factors: "US exit nodes are among the most common globally, reducing specificity of this correlation. French probable entry infrastructure serves significant legitimate privacy-focused traffic. Alternative middle relay paths could produce similar timing signatures."
             },
             {
               rank: 3,
               entry_region: "United Kingdom (GB)",
               exit_region: "Germany (DE)",
               confidence_level: "Medium",
-              timing_correlation: "Moderate correlation with 58% timestamp alignment. Entry node exhibits periodic availability patterns suggesting bandwidth-limited infrastructure or residential hosting. Timing gaps do not clearly correlate with known events.",
+              timing_correlation: "Moderate correlation with 58% timestamp alignment. Probable entry node exhibits periodic availability patterns suggesting bandwidth-limited infrastructure or residential hosting. Timing gaps do not clearly correlate with known events.",
               session_overlap: "7 sessions detected with inconsistent duration patterns (5-120 minutes). The variability suggests either multiple users or deliberately obfuscated usage patterns. Exit timing shows acceptable but not optimal alignment.",
               evidence_consistency: "489 packet sequences partially match this hypothesis. Some evidence could equally support alternative paths through adjacent AS networks. Protocol analysis is consistent with Tor but not exclusively indicative.",
               limiting_factors: "UK-DE corridor is heavily trafficked for legitimate Tor usage. Entry relay has documented history of intermittent availability affecting correlation precision. Evidence weight is insufficient for primary hypothesis status."
@@ -199,8 +199,13 @@ export default function ForensicAnalysis() {
 
       {/* Page Header */}
       <div className="forensic-header">
-        <h1 className="forensic-title">Hypothesis Evidence Explanation</h1>
-        <p className="forensic-subtitle">Case Reference: <code>{caseId}</code></p>
+        <h1 className="forensic-title">Forensic Analysis Details</h1>
+        <p className="forensic-subtitle">
+          Official Investigation Note - Case Reference: <code>{caseId}</code>
+        </p>
+        <p className="forensic-notice">
+          Prepared for: Tamil Nadu Police Cyber Crime Wing
+        </p>
         
         {/* Investigation Note Introduction */}
         <div className="investigation-intro">
@@ -208,7 +213,7 @@ export default function ForensicAnalysis() {
           <p>
             This technical analysis provides detailed examination of correlation hypotheses 
             identified through TOR traffic pattern analysis. Each hypothesis represents a 
-            potential entry-exit relay pairing based on packet timing signatures, session 
+            potential probable entry node-exit relay pairing based on packet timing signatures, session 
             overlap patterns, and protocol consistency markers.
           </p>
           <p>
@@ -324,6 +329,33 @@ export default function ForensicAnalysis() {
               ))
             )}
           </div>
+
+          {/* Analytical Limitations */}
+          <section className="limitations-section">
+            <div className="section-header">
+              <h2>Analytical Limitations</h2>
+            </div>
+            <div className="section-body">
+              <div className="limitations-grid">
+                <div className="limitation-item">
+                  <h4>Encryption Integrity</h4>
+                  <p>This analysis does not break TOR encryption protocols. All correlations are based on metadata timing patterns and network behavior analysis only.</p>
+                </div>
+                <div className="limitation-item">
+                  <h4>Identity Protection</h4>
+                  <p>Does not reveal real IP addresses or user identities. Analysis focuses on probable network path correlations without compromising user anonymity.</p>
+                </div>
+                <div className="limitation-item">
+                  <h4>Investigative Scope</h4>
+                  <p>Intended for investigative assistance only. Results provide probabilistic intelligence and require corroboration with additional evidence sources.</p>
+                </div>
+                <div className="limitation-item">
+                  <h4>Attribution Confidence</h4>
+                  <p>Cannot provide definitive attribution. All findings represent statistical correlations that may have alternative explanations requiring further investigation.</p>
+                </div>
+              </div>
+            </div>
+          </section>
 
           {/* Footer Note */}
           <div className="report-footer">

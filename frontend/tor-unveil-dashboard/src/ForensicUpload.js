@@ -13,12 +13,11 @@ import "./ForensicUpload.css";
 
 const API_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
 
-// Accepted file formats
+// Accepted file formats - PCAP and Network Logs only
 const ACCEPTED_FORMATS = [
   { extension: ".pcap", description: "Packet Capture file (tcpdump, Wireshark)" },
   { extension: ".pcapng", description: "Next Generation Packet Capture" },
-  { extension: ".log", description: "Network log file (firewall, proxy, ISP)" },
-  { extension: ".txt", description: "Plain text log file" }
+  { extension: ".log", description: "Network log file (firewall, proxy, ISP)" }
 ];
 
 // Format date for display
@@ -47,14 +46,14 @@ export default function ForensicUpload() {
   const [uploadResult, setUploadResult] = useState(null);
   const [error, setError] = useState(null);
 
-  // Validate file type
+  // Validate file type - PCAP and network logs only
   const validateFile = (file) => {
     const fileName = file.name.toLowerCase();
-    const validExtensions = [".pcap", ".pcapng", ".log", ".txt"];
+    const validExtensions = [".pcap", ".pcapng", ".log"];
     const isValid = validExtensions.some(ext => fileName.endsWith(ext));
     
     if (!isValid) {
-      return "Invalid file format. Only PCAP and log files are accepted.";
+      return "Invalid file format. Only PCAP captures and network log files are accepted.";
     }
     
     // Max file size: 100MB
@@ -191,13 +190,12 @@ export default function ForensicUpload() {
         requirements under the Indian Evidence Act, 1872.
       </div>
 
-      {/* Sealing Warning */}
-      {!isSealed && (
-        <div className="sealing-warning">
-          <strong>⚠️ IMPORTANT:</strong> Once evidence is sealed, it cannot be modified or replaced. 
-          Ensure file integrity before upload.
-        </div>
-      )}
+      {/* Forensic Warning */}
+      <div className="forensic-warning">
+        <strong>⚠️ FORENSIC NOTICE:</strong> Uploaded forensic evidence cannot be altered. 
+        Once sealed, evidence files become permanently read-only to maintain integrity 
+        for legal proceedings.
+      </div>
 
       {/* Accepted Formats Section */}
       <section className="upload-section">
@@ -241,7 +239,7 @@ export default function ForensicUpload() {
                   type="file"
                   id="evidence-file-input"
                   className="file-input"
-                  accept=".pcap,.pcapng,.log,.txt"
+                  accept=".pcap,.pcapng,.log"
                   onChange={handleFileChange}
                   disabled={uploading}
                 />

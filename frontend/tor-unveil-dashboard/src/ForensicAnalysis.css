@@ -449,6 +449,59 @@
   background: #e8f4fc;
 }
 
+/* ========== LIMITATIONS SECTION ========== */
+.limitations-section {
+  margin: 30px 0;
+  border: 2px solid #856404;
+  background: #fff;
+}
+
+.limitations-section .section-header {
+  background: #fff3cd;
+  color: #856404;
+  padding: 12px 16px;
+  border-bottom: 1px solid #856404;
+}
+
+.limitations-section .section-header h2 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.limitations-section .section-body {
+  padding: 20px;
+}
+
+.limitations-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.limitation-item {
+  padding: 16px;
+  border: 1px solid #d0d5dd;
+  background: #f8f9fa;
+}
+
+.limitation-item h4 {
+  margin: 0 0 8px 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #856404;
+  text-transform: uppercase;
+}
+
+.limitation-item p {
+  margin: 0;
+  font-size: 13px;
+  color: #333;
+  line-height: 1.5;
+}
+
 /* ========== RESPONSIVE ========== */
 @media (max-width: 768px) {
   .forensic-analysis-page {

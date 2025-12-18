@@ -75,12 +75,12 @@
   color: #0b3c5d;
 }
 
-/* ========== LEGAL WARNING BANNER ========== */
+/* ========== WARNING BANNERS ========== */
 .legal-warning {
   background: #fdf2f2;
   border: 2px solid #7a1f1f;
   padding: 14px 18px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   font-size: 14px;
   font-family: "Segoe UI", Arial, sans-serif;
   color: #7a1f1f;
@@ -88,6 +88,21 @@
 
 .legal-warning strong {
   color: #5a1515;
+  text-transform: uppercase;
+}
+
+.forensic-warning {
+  background: #fff3cd;
+  border: 2px solid #856404;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  font-family: "Segoe UI", Arial, sans-serif;
+  color: #856404;
+}
+
+.forensic-warning strong {
+  color: #6d4c00;
   text-transform: uppercase;
 }
 

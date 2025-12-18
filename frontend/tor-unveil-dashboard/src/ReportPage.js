@@ -109,10 +109,10 @@ All evidence was processed in a forensically sound manner with appropriate docum
           correlation_findings: `The forensic correlation analysis identified multiple plausible TOR circuit paths based on temporal alignment of the evidence with known relay activity windows. Key findings include:
 
 HYPOTHESIS RANKING:
-The analysis generated ranked hypotheses based on correlation strength. High-confidence correlations indicate strong temporal alignment between observed traffic patterns and relay availability windows. Medium and low confidence hypotheses represent alternative explanations that cannot be excluded based on available evidence.
+The analysis generated ranked hypotheses based on correlation strength. High-confidence correlations indicate strong temporal alignment between observed traffic patterns and probable entry node availability windows. Medium and low confidence hypotheses represent alternative explanations that cannot be excluded based on available evidence.
 
-ENTRY-EXIT CORRELATION:
-Traffic patterns were correlated with entry and exit relay pairs to identify potential circuit construction patterns. The correlation methodology considers relay uptime, bandwidth characteristics, and geographic distribution.
+PROBABLE ENTRY-EXIT CORRELATION:
+Traffic patterns were correlated with probable entry node and exit relay pairs to identify potential circuit construction patterns. The correlation methodology considers relay uptime, bandwidth characteristics, and geographic distribution.
 
 TEMPORAL ANALYSIS:
 Session timing analysis revealed patterns consistent with interactive browsing behavior over anonymization networks. Session durations and inter-session gaps were analyzed to characterize usage patterns.
@@ -122,7 +122,7 @@ Observed traffic characteristics including packet timing, connection patterns, a
 
           confidence_assessment: `The confidence levels assigned to each hypothesis reflect the strength of temporal and statistical correlation between the evidence and the hypothesized TOR circuit paths. The assessment methodology is as follows:
 
-HIGH CONFIDENCE (70-85%): Strong temporal alignment with multiple corroborating data points. Entry and exit relay activity windows overlap significantly with observed traffic timestamps. Alternative explanations are less probable but cannot be completely excluded.
+HIGH CONFIDENCE (70-85%): Strong temporal alignment with multiple corroborating data points. Probable entry node and exit relay activity windows overlap significantly with observed traffic timestamps. Alternative explanations are less probable but cannot be completely excluded.
 
 MEDIUM CONFIDENCE (40-70%): Moderate correlation strength with some supporting evidence. Temporal alignment is present but with gaps or ambiguities. Multiple alternative hypotheses may be equally plausible.
 
@@ -134,11 +134,13 @@ IMPORTANT: Confidence percentages represent statistical correlation strength, no
 
 This forensic report is prepared by the Cyber Crime Wing, Tamil Nadu Police for official law enforcement purposes. The findings presented herein are based on probabilistic correlation analysis and do not constitute definitive proof of any criminal activity or attribution to any individual.
 
-LIMITATIONS OF ANALYSIS:
+LIMITATIONS & ETHICS:
 1. This analysis is based on metadata correlation only. No traffic content was examined or decrypted.
-2. The TOR network is designed to provide anonymity. This analysis does not break TOR anonymity.
-3. Correlation findings indicate plausibility, not certainty. Multiple alternative explanations may exist.
-4. Confidence assessments reflect statistical alignment, not proof of use.
+2. The TOR network is designed to provide anonymity. This analysis does not break TOR anonymity or encryption.
+3. Does not reveal real IP addresses or user identities. All analysis respects privacy protections.
+4. Correlation findings indicate plausibility, not certainty. Multiple alternative explanations may exist.
+5. Confidence assessments reflect statistical alignment, not proof of usage or attribution.
+6. Analysis is conducted within ethical boundaries respecting digital rights and privacy.
 
 EVIDENTIARY CONSIDERATIONS:
 This report should be considered as technical investigative support material. Findings should be corroborated with additional evidence including but not limited to: device forensics, witness statements, financial records, and other investigative data before being presented as evidence.

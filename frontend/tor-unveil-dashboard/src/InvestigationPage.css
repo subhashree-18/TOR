@@ -407,7 +407,240 @@
   animation: spin 1s linear infinite;
 }
 
-/* ========== RESPONSIVE ========== */
+/* ========== TOR NETWORK STATUS ========== */
+.tor-network-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.tor-stat-item {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  border: 1px solid #d0d5dd;
+  background: #f8f9fa;
+}
+
+.tor-stat-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.tor-stat-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0b3c5d;
+  font-family: "Consolas", "Courier New", monospace;
+}
+
+.tor-stat-value.operational {
+  color: #1e7e34;
+}
+
+.tor-network-note {
+  padding: 12px;
+  background: #e3f2fd;
+  border: 1px solid #1565c0;
+  font-size: 12px;
+  color: #1565c0;
+}
+
+/* ========== ENHANCED TIMELINE ========== */
+.timeline-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.timeline-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid #d0d5dd;
+  background: #f8f9fa;
+}
+
+.timeline-item.completed {
+  background: #e6f4ea;
+  border-color: #1e7e34;
+}
+
+.timeline-item.in-progress {
+  background: #e3f2fd;
+  border-color: #1565c0;
+}
+
+.timeline-item.pending {
+  background: #fff3cd;
+  border-color: #856404;
+}
+
+.timeline-indicator {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.timeline-item.completed .timeline-indicator {
+  background: #1e7e34;
+  color: #fff;
+}
+
+.timeline-item.in-progress .timeline-indicator {
+  background: #1565c0;
+  color: #fff;
+}
+
+.timeline-item.pending .timeline-indicator {
+  background: #856404;
+  color: #fff;
+}
+
+.timeline-label {
+  font-weight: 600;
+  color: #333;
+  flex: 1;
+}
+
+.timeline-detail {
+  font-size: 12px;
+  color: #666;
+  font-style: italic;
+}
+
+/* ========== ENHANCED ACTION BUTTONS ========== */
+.primary-action {
+  margin-bottom: 24px;
+  padding: 20px;
+  border: 2px solid #0b3c5d;
+  background: #f0f4f8;
+}
+
+.primary-action h3 {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #0b3c5d;
+  text-transform: uppercase;
+}
+
+.btn-action {
+  background: #0b3c5d;
+  color: #fff;
+  border: 1px solid #0b3c5d;
+  padding: 14px 32px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.btn-action:hover:not(:disabled) {
+  background: #094056;
+  border-color: #094056;
+}
+
+.btn-action:disabled {
+  background: #ccc;
+  border-color: #ccc;
+  cursor: not-allowed;
+}
+
+.btn-action.primary {
+  background: #0b3c5d;
+  border-color: #0b3c5d;
+}
+
+.btn-action.warning {
+  background: #856404;
+  border-color: #856404;
+}
+
+.btn-action.success {
+  background: #1e7e34;
+  border-color: #1e7e34;
+}
+
+.btn-action.info {
+  background: #1565c0;
+  border-color: #1565c0;
+}
+
+.additional-actions {
+  border-top: 1px solid #d0d5dd;
+  padding-top: 20px;
+}
+
+.additional-actions h3 {
+  margin: 0 0 16px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #555;
+  text-transform: uppercase;
+}
+
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.action-card {
+  padding: 16px;
+  border: 1px solid #d0d5dd;
+  background: #fff;
+}
+
+.action-card-description {
+  font-size: 13px;
+  color: #666;
+  margin: 0 0 12px 0;
+}
+
+.btn-action-small {
+  background: #6c757d;
+  color: #fff;
+  border: 1px solid #6c757d;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.btn-action-small:hover {
+  background: #5a6268;
+  border-color: #5a6268;
+}
+
+.btn-action-small.secondary {
+  background: #6c757d;
+  border-color: #6c757d;
+}
+
+.btn-action-small.success {
+  background: #1e7e34;
+  border-color: #1e7e34;
+}
+
+/* ========== RESPONSIVE UPDATES ========== */
 @media (max-width: 768px) {
   .investigation-workspace {
     padding: 16px;
