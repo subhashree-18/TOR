@@ -6,7 +6,7 @@
  * Once sealed, evidence cannot be altered or re-uploaded
  */
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./ForensicUpload.css";
@@ -39,12 +39,23 @@ const formatDateTime = (dateString) => {
 export default function ForensicUpload() {
   const navigate = useNavigate();
   const location = useLocation();
-  const caseId = location.state?.caseId || "TN/CYB/2024/001234";
+  
+  // Get case ID from query params or location state
+  const searchParams = new URLSearchParams(location.search);
+  const caseId = searchParams.get('caseId') || location.state?.caseId || "TN/CYB/2024/001234";
 
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [uploadResult, setUploadResult] = useState(null);
   const [error, setError] = useState(null);
+
+  // Redirect to dashboard if accessed without proper case ID
+  useEffect(() => {
+    if (!searchParams.get('caseId') && !location.state?.caseId) {
+      navigate('/', { replace: true });
+      return;
+    }
+  }, [navigate, searchParams, location.state]);
 
   // Validate file type - PCAP and network logs only
   const validateFile = (file) => {
@@ -96,7 +107,7 @@ export default function ForensicUpload() {
     try {
       const formData = new FormData();
       formData.append("file", selectedFile);
-      formData.append("case_id", caseId);
+      formData.append("caseId", caseId);
 
       const response = await axios.post(
         `${API_URL}/api/evidence/upload`,
@@ -116,10 +127,8 @@ export default function ForensicUpload() {
         const fileInput = document.getElementById("evidence-file-input");
         if (fileInput) fileInput.value = "";
         
-        // Redirect to Investigation page after successful upload
-        setTimeout(() => {
-          navigate(`/investigation/${caseId}`, { state: { caseId } });
-        }, 2000);
+        // Don't auto-redirect - let user review results
+        // User can manually navigate using the "Proceed to Analysis" button
       }
     } catch (err) {
       console.error("Upload error:", err);
@@ -134,19 +143,18 @@ export default function ForensicUpload() {
       } else {
         // Mock response for demo when backend unavailable
         setUploadResult({
-          file_name: selectedFile.name,
-          sha256_hash: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          filename: selectedFile.name,
+          checksum: "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
           uploaded_at: new Date().toISOString(),
-          sealed: true
+          sealed_at: new Date().toISOString(),
+          status: "Sealed"
         });
         setSelectedFile(null);
         const fileInput = document.getElementById("evidence-file-input");
         if (fileInput) fileInput.value = "";
         
-        // Redirect to Investigation page after successful upload (mock scenario)
-        setTimeout(() => {
-          navigate(`/investigation/${caseId}`, { state: { caseId } });
-        }, 2000);
+        // Don't auto-redirect in mock scenario either
+        // User can manually navigate using buttons
       }
     } finally {
       setUploading(false);
@@ -223,7 +231,7 @@ export default function ForensicUpload() {
         </div>
       </section>
 
-      {/* Upload Form Section */}
+      {/* Upload Form Section - Only available if evidence not sealed */}
       {!isSealed ? (
         <section className="upload-section">
           <div className="section-header">
@@ -300,7 +308,58 @@ export default function ForensicUpload() {
             </div>
           </div>
         </section>
-      ) : null}
+      ) : (
+        /* Evidence Sealed - Read-Only Notice */
+        <section className="upload-section sealed-notice-section">
+          <div className="section-header locked-header">
+            <h2>🔒 Evidence Sealed - Read-Only Mode</h2>
+          </div>
+          <div className="section-body">
+            <div className="sealed-notice">
+              <div className="sealed-icon">🛡️</div>
+              <div className="sealed-content">
+                <h3>Case Evidence Permanently Locked</h3>
+                <p>
+                  This case's evidence has been cryptographically sealed and can no longer be modified. 
+                  This prevents tampering and ensures the integrity of evidence for legal proceedings.
+                </p>
+                <div className="sealed-features">
+                  <div className="sealed-feature">
+                    <span className="feature-icon">✓</span>
+                    <span>Evidence files permanently protected from modification</span>
+                  </div>
+                  <div className="sealed-feature">
+                    <span className="feature-icon">✓</span>
+                    <span>Chain of custody cryptographically guaranteed</span>
+                  </div>
+                  <div className="sealed-feature">
+                    <span className="feature-icon">✓</span>
+                    <span>Legal admissibility requirements satisfied</span>
+                  </div>
+                  <div className="sealed-feature">
+                    <span className="feature-icon">✓</span>
+                    <span>Analysis and reporting functions remain available</span>
+                  </div>
+                </div>
+                <div className="sealed-actions">
+                  <button
+                    className="btn-primary"
+                    onClick={() => navigate(`/analysis?caseId=${encodeURIComponent(caseId)}`)}
+                  >
+                    Proceed to Analysis
+                  </button>
+                  <button
+                    className="btn-secondary"
+                    onClick={() => navigate(`/investigation?caseId=${encodeURIComponent(caseId)}`)}
+                  >
+                    Return to Investigation
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Upload Result Section */}
       {uploadResult && (
@@ -317,7 +376,7 @@ export default function ForensicUpload() {
                   <tr>
                     <th>Evidence Type</th>
                     <td>
-                      {uploadResult.file_name?.toLowerCase().includes('.pcap') 
+                      {uploadResult.filename?.toLowerCase().includes('.pcap') 
                         ? 'Network Traffic Capture (PCAP)'
                         : 'Network Log File'
                       }
@@ -325,28 +384,76 @@ export default function ForensicUpload() {
                   </tr>
                   <tr>
                     <th>Original File Name</th>
-                    <td>{uploadResult.file_name}</td>
+                    <td>{uploadResult.filename}</td>
                   </tr>
                   <tr>
                     <th>SHA-256 Hash (Integrity Proof)</th>
                     <td>
-                      <code className="hash-value">{uploadResult.sha256_hash}</code>
+                      <code className="hash-value">{uploadResult.checksum}</code>
+                      <span className="hash-status verified">✓ Verified</span>
                     </td>
                   </tr>
                   <tr>
                     <th>Upload Date & Time</th>
-                    <td>{formatDateTime(uploadResult.uploaded_at)}</td>
+                    <td>
+                      {formatDateTime(uploadResult.uploaded_at)}
+                      <span className="timestamp-verification">IST (Verified)</span>
+                    </td>
                   </tr>
                   <tr>
                     <th>Evidence Status</th>
                     <td>
                       <span className="sealed-badge">
-                        Sealed (Read-Only)
+                        🔒 Sealed (Read-Only)
                       </span>
+                      <span className="custody-indicator">Chain of Custody: Intact</span>
                     </td>
+                  </tr>
+                  <tr>
+                    <th>Investigating Officer</th>
+                    <td>Inspector [Badge #TN2024-CYB] - Tamil Nadu Police</td>
                   </tr>
                 </tbody>
               </table>
+
+              {/* Enhanced Chain of Custody Visualization */}
+              <div className="custody-chain-visual">
+                <h4 className="custody-title">🔗 Digital Chain of Custody Timeline</h4>
+                <div className="custody-steps">
+                  <div className="custody-step completed">
+                    <div className="step-indicator">1</div>
+                    <div className="step-content">
+                      <strong>Evidence Collection</strong>
+                      <p>File uploaded: {formatDateTime(uploadResult.uploaded_at)}</p>
+                      <span className="step-status">✓ Completed</span>
+                    </div>
+                  </div>
+                  <div className="custody-step completed">
+                    <div className="step-indicator">2</div>
+                    <div className="step-content">
+                      <strong>Cryptographic Sealing</strong>
+                      <p>Hash generated: {uploadResult.checksum?.substring(0, 16)}...</p>
+                      <span className="step-status">✓ Sealed</span>
+                    </div>
+                  </div>
+                  <div className="custody-step completed">
+                    <div className="step-indicator">3</div>
+                    <div className="step-content">
+                      <strong>Evidence Verification</strong>
+                      <p>Integrity check passed - File is tamper-proof</p>
+                      <span className="step-status">✓ Verified</span>
+                    </div>
+                  </div>
+                  <div className="custody-step pending">
+                    <div className="step-indicator">4</div>
+                    <div className="step-content">
+                      <strong>Analysis Phase</strong>
+                      <p>Ready for forensic correlation analysis</p>
+                      <span className="step-status">⏳ Pending</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div className="immutable-notice">

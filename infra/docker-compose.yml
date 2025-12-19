@@ -34,7 +34,7 @@ services:
       context: ../frontend/tor-unveil-dashboard
     container_name: torunveil-frontend
     environment:
-      - REACT_APP_API_URL=http://backend:8000
+      - REACT_APP_API_URL=http://localhost:8000
     restart: always
     depends_on:
       - backend

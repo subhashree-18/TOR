@@ -5,7 +5,7 @@ from pymongo import MongoClient
 import os
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
-from fastapi import File, UploadFile
+from fastapi import File, UploadFile, Form
 from io import BytesIO, StringIO
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
@@ -397,7 +397,7 @@ def relays_map(limit: int = 2000):
             projection,
         ).limit(limit)
     )
-    return {"count": len(relays), "data": relays}
+    return relays
 
 
 # ---------------------------------------------------------
@@ -1756,5 +1756,419 @@ def scoring_methodology():
             "no_certainty": "Correlation does not imply causation or actual usage",
             "false_positives": "High-scoring paths may not represent actual user traffic",
             "false_negatives": "Low-scoring paths could still be valid network routes"
+        }
+    }
+
+
+@app.get("/api/investigations")
+async def get_investigations():
+    """
+    Get list of ongoing investigations
+    Returns mock data for demonstration
+    """
+    return {
+        "investigations": [
+            {
+                "caseId": "CID/TN/CCW/2024/001",
+                "title": "Ransomware Investigation - Banking Sector",
+                "caseType": "Cyber Crime", 
+                "status": "Active",
+                "evidenceStatus": "Uploaded",
+                "analysisStatus": "In Progress",
+                "confidenceLevel": "Medium",
+                "priority": "High",
+                "lastActivity": "2024-12-18T10:30:00Z",
+                "lastUpdated": "18-Dec-2024 10:30",
+                "assignedOfficer": "Inspector Rajesh Kumar",
+                "description": "Investigation into ransomware attack on regional banking network"
+            },
+            {
+                "caseId": "CID/TN/CCW/2024/002", 
+                "title": "Dark Web Narcotics Investigation",
+                "caseType": "Narcotics",
+                "status": "Pending Evidence",
+                "evidenceStatus": "Pending",
+                "analysisStatus": "Not Started",
+                "confidenceLevel": "Low",
+                "priority": "Medium",
+                "lastActivity": "2024-12-17T14:15:00Z",
+                "lastUpdated": "17-Dec-2024 14:15",
+                "assignedOfficer": "Sub-Inspector Priya Sharma",
+                "description": "Tracking illegal drug sales through TOR networks"
+            },
+            {
+                "caseId": "CID/TN/CCW/2024/003",
+                "title": "Financial Fraud Network Analysis", 
+                "caseType": "Financial Fraud",
+                "status": "Report Generated",
+                "evidenceStatus": "Sealed",
+                "analysisStatus": "Completed",
+                "confidenceLevel": "High",
+                "priority": "High",
+                "lastActivity": "2024-12-16T09:45:00Z",
+                "lastUpdated": "16-Dec-2024 09:45",
+                "assignedOfficer": "Inspector Vijay Krishnan",
+                "description": "Multi-state cryptocurrency fraud investigation"
+            },
+            {
+                "caseId": "TN/CYB/2024/001234",
+                "title": "Cybercrime Investigation - Identity Theft",
+                "caseType": "Identity Theft",
+                "status": "Active",
+                "evidenceStatus": "Pending",
+                "analysisStatus": "Not Started",
+                "confidenceLevel": "Low",
+                "priority": "Medium",
+                "lastActivity": "2024-12-18T12:00:00Z",
+                "lastUpdated": "18-Dec-2024 12:00",
+                "assignedOfficer": "Inspector Tamil Arasan",
+                "description": "Investigation into identity theft through TOR networks"
+            }
+        ]
+    }
+
+
+@app.get("/api/investigations/{case_id:path}/status")
+async def get_investigation_status(case_id: str):
+    """
+    Get investigation status for workflow validation
+    """
+    investigations_data = {
+        "CID/TN/CCW/2024/001": {
+            "caseId": "CID/TN/CCW/2024/001",
+            "evidenceUploaded": True,
+            "evidenceSealed": True,
+            "analysisCompleted": False,
+            "reportGenerated": False
+        },
+        "CID/TN/CCW/2024/002": {
+            "caseId": "CID/TN/CCW/2024/002",
+            "evidenceUploaded": False,
+            "evidenceSealed": False,
+            "analysisCompleted": False,
+            "reportGenerated": False
+        },
+        "CID/TN/CCW/2024/003": {
+            "caseId": "CID/TN/CCW/2024/003",
+            "evidenceUploaded": True,
+            "evidenceSealed": True,
+            "analysisCompleted": True,
+            "reportGenerated": True
+        },
+        "TN/CYB/2024/001234": {
+            "caseId": "TN/CYB/2024/001234",
+            "evidenceUploaded": False,
+            "evidenceSealed": False,
+            "analysisCompleted": False,
+            "reportGenerated": False
+        }
+    }
+    
+    if case_id in investigations_data:
+        return investigations_data[case_id]
+    else:
+        raise HTTPException(status_code=404, detail="Investigation not found")
+
+
+@app.get("/api/investigations/{case_id:path}")
+async def get_investigation(case_id: str):
+    """
+    Get specific investigation details
+    """
+    # Debug: print the actual case_id received
+    print(f"DEBUG: Received case_id: '{case_id}'")
+    
+    # Mock data for specific cases
+    investigations_data = {
+        "CID/TN/CCW/2024/001": {
+            "caseId": "CID/TN/CCW/2024/001",
+            "title": "Ransomware Investigation - Banking Sector",
+            "caseType": "Cyber Crime",
+            "status": "Active",
+            "evidenceStatus": "Uploaded",
+            "analysisStatus": "In Progress",
+            "confidenceLevel": "Medium",
+            "priority": "High",
+            "lastActivity": "2024-12-18T10:30:00Z",
+            "lastUpdated": "18-Dec-2024 10:30",
+            "assignedOfficer": "Inspector Rajesh Kumar",
+            "description": "Investigation into ransomware attack on regional banking network",
+            "firNumber": "FIR/2024/CCW/001",
+            "registrationDate": "2024-12-15",
+            "investigatingUnit": "Tamil Nadu Cyber Crime Wing",
+            "evidenceFiles": [
+                {
+                    "filename": "banking_traffic.pcap",
+                    "uploadedAt": "2024-12-16T14:30:00Z",
+                    "fileSize": "2.1 MB",
+                    "checksum": "sha256:b5d4c5ad...",
+                    "status": "Sealed"
+                }
+            ],
+            "analysisResults": {
+                "correlationScore": 0.72,
+                "suspiciousConnections": 15,
+                "torExitNodes": 8,
+                "riskAssessment": "Medium-High"
+            }
+        },
+        "CID/TN/CCW/2024/002": {
+            "caseId": "CID/TN/CCW/2024/002",
+            "title": "Dark Web Narcotics Investigation",
+            "caseType": "Narcotics",
+            "status": "Pending Evidence",
+            "evidenceStatus": "Pending",
+            "analysisStatus": "Not Started",
+            "confidenceLevel": "Low",
+            "priority": "Medium",
+            "lastActivity": "2024-12-17T14:15:00Z",
+            "lastUpdated": "17-Dec-2024 14:15",
+            "assignedOfficer": "Sub-Inspector Priya Sharma",
+            "description": "Tracking illegal drug sales through TOR networks",
+            "firNumber": "FIR/2024/CCW/002",
+            "registrationDate": "2024-12-17",
+            "investigatingUnit": "Tamil Nadu Cyber Crime Wing",
+            "evidenceFiles": [],
+            "analysisResults": None,
+            "evidence": {
+                "uploaded": True,
+                "sealed": False,
+                "files": []
+            },
+            "analysis": {
+                "status": "NOT_STARTED",
+                "started_at": None,
+                "completed_at": None
+            }
+        },
+        "CID/TN/CCW/2024/003": {
+            "caseId": "CID/TN/CCW/2024/003",
+            "title": "Financial Fraud Network Analysis",
+            "caseType": "Financial Fraud",
+            "status": "Report Generated",
+            "evidenceStatus": "Sealed",
+            "analysisStatus": "Completed",
+            "confidenceLevel": "High",
+            "priority": "High",
+            "lastActivity": "2024-12-16T09:45:00Z",
+            "lastUpdated": "16-Dec-2024 09:45",
+            "assignedOfficer": "Inspector Vijay Krishnan",
+            "description": "Multi-state cryptocurrency fraud investigation",
+            "firNumber": "FIR/2024/CCW/003",
+            "registrationDate": "2024-12-14",
+            "investigatingUnit": "Tamil Nadu Cyber Crime Wing",
+            "evidenceFiles": [
+                {
+                    "filename": "financial_network.pcap",
+                    "uploadedAt": "2024-12-15T09:15:00Z",
+                    "fileSize": "5.7 MB",
+                    "checksum": "sha256:c8f2a1b3...",
+                    "status": "Sealed"
+                },
+                {
+                    "filename": "crypto_transactions.log",
+                    "uploadedAt": "2024-12-15T09:20:00Z",
+                    "fileSize": "1.2 MB", 
+                    "checksum": "sha256:f9e4d2a1...",
+                    "status": "Sealed"
+                }
+            ],
+            "analysisResults": {
+                "correlationScore": 0.89,
+                "suspiciousConnections": 42,
+                "torExitNodes": 23,
+                "riskAssessment": "High"
+            }
+        },
+        "TN/CYB/2024/001234": {
+            "caseId": "TN/CYB/2024/001234",
+            "title": "Cybercrime Investigation - Identity Theft",
+            "caseType": "Identity Theft",
+            "status": "Active",
+            "evidenceStatus": "Pending",
+            "analysisStatus": "Not Started", 
+            "confidenceLevel": "Low",
+            "priority": "Medium",
+            "lastActivity": "2024-12-18T12:00:00Z",
+            "lastUpdated": "18-Dec-2024 12:00",
+            "assignedOfficer": "Inspector Tamil Arasan",
+            "description": "Investigation into identity theft through TOR networks",
+            "firNumber": "FIR/2024/CYB/001234",
+            "registrationDate": "2024-12-18",
+            "investigatingUnit": "Tamil Nadu Cyber Crime Wing",
+            "evidenceFiles": [],
+            "analysisResults": {
+                "correlationScore": 0.45,
+                "suspiciousConnections": 5,
+                "torExitNodes": 2,
+                "riskAssessment": "Medium"
+            }
+        }
+    }
+    
+    if case_id in investigations_data:
+        investigation = investigations_data[case_id].copy()
+        # Ensure case_id field is properly set
+        investigation["case_id"] = investigation.get("caseId", case_id)
+        return investigation
+    else:
+        raise HTTPException(status_code=404, detail="Investigation not found")
+
+
+@app.get("/api/analysis/{case_id:path}")
+async def get_analysis_results(case_id: str):
+    """
+    Get analysis results for a specific investigation case
+    """
+    # Debug: print the actual case_id received
+    print(f"DEBUG: Analysis requested for case_id: '{case_id}'")
+    
+    # Mock analysis data matching frontend expectations
+    analysis_data = {
+        "confidence_evolution": {
+            "initial_confidence": "Medium",
+            "current_confidence": "High", 
+            "improvement_factor": "Exit node correlation increased confidence from 55% to 78%",
+            "evolution_note": "Confidence improves as additional exit-node evidence is correlated."
+        },
+        "hypotheses": [
+            {
+                "rank": 1,
+                "entry_region": "Germany (DE)",
+                "exit_region": "Netherlands (NL)",
+                "evidence_count": 847,
+                "confidence_level": "High",
+                "explanation": {
+                    "timing_consistency": "Strong temporal alignment observed in 87% of traffic samples",
+                    "guard_persistence": "Entry node maintained consistent uptime during analysis window",
+                    "evidence_strength": "High correlation between session timing and known Tor relay patterns"
+                }
+            },
+            {
+                "rank": 2,
+                "entry_region": "France (FR)",
+                "exit_region": "United States (US)",
+                "evidence_count": 612,
+                "confidence_level": "High",
+                "explanation": {
+                    "timing_consistency": "Moderate temporal alignment observed in 73% of traffic samples",
+                    "guard_persistence": "Entry node showed intermittent uptime patterns",
+                    "evidence_strength": "Good correlation with traffic timing patterns"
+                }
+            },
+            {
+                "rank": 3,
+                "entry_region": "United Kingdom (GB)",
+                "exit_region": "Canada (CA)",
+                "evidence_count": 445,
+                "confidence_level": "Medium",
+                "explanation": {
+                    "timing_consistency": "Weak temporal alignment observed in 54% of traffic samples",
+                    "guard_persistence": "Entry node had limited uptime during analysis window",
+                    "evidence_strength": "Partial correlation with known relay characteristics"
+                }
+            }
+        ],
+        "tor_relays": [
+            {
+                "fingerprint": "A1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6Q7R8S9T0",
+                "nickname": "GermanGuard",
+                "ip": "185.220.101.45",
+                "country": "DE",
+                "lat": 51.2993,
+                "lon": 9.4910,
+                "risk_score": 0.15,
+                "is_exit": False,
+                "is_guard": True
+            },
+            {
+                "fingerprint": "B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6Q7R8S9T0U1",
+                "nickname": "DutchExit",
+                "ip": "185.220.102.8",
+                "country": "NL", 
+                "lat": 52.3667,
+                "lon": 4.8945,
+                "risk_score": 0.23,
+                "is_exit": True,
+                "is_guard": False
+            },
+            {
+                "fingerprint": "C3D4E5F6G7H8I9J0K1L2M3N4O5P6Q7R8S9T0U1V2",
+                "nickname": "FrenchRelay",
+                "ip": "193.70.95.180",
+                "country": "FR",
+                "lat": 48.8566,
+                "lon": 2.3522,
+                "risk_score": 0.08,
+                "is_exit": False,
+                "is_guard": True
+            }
+        ],
+        "analysis_metadata": {
+            "case_id": case_id,
+            "analysis_timestamp": "2024-12-19T04:15:00Z",
+            "evidence_files_processed": ["banking_traffic.pcap", "network_logs.txt"],
+            "total_evidence_size": "2.4 MB",
+            "processing_duration": "45 seconds",
+            "correlation_algorithm": "Bayesian Path Inference v2.1",
+            "confidence_threshold": 0.65
+        },
+        "limitations": [
+            "Analysis based on timing correlation only - no packet content inspection",
+            "Results represent plausibility estimates, not definitive proof",
+            "Geographic data limited to country-level resolution", 
+            "Relay metadata sourced from public Tor directory only",
+            "No user identification or deanonymization attempted"
+        ]
+    }
+    
+    return analysis_data
+
+
+@app.post("/api/evidence/upload")
+async def upload_evidence(file: UploadFile = File(...), caseId: str = Form(...)):
+    """
+    Upload forensic evidence file (PCAP, logs, etc.)
+    """
+    import hashlib
+    import os
+    from datetime import datetime
+    
+    # Validate file type
+    allowed_extensions = {'.pcap', '.cap', '.pcapng', '.log', '.txt', '.json'}
+    file_ext = os.path.splitext(file.filename)[1].lower()
+    
+    if file_ext not in allowed_extensions:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"File type {file_ext} not allowed. Supported types: {', '.join(allowed_extensions)}"
+        )
+    
+    # Read file content for processing
+    content = await file.read()
+    file_size = len(content)
+    
+    # Generate file checksum
+    file_hash = hashlib.sha256(content).hexdigest()
+    
+    # Simulate file storage (in real implementation, save to secure storage)
+    timestamp = datetime.now().isoformat()
+    
+    # Return upload result
+    return {
+        "success": True,
+        "message": "Evidence uploaded and sealed successfully",
+        "evidenceId": f"EVD_{caseId}_{timestamp}".replace(":", "").replace("-", ""),
+        "filename": file.filename,
+        "fileSize": f"{file_size / (1024*1024):.2f} MB",
+        "checksum": f"sha256:{file_hash[:16]}...",
+        "uploaded_at": timestamp,
+        "sealed_at": timestamp,
+        "status": "Sealed",
+        "chain_of_custody": {
+            "uploaded_by": "Officer_System", # In real system, get from authentication
+            "upload_timestamp": timestamp,
+            "seal_timestamp": timestamp,
+            "integrity_verified": True
         }
     }

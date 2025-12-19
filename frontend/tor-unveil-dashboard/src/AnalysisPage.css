@@ -315,6 +315,73 @@
   background: #dc3545;
 }
 
+/* ========== CONFIDENCE EVOLUTION ========== */
+.confidence-evolution {
+  padding: 16px;
+  border: 1px solid #d0d5dd;
+  background: #f8f9fa;
+  margin-bottom: 16px;
+}
+
+.evolution-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.evolution-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border: 1px solid #d0d5dd;
+  background: #fff;
+}
+
+.evolution-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #555;
+}
+
+.evolution-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0b3c5d;
+  padding: 2px 8px;
+  background: #e8f4fc;
+  border: 1px solid #0b3c5d;
+}
+
+.evolution-value.updated {
+  color: #1e7e34;
+  background: #e6f4ea;
+  border-color: #1e7e34;
+}
+
+.evolution-explanation {
+  padding: 12px;
+  background: #fff3cd;
+  border: 1px solid #856404;
+  color: #6d4c00;
+}
+
+.evolution-explanation p {
+  margin: 0 0 8px 0;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.evolution-explanation p:last-child {
+  margin: 0;
+}
+
+.evolution-note {
+  font-style: italic;
+  color: #5a3e00;
+}
+
 .btn-explain {
   background: none;
   border: 1px solid #0b3c5d;
@@ -330,6 +397,216 @@
 .btn-explain:hover {
   background-color: #0b3c5d;
   color: white;
+}
+
+/* ========== TRANSPARENCY & EXPLAINABILITY ========== */
+.explainability-panel {
+  margin-top: 20px;
+  padding: 20px;
+  background: #f8f9fa;
+  border: 1px solid #d0d5dd;
+  border-left: 4px solid #d9a441;
+}
+
+.explainability-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0b3c5d;
+  margin: 0 0 16px 0;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.explanation-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.explanation-item {
+  padding: 16px;
+  background: #fff;
+  border: 1px solid #d0d5dd;
+  border-radius: 4px;
+}
+
+.explanation-item h5 {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0b3c5d;
+  margin: 0 0 12px 0;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.explanation-item p {
+  font-size: 13px;
+  line-height: 1.4;
+  margin: 0 0 8px 0;
+  color: #555;
+}
+
+.explanation-item p:last-child {
+  margin: 0;
+}
+
+.explanation-item p strong {
+  color: #333;
+  font-weight: 600;
+}
+
+.methodology-warning {
+  padding: 12px 16px;
+  background: #fff3cd;
+  border: 2px solid #856404;
+  color: #6d4c00;
+  font-size: 13px;
+  line-height: 1.4;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.methodology-warning strong {
+  color: #5a3e00;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+/* ========== PLAIN-ENGLISH TECHNICAL SUMMARY ========== */
+.plain-english-summary {
+  padding: 20px;
+  background: #f8f9fa;
+  border: 1px solid #d0d5dd;
+  border-left: 4px solid #28a745;
+}
+
+.summary-intro {
+  margin-bottom: 24px;
+  padding: 16px;
+  background: #fff;
+  border: 1px solid #d0d5dd;
+  border-radius: 4px;
+}
+
+.summary-intro h4 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0b3c5d;
+  margin: 0 0 12px 0;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.summary-intro p {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #333;
+  margin: 0;
+}
+
+.summary-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.summary-section {
+  padding: 16px;
+  background: #fff;
+  border: 1px solid #d0d5dd;
+  border-radius: 4px;
+}
+
+.summary-section h5 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0b3c5d;
+  margin: 0 0 12px 0;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.summary-section p {
+  font-size: 13px;
+  line-height: 1.4;
+  color: #333;
+  margin: 0 0 12px 0;
+}
+
+.summary-section ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.summary-section ul li {
+  font-size: 13px;
+  line-height: 1.4;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.confidence-breakdown {
+  margin-top: 12px;
+}
+
+.confidence-level {
+  padding: 8px 12px;
+  margin-bottom: 6px;
+  background: #e8f4fc;
+  border-left: 3px solid #0b3c5d;
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.evidence-capabilities {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.can-do, .cannot-do {
+  padding: 12px;
+  border-radius: 4px;
+}
+
+.can-do {
+  background: #e6f4ea;
+  border: 1px solid #28a745;
+}
+
+.cannot-do {
+  background: #fdf2f2;
+  border: 1px solid #dc3545;
+}
+
+.can-do strong, .cannot-do strong {
+  display: block;
+  font-size: 12px;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.can-do ul, .cannot-do ul {
+  margin: 0;
+  padding-left: 16px;
+}
+
+.can-do ul li, .cannot-do ul li {
+  font-size: 12px;
+  line-height: 1.3;
+  margin-bottom: 4px;
+}
+
+.investigative-guidance {
+  background: #fff3cd !important;
+  border: 2px solid #856404 !important;
+}
+
+.investigative-guidance p {
+  font-weight: 500;
+  color: #6d4c00;
+}
+
+.investigative-guidance strong {
+  color: #5a3e00;
 }
 
 /* ========== EXPLANATION ROW STYLING ========== */
@@ -370,6 +647,79 @@
 
 .factor-item strong {
   color: #0b3c5d;
+}
+
+/* ========== DETAILED EXPLANATION WITH UNCERTAINTY ========== */
+.explanation-header h4 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0b3c5d;
+  margin: 0 0 16px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #d0d5dd;
+}
+
+.explanation-grid-detail {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.detail-section {
+  padding: 16px;
+  background: #f8f9fa;
+  border: 1px solid #d0d5dd;
+  border-radius: 4px;
+}
+
+.detail-section h5 {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0b3c5d;
+  margin: 0 0 12px 0;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.limitation-item, .uncertainty-item {
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  border-left: 3px solid #dc3545;
+  background: #fff;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.uncertainty-item {
+  border-left-color: #ffc107;
+  background: #fffdf0;
+}
+
+.limitation-item:last-child, .uncertainty-item:last-child {
+  margin-bottom: 0;
+}
+
+.limitation-item strong, .uncertainty-item strong {
+  color: #333;
+  font-weight: 600;
+}
+
+.hypothesis-disclaimer {
+  padding: 12px 16px;
+  background: #e8f4fd;
+  border: 2px solid #0b3c5d;
+  color: #0a2e47;
+  font-size: 13px;
+  line-height: 1.4;
+  font-family: "Segoe UI", Arial, sans-serif;
+  border-radius: 4px;
+}
+
+.hypothesis-disclaimer strong {
+  color: #0a2e47;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
 /* ========== ANALYTICAL LIMITATIONS ========== */

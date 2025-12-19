@@ -8,7 +8,7 @@
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Breadcrumb from './Breadcrumb';
 import './InvestigationPage.css';
 
@@ -29,7 +29,9 @@ const formatOfficialDate = (dateString) => {
 
 export default function InvestigationPage() {
   const navigate = useNavigate();
-  const { caseId } = useParams();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const caseId = searchParams.get('caseId');
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -39,8 +41,8 @@ export default function InvestigationPage() {
   // Fetch case details from backend
   useEffect(() => {
     if (!caseId) {
-      setError("No case ID provided. Please select a case from Dashboard.");
-      setLoading(false);
+      // Redirect to dashboard if no case ID is provided
+      navigate('/', { replace: true });
       return;
     }
 
@@ -93,7 +95,7 @@ export default function InvestigationPage() {
       return {
         text: "Upload Evidence Files",
         description: "Upload PCAP captures, network logs, or digital evidence for forensic analysis",
-        action: () => navigate(`/evidence/${caseId}`),
+        action: () => navigate(`/evidence?caseId=${encodeURIComponent(caseId)}`),
         type: "primary"
       };
     }
@@ -116,7 +118,7 @@ export default function InvestigationPage() {
           // Simulate backend analysis initiation
           setTimeout(() => {
             setInitiatingAnalysis(false);
-            navigate(`/analysis/${caseId}`);
+            navigate(`/analysis?caseId=${encodeURIComponent(caseId)}`);
           }, 2000);
         },
         type: "primary"
@@ -127,7 +129,7 @@ export default function InvestigationPage() {
       return {
         text: "View Live Analysis",
         description: "Monitor real-time analysis progress and preliminary findings",
-        action: () => navigate(`/analysis/${caseId}`),
+        action: () => navigate(`/analysis?caseId=${encodeURIComponent(caseId)}`),
         type: "info"
       };
     }
@@ -136,7 +138,7 @@ export default function InvestigationPage() {
       return {
         text: "Review Analysis Results",
         description: "Examine correlation findings, confidence scores, and evidence assessment",
-        action: () => navigate(`/analysis/${caseId}`),
+        action: () => navigate(`/analysis?caseId=${encodeURIComponent(caseId)}`),
         type: "success"
       };
     }
@@ -152,7 +154,7 @@ export default function InvestigationPage() {
       actions.push({
         text: "View Forensic Details",
         description: "Examine uploaded evidence files and metadata",
-        action: () => navigate(`/forensic-analysis/${caseId}`),
+        action: () => navigate(`/forensic-analysis?caseId=${encodeURIComponent(caseId)}`),
         type: "secondary"
       });
     }
@@ -161,7 +163,7 @@ export default function InvestigationPage() {
       actions.push({
         text: "Generate Final Report", 
         description: "Create comprehensive investigation report for legal proceedings",
-        action: () => navigate(`/report/${caseId}`),
+        action: () => navigate(`/report?caseId=${encodeURIComponent(caseId)}`),
         type: "success"
       });
     }
@@ -234,6 +236,113 @@ export default function InvestigationPage() {
               </tr>
             </tbody>
           </table>
+        </div>
+      </section>
+
+      {/* Case Timeline - Investigation Progress */}
+      <section className="workspace-section">
+        <div className="section-header">
+          <h2>📋 Investigation Timeline</h2>
+        </div>
+        <div className="section-body">
+          <div className="timeline-container">
+            <div className="timeline-item">
+              <div className="timeline-indicator completed">
+                <span className="timeline-checkmark">✓</span>
+              </div>
+              <div className="timeline-content">
+                <h4>Case Initiated</h4>
+                <p>Investigation file created in system</p>
+                <span className="timeline-date">{formatOfficialDate(caseData.created_at)}</span>
+              </div>
+            </div>
+
+            <div className={`timeline-item ${caseData.evidence?.uploaded ? 'completed' : 'pending'}`}>
+              <div className={`timeline-indicator ${caseData.evidence?.uploaded ? 'completed' : 'pending'}`}>
+                <span className="timeline-checkmark">{caseData.evidence?.uploaded ? '✓' : '⏳'}</span>
+              </div>
+              <div className="timeline-content">
+                <h4>Evidence Collection</h4>
+                <p>PCAP files and network logs uploaded</p>
+                <span className="timeline-date">
+                  {caseData.evidence?.uploaded 
+                    ? formatOfficialDate(caseData.evidence.uploaded_at)
+                    : 'Pending evidence upload'
+                  }
+                </span>
+              </div>
+            </div>
+
+            <div className={`timeline-item ${caseData.evidence?.sealed ? 'completed' : 'pending'}`}>
+              <div className={`timeline-indicator ${caseData.evidence?.sealed ? 'completed' : 'pending'}`}>
+                <span className="timeline-checkmark">{caseData.evidence?.sealed ? '✓' : '⏳'}</span>
+              </div>
+              <div className="timeline-content">
+                <h4>Evidence Sealing</h4>
+                <p>Cryptographic integrity verification applied</p>
+                <span className="timeline-date">
+                  {caseData.evidence?.sealed 
+                    ? formatOfficialDate(caseData.evidence.sealed_at || caseData.evidence.uploaded_at)
+                    : 'Pending evidence sealing'
+                  }
+                </span>
+              </div>
+            </div>
+
+            <div className={`timeline-item ${caseData.analysis?.status === 'COMPLETED' ? 'completed' : 'pending'}`}>
+              <div className={`timeline-indicator ${caseData.analysis?.status === 'COMPLETED' ? 'completed' : 'pending'}`}>
+                <span className="timeline-checkmark">{caseData.analysis?.status === 'COMPLETED' ? '✓' : '⏳'}</span>
+              </div>
+              <div className="timeline-content">
+                <h4>TOR Correlation Analysis</h4>
+                <p>Statistical analysis of traffic patterns completed</p>
+                <span className="timeline-date">
+                  {caseData.analysis?.status === 'COMPLETED' 
+                    ? formatOfficialDate(caseData.analysis.completed_at || new Date())
+                    : 'Pending analysis completion'
+                  }
+                </span>
+              </div>
+            </div>
+
+            <div className={`timeline-item ${caseData.report?.generated ? 'completed' : 'pending'}`}>
+              <div className={`timeline-indicator ${caseData.report?.generated ? 'completed' : 'pending'}`}>
+                <span className="timeline-checkmark">{caseData.report?.generated ? '✓' : '⏳'}</span>
+              </div>
+              <div className="timeline-content">
+                <h4>Final Report Generation</h4>
+                <p>Comprehensive forensic report for legal proceedings</p>
+                <span className="timeline-date">
+                  {caseData.report?.generated 
+                    ? formatOfficialDate(caseData.report.generated_at)
+                    : 'Pending report generation'
+                  }
+                </span>
+              </div>
+            </div>
+
+            <div className="timeline-item pending">
+              <div className="timeline-indicator pending">
+                <span className="timeline-checkmark">⏳</span>
+              </div>
+              <div className="timeline-content">
+                <h4>Case Closure</h4>
+                <p>Investigation completed and case archived</p>
+                <span className="timeline-date">Pending investigation closure</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="timeline-legend">
+            <div className="legend-item">
+              <span className="legend-icon completed">✓</span>
+              <span>Completed</span>
+            </div>
+            <div className="legend-item">
+              <span className="legend-icon pending">⏳</span>
+              <span>Pending</span>
+            </div>
+          </div>
         </div>
       </section>
 

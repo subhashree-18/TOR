@@ -16,7 +16,10 @@ const API_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
 export default function ForensicAnalysis() {
   const navigate = useNavigate();
   const location = useLocation();
-  const caseId = location.state?.caseId || "TN/CYB/2024/001234";
+  
+  // Get case ID from query params or location state
+  const searchParams = new URLSearchParams(location.search);
+  const caseId = searchParams.get('caseId') || location.state?.caseId || "TN/CYB/2024/001234";
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

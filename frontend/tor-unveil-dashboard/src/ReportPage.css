@@ -86,6 +86,24 @@
   background: #e8f4fc;
 }
 
+.btn-export-summary {
+  background: #d9a441;
+  color: #fff;
+  border: 1px solid #d9a441;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: "Segoe UI", Arial, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn-export-summary:hover {
+  background: #c69035;
+  border-color: #c69035;
+}
+
 /* ========== PRINT STYLES ========== */
 @media print {
   /* Hide screen-only elements */

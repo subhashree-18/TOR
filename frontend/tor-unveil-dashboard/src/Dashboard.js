@@ -1,6 +1,6 @@
 /**
- * Dashboard.js ??? CASE REGISTRY (POLICE RECORDS STYLE)
- * Tamil Nadu Police Cyber Crime Wing - TOR???Unveil
+ * Dashboard.js → CASE REGISTRY (POLICE RECORDS STYLE)
+ * Tamil Nadu Police Cyber Crime Wing - TOR→Unveil
  * 
  * This UI is for a Tamil Nadu Police / Government forensic system.
  * 
@@ -16,6 +16,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Dashboard.css";
 
+const API_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
+
 export default function Dashboard() {
   const navigate = useNavigate();
   
@@ -25,21 +27,49 @@ export default function Dashboard() {
   const [error, setError] = useState(null);
   const [selectedCase, setSelectedCase] = useState(null);
 
-  // Fetch cases from backend
-  const fetchCases = useCallback(async () => {
+  // Fetch cases from backend with retry mechanism
+  const fetchCases = useCallback(async (retryCount = 0) => {
     setLoading(true);
     setError(null);
     
     try {
-      const response = await fetch("/api/investigations");
+      const response = await fetch(`${API_URL}/api/investigations`);
       if (response.ok) {
-        const data = await response.json();
-        setCases(data.investigations || data || []);
+        // Check if response is actually JSON before parsing
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          const data = await response.json();
+          setCases(data.investigations || data || []);
+        } else {
+          // Response is not JSON, handle as text for debugging
+          const text = await response.text();
+          console.warn("Backend returned non-JSON response:", text);
+          throw new Error("Backend returned invalid JSON response");
+        }
       } else {
-        throw new Error("Unable to retrieve case records from server");
+        // Try to get error message from response
+        let errorMessage = "Unable to retrieve case records from server";
+        try {
+          const errorText = await response.text();
+          if (errorText) {
+            console.warn("Backend error response:", errorText);
+            errorMessage += ` (${response.status}: ${response.statusText})`;
+          }
+        } catch (parseErr) {
+          // Ignore parsing errors for error responses
+        }
+        throw new Error(errorMessage);
       }
     } catch (err) {
       console.warn("Backend unavailable, showing empty state:", err.message);
+      
+      // Retry once after a short delay if it's the first attempt
+      if (retryCount === 0 && (err.message.includes("Failed to fetch") || err.message.includes("JSON"))) {
+        console.log("Retrying backend connection in 2 seconds...");
+        setTimeout(() => fetchCases(1), 2000);
+        return;
+      }
+      
       setError("Case records unavailable. Backend service may be offline.");
       setCases([]);
     } finally {
@@ -69,7 +99,7 @@ export default function Dashboard() {
       return {
         message: `Case ${pendingEvidence.caseId}: Upload forensic evidence to proceed.`,
         action: "Upload Evidence",
-        path: `/forensic-upload/${pendingEvidence.caseId}`
+        path: `/evidence?caseId=${encodeURIComponent(pendingEvidence.caseId)}`
       };
     }
 
@@ -110,7 +140,7 @@ export default function Dashboard() {
   };
 
   const handleViewCase = (caseItem) => {
-    navigate(`/investigation/${caseItem.caseId}`);
+    navigate(`/investigation?caseId=${encodeURIComponent(caseItem.caseId)}`);
   };
 
   const handleRegisterNewCase = () => {
@@ -203,6 +233,64 @@ export default function Dashboard() {
           <button className="btn-next-action" onClick={handleNextAction}>
             {nextAction.action}
           </button>
+        </div>
+      </div>
+
+      {/* Investigator Workflow Guidance */}
+      <div className="workflow-guidance-section">
+        <div className="workflow-guidance-header">
+          <h3>🎯 Investigation Workflow Guide</h3>
+        </div>
+        <div className="workflow-guidance-content">
+          <div className="workflow-intro">
+            <p>Follow these steps for proper forensic investigation protocol:</p>
+          </div>
+          <div className="workflow-steps">
+            <div className="workflow-step">
+              <div className="step-number">1</div>
+              <div className="step-content">
+                <h4>Case Registration</h4>
+                <p>Create new investigation file with FIR reference and case details</p>
+                <span className="step-note">✓ Always link to official FIR number</span>
+              </div>
+            </div>
+            <div className="workflow-step">
+              <div className="step-number">2</div>
+              <div className="step-content">
+                <h4>Evidence Collection</h4>
+                <p>Upload PCAP files and network logs following chain of custody procedures</p>
+                <span className="step-note">⚠️ Ensure evidence integrity before upload</span>
+              </div>
+            </div>
+            <div className="workflow-step">
+              <div className="step-number">3</div>
+              <div className="step-content">
+                <h4>Evidence Sealing</h4>
+                <p>Cryptographically seal evidence to prevent tampering</p>
+                <span className="step-note">🔒 Once sealed, evidence becomes read-only</span>
+              </div>
+            </div>
+            <div className="workflow-step">
+              <div className="step-number">4</div>
+              <div className="step-content">
+                <h4>TOR Correlation Analysis</h4>
+                <p>Run statistical analysis to identify traffic patterns and correlations</p>
+                <span className="step-note">📊 Analysis provides investigative leads only</span>
+              </div>
+            </div>
+            <div className="workflow-step">
+              <div className="step-number">5</div>
+              <div className="step-content">
+                <h4>Report Generation</h4>
+                <p>Create comprehensive forensic reports for legal proceedings</p>
+                <span className="step-note">📄 Export in multiple formats for different audiences</span>
+              </div>
+            </div>
+          </div>
+          <div className="workflow-reminder">
+            <strong>💡 Remember:</strong> This system provides correlation analysis only. All findings must be corroborated 
+            with traditional investigative methods and additional evidence before any enforcement action.
+          </div>
         </div>
       </div>
 

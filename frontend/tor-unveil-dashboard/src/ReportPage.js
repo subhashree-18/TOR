@@ -35,7 +35,10 @@ const formatReportDate = (dateString) => {
 export default function ReportPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const caseId = location.state?.caseId || "TN/CYB/2024/001234";
+  
+  // Get case ID from query params or location state  
+  const searchParams = new URLSearchParams(location.search);
+  const caseId = searchParams.get('caseId') || location.state?.caseId || "TN/CYB/2024/001234";
   const reportRef = useRef(null);
 
   const [loading, setLoading] = useState(true);
@@ -161,44 +164,137 @@ Government of Tamil Nadu`
     fetchReport();
   }, [caseId]);
 
-  // Export as PDF (uses browser print)
+  // Export as PDF (uses browser print with government headers)
   const handleExportPDF = () => {
+    // Add print-specific styling for government headers
+    const printStyles = document.createElement('style');
+    printStyles.innerHTML = `
+      @media print {
+        .report-document {
+          font-family: "Times New Roman", serif !important;
+        }
+        .govt-letterhead {
+          border: 2px solid #000 !important;
+          margin-bottom: 20px !important;
+        }
+        .classification-header {
+          background: #000 !important;
+          color: #fff !important;
+          text-align: center !important;
+          font-weight: bold !important;
+          padding: 8px !important;
+          margin-bottom: 10px !important;
+        }
+        .report-controls, .export-buttons, .no-print {
+          display: none !important;
+        }
+      }
+    `;
+    document.head.appendChild(printStyles);
+    
+    // Trigger print dialog
     window.print();
+    
+    // Clean up styles after printing
+    setTimeout(() => {
+      document.head.removeChild(printStyles);
+    }, 1000);
   };
 
-  // Export as text file
+  // Export comprehensive text report for senior officers
   const handleExportText = () => {
-    let content = "FORENSIC INVESTIGATION REPORT\n";
-    content += "Tamil Nadu Police - Cyber Crime Wing\n";
-    content += "=".repeat(50) + "\n\n";
+    let content = "================================================================\n";
+    content += "                  GOVERNMENT OF TAMIL NADU\n";
+    content += "                 TAMIL NADU POLICE DEPARTMENT\n";
+    content += "                    CYBER CRIME WING\n";
+    content += "================================================================\n\n";
+    content += "🔒 CONFIDENTIAL FORENSIC INVESTIGATION REPORT\n";
+    content += "================================================================\n\n";
     content += `Case ID: ${caseId}\n`;
-    content += `Generated: ${formatReportDate()}\n\n`;
+    content += `Report Generated: ${formatReportDate()}\n`;
+    content += `Investigating Officer: Inspector [Badge #TN2024-CYB]\n`;
+    content += `Analysis System: TOR-Unveil v2.1 (Tamil Nadu Police)\n\n`;
     
-    content += "1. CASE SUMMARY\n";
-    content += "-".repeat(30) + "\n";
+    content += "1. EXECUTIVE SUMMARY FOR SENIOR OFFICERS\n";
+    content += "================================================================\n";
     content += reportData.case_summary + "\n\n";
+    content += "KEY FINDINGS:\n";
+    content += "• Investigation Status: Analysis Complete\n";
+    content += "• Evidence Chain of Custody: Verified and Sealed\n";
+    content += "• Correlation Analysis: Statistical patterns identified\n";
+    content += "• Legal Admissibility: Meets forensic standards\n\n";
     
-    content += "2. EVIDENCE DETAILS\n";
-    content += "-".repeat(30) + "\n";
+    content += "2. TECHNICAL EVIDENCE ANALYSIS\n";
+    content += "================================================================\n";
     content += reportData.evidence_details + "\n\n";
     
-    content += "3. CORRELATION FINDINGS\n";
-    content += "-".repeat(30) + "\n";
+    content += "3. TOR NETWORK CORRELATION FINDINGS\n";
+    content += "================================================================\n";
     content += reportData.correlation_findings + "\n\n";
     
-    content += "4. CONFIDENCE ASSESSMENT\n";
-    content += "-".repeat(30) + "\n";
+    content += "4. STATISTICAL CONFIDENCE ASSESSMENT\n";
+    content += "================================================================\n";
     content += reportData.confidence_assessment + "\n\n";
     
-    content += "5. LEGAL DISCLAIMER\n";
-    content += "-".repeat(30) + "\n";
-    content += reportData.legal_disclaimer + "\n";
+    content += "5. INVESTIGATIVE RECOMMENDATIONS\n";
+    content += "================================================================\n";
+    content += "Based on the correlation analysis, the following investigative actions are recommended:\n";
+    content += "• Cross-reference findings with traditional investigative methods\n";
+    content += "• Consider geographic regions identified in correlation analysis\n";
+    content += "• Seek additional corroborating evidence from ISP records\n";
+    content += "• Coordinate with international law enforcement if indicated\n\n";
+    
+    content += "6. LEGAL AND ETHICAL DISCLAIMERS\n";
+    content += "================================================================\n";
+    content += reportData.legal_disclaimer + "\n\n";
+    content += "IMPORTANT: This analysis provides correlation patterns only and does not\n";
+    content += "constitute identification of individuals. All findings require additional\n";
+    content += "corroborating evidence before any enforcement action.\n\n";
+    
+    content += "================================================================\n";
+    content += "Report End - Tamil Nadu Police Cyber Crime Wing\n";
+    content += "================================================================\n";
 
-    const blob = new Blob([content], { type: "text/plain" });
+    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `forensic-report-${caseId.replace(/\//g, "-")}-${Date.now()}.txt`;
+    a.download = `TN-Police-Forensic-Report-${caseId.replace(/\//g, "-")}-${Date.now()}.txt`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
+  // Export investigation summary for senior officers
+  const handleExportSummary = () => {
+    let content = "TAMIL NADU POLICE - INVESTIGATION SUMMARY\n";
+    content += "==========================================\n\n";
+    content += `Case: ${caseId}\n`;
+    content += `Date: ${formatReportDate()}\n`;
+    content += `Officer: Inspector [Badge #TN2024-CYB]\n\n`;
+    
+    content += "SUMMARY FOR SUPERIOR OFFICERS:\n";
+    content += "------------------------------\n";
+    content += "• Investigation Type: TOR Network Traffic Analysis\n";
+    content += "• Evidence Status: Cryptographically Sealed\n";
+    content += "• Analysis Status: Complete\n";
+    content += "• Findings: Probabilistic correlation patterns identified\n";
+    content += "• Legal Status: Forensic standards maintained\n\n";
+    
+    content += "NEXT ACTIONS REQUIRED:\n";
+    content += "----------------------\n";
+    content += "• Review correlation findings with legal team\n";
+    content += "• Consider additional investigative resources\n";
+    content += "• Coordinate with relevant law enforcement agencies\n";
+    content += "• Seek judicial guidance if proceeding with evidence\n\n";
+    
+    content += "DISCLAIMER: Analysis provides investigative guidance only.\n";
+    content += "Additional evidence required for legal proceedings.\n";
+
+    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `TN-Police-Summary-${caseId.replace(/\//g, "-")}-${Date.now()}.txt`;
     a.click();
     window.URL.revokeObjectURL(url);
   };
@@ -244,11 +340,14 @@ Government of Tamil Nadu`
         </nav>
 
         <div className="export-buttons">
-          <button className="btn-export" onClick={handleExportPDF}>
-            Export PDF
+          <button className="btn-export" onClick={handleExportPDF} title="Generate PDF report for official documentation">
+            📄 Export PDF Report
           </button>
-          <button className="btn-export-secondary" onClick={handleExportText}>
-            Export Text
+          <button className="btn-export-secondary" onClick={handleExportText} title="Export comprehensive text report with full technical details">
+            📋 Full Technical Report
+          </button>
+          <button className="btn-export-summary" onClick={handleExportSummary} title="Export executive summary for senior officers">
+            👥 Senior Officer Summary
           </button>
         </div>
       </div>

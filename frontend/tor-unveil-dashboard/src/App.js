@@ -19,7 +19,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from "react";
-import { BrowserRouter, Routes, Route, useNavigate, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useNavigate, useLocation, useParams } from "react-router-dom";
 import { AppProvider, useAppContext } from "./AppContext";
 import Dashboard from "./Dashboard";
 import AnalysisPage from "./AnalysisPage";
@@ -29,6 +29,44 @@ import ForensicAnalysis from "./ForensicAnalysis";
 import ForensicUpload from "./ForensicUpload";
 import PoliceLogin from "./PoliceLogin";
 import "./App.css";
+
+const API_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
+
+// ============================================================================
+// LEGACY ROUTE REDIRECT COMPONENT
+// Handles old URLs gracefully by redirecting to new query parameter format
+// ============================================================================
+
+function LegacyRouteRedirect() {
+  const navigate = useNavigate();
+  const { caseId } = useParams();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (caseId) {
+      // Extract the base path and redirect with query parameters
+      let newPath = "/";
+      const pathname = location.pathname;
+      
+      if (pathname.includes("/forensic-upload") || pathname.includes("/evidence")) {
+        newPath = `/evidence?caseId=${encodeURIComponent(caseId)}`;
+      } else if (pathname.includes("/analysis")) {
+        newPath = `/analysis?caseId=${encodeURIComponent(caseId)}`;
+      } else if (pathname.includes("/forensic-analysis")) {
+        newPath = `/forensic-analysis?caseId=${encodeURIComponent(caseId)}`;
+      } else if (pathname.includes("/report")) {
+        newPath = `/report?caseId=${encodeURIComponent(caseId)}`;
+      }
+      
+      navigate(newPath, { replace: true });
+    } else {
+      // No case ID, redirect to dashboard
+      navigate("/", { replace: true });
+    }
+  }, [navigate, caseId, location.pathname]);
+
+  return <div>Redirecting...</div>;
+}
 
 // ============================================================================
 // NAVIGATION WORKFLOW STEPS
@@ -100,6 +138,26 @@ function GovernmentHeader({ userInfo, onLogout }) {
         </div>
       </div>
     </header>
+  );
+}
+
+// ============================================================================
+// LEGAL & ETHICAL GUARDRAILS NOTICE
+// Global notice about system limitations and ethical usage
+// ============================================================================
+
+function LegalNotice() {
+  return (
+    <div className="legal-notice-banner">
+      <div className="legal-notice-content">
+        <div className="legal-warning-icon">⚖️</div>
+        <div className="legal-text">
+          <strong>IMPORTANT LEGAL NOTICE:</strong> This system provides correlation analysis only. 
+          <span className="legal-emphasis">TOR-Unveil does not deanonymize TOR users</span> and cannot identify individual persons. 
+          All findings are probabilistic assessments for investigative guidance only, not conclusive evidence.
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -284,15 +342,28 @@ function AppContent() {
     }
 
     try {
-      const response = await fetch(`/api/investigations/${caseId}/status`);
+      const response = await fetch(`${API_URL}/api/investigations/${caseId}/status`);
       if (response.ok) {
-        const data = await response.json();
-        setCaseStatus({
-          hasInvestigation: true,
-          hasEvidence: data.evidence_uploaded || false,
-          hasAnalysis: data.analysis_complete || false,
-          isComplete: data.report_generated || false
-        });
+        // Check if response is actually JSON before parsing
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          const data = await response.json();
+          setCaseStatus({
+            hasInvestigation: true,
+            hasEvidence: data.evidence_uploaded || false,
+            hasAnalysis: data.analysis_complete || false,
+            isComplete: data.report_generated || false
+          });
+        } else {
+          console.warn("Backend returned non-JSON response for case status");
+          // Assume case exists but is new
+          setCaseStatus({
+            hasInvestigation: true,
+            hasEvidence: false,
+            hasAnalysis: false,
+            isComplete: false
+          });
+        }
       } else {
         // Case exists but might be new
         setCaseStatus({
@@ -353,6 +424,7 @@ function AppContent() {
   return (
     <div className="govt-app-container">
       <GovernmentHeader userInfo={userInfo} onLogout={handleLogout} />
+      <LegalNotice />
       
       <div className="govt-main-layout">
         <LeftNavigation 
@@ -371,14 +443,20 @@ function AppContent() {
               
               {/* Investigation Hub - Single Source of Truth */}
               <Route path="/investigation" element={<InvestigationPage />} />
-              <Route path="/investigation/:caseId" element={<InvestigationPage />} />
               
               {/* Protected routes with backend verification */}
               {/* Only accessible via Investigation workflow buttons */}
-              <Route path="/evidence/:caseId" element={<ForensicUpload />} />
-              <Route path="/analysis/:caseId" element={<AnalysisPage />} />
-              <Route path="/forensic-analysis/:caseId" element={<ForensicAnalysis />} />
-              <Route path="/report/:caseId" element={<ReportPage />} />
+              <Route path="/evidence" element={<ForensicUpload />} />
+              <Route path="/analysis" element={<AnalysisPage />} />
+              <Route path="/forensic-analysis" element={<ForensicAnalysis />} />
+              <Route path="/report" element={<ReportPage />} />
+              
+              {/* Legacy route redirects for old URLs */}
+              <Route path="/forensic-upload/:caseId" element={<LegacyRouteRedirect />} />
+              <Route path="/evidence/:caseId" element={<LegacyRouteRedirect />} />
+              <Route path="/analysis/:caseId" element={<LegacyRouteRedirect />} />
+              <Route path="/forensic-analysis/:caseId" element={<LegacyRouteRedirect />} />
+              <Route path="/report/:caseId" element={<LegacyRouteRedirect />} />
             </Routes>
           </div>
         </main>
