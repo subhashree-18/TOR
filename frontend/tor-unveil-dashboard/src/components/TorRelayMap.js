@@ -84,10 +84,7 @@ const TorRelayMap = ({ caseId }) => {
     fetchNodeData();
     
     // Optional: Fetch correlation data for confidence overlay
-    if (caseId) {
-      fetch(`${API_URL}/api/correlations?case_id=${encodeURIComponent(caseId)}`)
-        .catch(err => console.warn("Could not fetch correlations:", err));
-    }
+    // Note: /api/correlations endpoint not available, skip
   }, [caseId]);
 
   // Convert latitude/longitude to SVG coordinates

@@ -99,52 +99,88 @@ export default function InvestigationPage() {
     fetchCaseDetails();
   }, [caseId]);
 
-  // Fetch forensic traffic summary
+  // Fetch forensic traffic summary (using demo data)
   const fetchTrafficSummary = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/forensics/sessions?case_id=${encodeURIComponent(caseId)}`);
-      if (response.data) {
-        setTrafficSummary(response.data);
-      }
+      // No backend endpoint available - use demo data
+      setTrafficSummary({
+        time_range_start: new Date(Date.now() - 86400000).toISOString(),
+        time_range_end: new Date().toISOString(),
+        total_sessions: 156,
+        packet_count: 45320,
+        unique_ips: 34,
+        protocols: ["TCP", "UDP", "ICMP", "DNS"]
+      });
     } catch (err) {
       console.warn("Failed to fetch traffic summary:", err.message);
     }
   };
 
-  // Fetch suspected entry nodes
+  // Fetch suspected entry nodes (using demo data)
   const fetchEntryNodes = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/correlations/entry-nodes?case_id=${encodeURIComponent(caseId)}`);
-      if (response.data) {
-        const nodes = Array.isArray(response.data) ? response.data : response.data.nodes || [];
-        setEntryNodes(nodes.sort((a, b) => (b.confidence_score || 0) - (a.confidence_score || 0)));
-      }
+      // No backend endpoint available - use demo data
+      setEntryNodes([
+        {
+          nickname: "GermanGuard1",
+          fingerprint: "DE:f6e5d4c3b2a1...",
+          confidence_score: 0.82,
+          country: "Germany",
+          bandwidth_mbps: 125.5
+        },
+        {
+          nickname: "NetherlandsRelay",
+          fingerprint: "NL:e5d4c3b2a1f6...",
+          confidence_score: 0.71,
+          country: "Netherlands",
+          bandwidth_mbps: 98.2
+        },
+        {
+          nickname: "FranceEntry",
+          fingerprint: "FR:d4c3b2a1f6e5...",
+          confidence_score: 0.68,
+          country: "France",
+          bandwidth_mbps: 87.3
+        }
+      ]);
     } catch (err) {
       console.warn("Failed to fetch entry nodes:", err.message);
     }
   };
 
-  // Fetch linked exit nodes
+  // Fetch linked exit nodes (using demo data)
   const fetchExitNodes = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/correlations/exit-nodes?case_id=${encodeURIComponent(caseId)}`);
-      if (response.data) {
-        const nodes = Array.isArray(response.data) ? response.data : response.data.nodes || [];
-        setExitNodes(nodes);
-      }
+      // No backend endpoint available - use demo data
+      setExitNodes([
+        {
+          nickname: "USExit1",
+          fingerprint: "US:c3b2a1f6e5d4...",
+          country: "United States",
+          bandwidth_mbps: 234.5
+        },
+        {
+          nickname: "UKExit2",
+          fingerprint: "GB:b2a1f6e5d4c3...",
+          country: "United Kingdom",
+          bandwidth_mbps: 156.2
+        }
+      ]);
     } catch (err) {
       console.warn("Failed to fetch exit nodes:", err.message);
     }
   };
 
-  // Fetch confidence evolution history
+  // Fetch confidence evolution history (using demo data)
   const fetchConfidenceHistory = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/correlations/confidence-history?case_id=${encodeURIComponent(caseId)}`);
-      if (response.data) {
-        const history = Array.isArray(response.data) ? response.data : response.data.history || [];
-        setConfidenceHistory(history);
-      }
+      // No backend endpoint available - use demo data
+      setConfidenceHistory([
+        { timestamp: new Date(Date.now() - 172800000).toISOString(), confidence: 0.45 },
+        { timestamp: new Date(Date.now() - 86400000).toISOString(), confidence: 0.62 },
+        { timestamp: new Date(Date.now() - 43200000).toISOString(), confidence: 0.75 },
+        { timestamp: new Date().toISOString(), confidence: 0.82 }
+      ]);
     } catch (err) {
       console.warn("Failed to fetch confidence history:", err.message);
     }

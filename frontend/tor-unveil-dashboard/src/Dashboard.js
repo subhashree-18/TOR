@@ -93,7 +93,8 @@ export default function Dashboard() {
   const fetchTorTopology = useCallback(async () => {
     setTopologyLoading(true);
     try {
-      const response = await fetch(`${API_URL}/api/nodes/summary`);
+      // Use /relays/map endpoint which returns node topology
+      const response = await fetch(`${API_URL}/relays/map`);
       if (response.ok) {
         const data = await response.json();
         setTorTopology(data);
@@ -113,7 +114,8 @@ export default function Dashboard() {
   const fetchTopEntryNodes = useCallback(async () => {
     setEntryNodesLoading(true);
     try {
-      const response = await fetch(`${API_URL}/api/correlations/top-entry-nodes`);
+      // Use /risk/top endpoint which returns top risk nodes (entry nodes)
+      const response = await fetch(`${API_URL}/risk/top`);
       if (response.ok) {
         const data = await response.json();
         setTopEntryNodes(Array.isArray(data) ? data.slice(0, 3) : data.nodes?.slice(0, 3) || []);
@@ -133,10 +135,11 @@ export default function Dashboard() {
   const fetchRecentEvents = useCallback(async () => {
     setEventsLoading(true);
     try {
-      const response = await fetch(`${API_URL}/api/correlations/recent`);
+      // Use /api/investigations endpoint which returns recent cases/investigations
+      const response = await fetch(`${API_URL}/api/investigations`);
       if (response.ok) {
         const data = await response.json();
-        setRecentEvents(Array.isArray(data) ? data.slice(0, 5) : data.events?.slice(0, 5) || []);
+        setRecentEvents(Array.isArray(data) ? data.slice(0, 5) : data.investigations?.slice(0, 5) || []);
       } else {
         console.warn("Failed to fetch recent events");
         setRecentEvents([]);

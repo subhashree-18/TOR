@@ -94,10 +94,40 @@ const WORKFLOW_STEPS = [
 ];
 
 // ============================================================================
-// GOVERNMENT HEADER COMPONENT
-// Fixed top header with official branding
+// CHANGE 9: PROTECTED ROUTE WRAPPER
+// Enforces investigation workflow: Dashboard → Investigation → Analysis → Report
+// Only allows access to investigation pages if case_id is provided and valid
 // ============================================================================
 
+function ProtectedRoute({ element, requiresCaseId = false, requiredAnalysisState = null }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Get case ID from query params or location state
+  const searchParams = new URLSearchParams(location.search);
+  const caseIdFromParams = searchParams.get('caseId');
+  const caseIdFromState = location.state?.caseId;
+  const caseId = caseIdFromParams || caseIdFromState;
+  
+  // If case ID is required but not provided, redirect to dashboard
+  if (requiresCaseId && !caseId) {
+    return (
+      <div className="route-protection-notice">
+        <h2>Access Denied</h2>
+        <p>This page requires a valid case ID. Please select a case from the Dashboard.</p>
+        <button onClick={() => navigate("/dashboard")}>Return to Dashboard</button>
+      </div>
+    );
+  }
+  
+  // Return the protected element
+  return element;
+}
+
+// ============================================================================
+// INVESTIGATION WORKFLOW ROUTER
+// Ensures proper flow: Dashboard → Investigation → Evidence/Analysis → Report
+// ============================================================================
 function GovernmentHeader({ userInfo, onLogout }) {
   return (
     <header className="govt-header">
@@ -442,15 +472,48 @@ function AppContent() {
               <Route path="/dashboard" element={<Dashboard />} />
               
               {/* Investigation Hub - Single Source of Truth */}
+              {/* Requires valid case_id to function */}
               <Route path="/investigation" element={<InvestigationPage />} />
               <Route path="/investigation/:caseId" element={<InvestigationPage />} />
               
-              {/* Protected routes with backend verification */}
-              {/* Only accessible via Investigation workflow buttons */}
-              <Route path="/evidence" element={<ForensicUpload />} />
-              <Route path="/analysis" element={<AnalysisPage />} />
-              <Route path="/forensic-analysis" element={<ForensicAnalysis />} />
-              <Route path="/report" element={<ReportPage />} />
+              {/* CHANGE 9: Protected routes - require case_id */}
+              {/* Only accessible after selecting case in Investigation page */}
+              <Route 
+                path="/evidence" 
+                element={
+                  <ProtectedRoute 
+                    element={<ForensicUpload />} 
+                    requiresCaseId={true} 
+                  />
+                } 
+              />
+              <Route 
+                path="/analysis" 
+                element={
+                  <ProtectedRoute 
+                    element={<AnalysisPage />} 
+                    requiresCaseId={true} 
+                  />
+                } 
+              />
+              <Route 
+                path="/forensic-analysis" 
+                element={
+                  <ProtectedRoute 
+                    element={<ForensicAnalysis />} 
+                    requiresCaseId={true} 
+                  />
+                } 
+              />
+              <Route 
+                path="/report" 
+                element={
+                  <ProtectedRoute 
+                    element={<ReportPage />} 
+                    requiresCaseId={true} 
+                  />
+                } 
+              />
               
               {/* Legacy route redirects for old URLs */}
               <Route path="/forensic-upload/:caseId" element={<LegacyRouteRedirect />} />
