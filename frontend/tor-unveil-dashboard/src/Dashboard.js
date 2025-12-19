@@ -26,6 +26,18 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedCase, setSelectedCase] = useState(null);
+  
+  // TOR Topology Summary State
+  const [torTopology, setTorTopology] = useState(null);
+  const [topologyLoading, setTopologyLoading] = useState(false);
+  
+  // High-Confidence Entry Nodes State
+  const [topEntryNodes, setTopEntryNodes] = useState([]);
+  const [entryNodesLoading, setEntryNodesLoading] = useState(false);
+  
+  // Recent Correlation Events State
+  const [recentEvents, setRecentEvents] = useState([]);
+  const [eventsLoading, setEventsLoading] = useState(false);
 
   // Fetch cases from backend with retry mechanism
   const fetchCases = useCallback(async (retryCount = 0) => {
@@ -77,8 +89,74 @@ export default function Dashboard() {
     }
   }, []);
 
+  // Fetch TOR Topology Summary from backend
+  const fetchTorTopology = useCallback(async () => {
+    setTopologyLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/api/nodes/summary`);
+      if (response.ok) {
+        const data = await response.json();
+        setTorTopology(data);
+      } else {
+        console.warn("Failed to fetch TOR topology summary");
+        setTorTopology(null);
+      }
+    } catch (err) {
+      console.warn("Backend TOR topology unavailable:", err.message);
+      setTorTopology(null);
+    } finally {
+      setTopologyLoading(false);
+    }
+  }, []);
+
+  // Fetch High-Confidence Entry Nodes from backend
+  const fetchTopEntryNodes = useCallback(async () => {
+    setEntryNodesLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/api/correlations/top-entry-nodes`);
+      if (response.ok) {
+        const data = await response.json();
+        setTopEntryNodes(Array.isArray(data) ? data.slice(0, 3) : data.nodes?.slice(0, 3) || []);
+      } else {
+        console.warn("Failed to fetch top entry nodes");
+        setTopEntryNodes([]);
+      }
+    } catch (err) {
+      console.warn("Backend entry nodes unavailable:", err.message);
+      setTopEntryNodes([]);
+    } finally {
+      setEntryNodesLoading(false);
+    }
+  }, []);
+
+  // Fetch Recent Correlation Events from backend
+  const fetchRecentEvents = useCallback(async () => {
+    setEventsLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/api/correlations/recent`);
+      if (response.ok) {
+        const data = await response.json();
+        setRecentEvents(Array.isArray(data) ? data.slice(0, 5) : data.events?.slice(0, 5) || []);
+      } else {
+        console.warn("Failed to fetch recent events");
+        setRecentEvents([]);
+      }
+    } catch (err) {
+      console.warn("Backend recent events unavailable:", err.message);
+      setRecentEvents([]);
+    } finally {
+      setEventsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchCases();
+    // Fetch TOR topology data
+    fetchTorTopology();
+    // Fetch top entry nodes
+    fetchTopEntryNodes();
+    // Fetch recent correlation events
+    fetchRecentEvents();
   }, [fetchCases]);
 
   // Determine next recommended action based on case status
@@ -234,6 +312,109 @@ export default function Dashboard() {
             {nextAction.action}
           </button>
         </div>
+      </div>
+
+      {/* SECTION 1: Active TOR Topology Summary */}
+      <div className="tor-topology-section">
+        <div className="section-header">Active TOR Topology Summary</div>
+        {topologyLoading ? (
+          <div className="loading-state">Loading TOR topology data...</div>
+        ) : torTopology ? (
+          <div className="topology-grid">
+            <div className="topology-card">
+              <span className="card-label">Total TOR Nodes Observed</span>
+              <span className="card-value">{torTopology.total_nodes || 0}</span>
+            </div>
+            <div className="topology-card">
+              <span className="card-label">Guard (Entry) Nodes</span>
+              <span className="card-value">{torTopology.guard_nodes || 0}</span>
+            </div>
+            <div className="topology-card">
+              <span className="card-label">Exit Nodes</span>
+              <span className="card-value">{torTopology.exit_nodes || 0}</span>
+            </div>
+            <div className="topology-card">
+              <span className="card-label">Middle Nodes</span>
+              <span className="card-value">{torTopology.middle_nodes || 0}</span>
+            </div>
+          </div>
+        ) : (
+          <div className="empty-state">TOR topology data unavailable</div>
+        )}
+      </div>
+
+      {/* SECTION 2: High-Confidence Entry Nodes */}
+      <div className="entry-nodes-section">
+        <div className="section-header">High-Confidence Entry Nodes (Guard Nodes)</div>
+        {entryNodesLoading ? (
+          <div className="loading-state">Loading entry nodes data...</div>
+        ) : topEntryNodes && topEntryNodes.length > 0 ? (
+          <table className="entry-nodes-table">
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Fingerprint</th>
+                <th>Country</th>
+                <th>Confidence Score</th>
+              </tr>
+            </thead>
+            <tbody>
+              {topEntryNodes.map((node, index) => (
+                <tr key={node.fingerprint || index}>
+                  <td>#{index + 1}</td>
+                  <td><code className="fingerprint">{(node.fingerprint || node.id || '???').substring(0, 16)}...</code></td>
+                  <td>{node.country || 'Unknown'}</td>
+                  <td>
+                    <div className="confidence-display">
+                      <span className="confidence-text">{Math.round((node.confidence_score || 0) * 100)}%</span>
+                      <div className="confidence-bar">
+                        <div 
+                          className="confidence-fill"
+                          style={{width: `${(node.confidence_score || 0) * 100}%`}}
+                        />
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <div className="empty-state">No high-confidence entry nodes available</div>
+        )}
+      </div>
+
+      {/* SECTION 3: Recent Correlation Events */}
+      <div className="recent-events-section">
+        <div className="section-header">Recent Correlation Events</div>
+        {eventsLoading ? (
+          <div className="loading-state">Loading correlation events...</div>
+        ) : recentEvents && recentEvents.length > 0 ? (
+          <div className="events-timeline">
+            {recentEvents.map((event, index) => (
+              <div key={event.id || index} className="event-item">
+                <div className="event-timestamp">
+                  {new Date(event.timestamp || Date.now()).toLocaleString('en-IN')}
+                </div>
+                <div className="event-details">
+                  <p className="event-description">{event.description || event.event_type || 'Correlation event'}</p>
+                  {event.confidence && (
+                    <div className="event-confidence">
+                      Confidence: <strong>{Math.round(event.confidence * 100)}%</strong>
+                    </div>
+                  )}
+                  {event.nodes_involved && (
+                    <div className="event-nodes">
+                      Nodes: {Array.isArray(event.nodes_involved) ? event.nodes_involved.join(', ') : event.nodes_involved}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="empty-state">No recent correlation events</div>
+        )}
       </div>
 
       {/* Investigator Workflow Guidance */}

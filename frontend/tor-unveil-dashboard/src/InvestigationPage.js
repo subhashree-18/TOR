@@ -45,6 +45,13 @@ export default function InvestigationPage() {
   const [caseData, setCaseData] = useState(null);
   const [initiatingAnalysis, setInitiatingAnalysis] = useState(false);
 
+  // Forensic data states
+  const [trafficSummary, setTrafficSummary] = useState(null);
+  const [entryNodes, setEntryNodes] = useState([]);
+  const [exitNodes, setExitNodes] = useState([]);
+  const [confidenceHistory, setConfidenceHistory] = useState([]);
+  const [forensicLoading, setForensicLoading] = useState(false);
+
   // Fetch case details from backend
   useEffect(() => {
     if (!caseId) {
@@ -91,6 +98,70 @@ export default function InvestigationPage() {
 
     fetchCaseDetails();
   }, [caseId]);
+
+  // Fetch forensic traffic summary
+  const fetchTrafficSummary = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/api/forensics/sessions?case_id=${encodeURIComponent(caseId)}`);
+      if (response.data) {
+        setTrafficSummary(response.data);
+      }
+    } catch (err) {
+      console.warn("Failed to fetch traffic summary:", err.message);
+    }
+  };
+
+  // Fetch suspected entry nodes
+  const fetchEntryNodes = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/api/correlations/entry-nodes?case_id=${encodeURIComponent(caseId)}`);
+      if (response.data) {
+        const nodes = Array.isArray(response.data) ? response.data : response.data.nodes || [];
+        setEntryNodes(nodes.sort((a, b) => (b.confidence_score || 0) - (a.confidence_score || 0)));
+      }
+    } catch (err) {
+      console.warn("Failed to fetch entry nodes:", err.message);
+    }
+  };
+
+  // Fetch linked exit nodes
+  const fetchExitNodes = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/api/correlations/exit-nodes?case_id=${encodeURIComponent(caseId)}`);
+      if (response.data) {
+        const nodes = Array.isArray(response.data) ? response.data : response.data.nodes || [];
+        setExitNodes(nodes);
+      }
+    } catch (err) {
+      console.warn("Failed to fetch exit nodes:", err.message);
+    }
+  };
+
+  // Fetch confidence evolution history
+  const fetchConfidenceHistory = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/api/correlations/confidence-history?case_id=${encodeURIComponent(caseId)}`);
+      if (response.data) {
+        const history = Array.isArray(response.data) ? response.data : response.data.history || [];
+        setConfidenceHistory(history);
+      }
+    } catch (err) {
+      console.warn("Failed to fetch confidence history:", err.message);
+    }
+  };
+
+  // Fetch all forensic data when case is loaded
+  useEffect(() => {
+    if (caseData && caseData.evidence?.uploaded) {
+      setForensicLoading(true);
+      Promise.all([
+        fetchTrafficSummary(),
+        fetchEntryNodes(),
+        fetchExitNodes(),
+        fetchConfidenceHistory()
+      ]).finally(() => setForensicLoading(false));
+    }
+  }, [caseData]);
 
   // Get next action based on case state (Enhanced with more options)
   const getNextAction = () => {
@@ -437,6 +508,178 @@ export default function InvestigationPage() {
           </table>
         </div>
       </section>
+
+      {/* SECTION 1: Observed Traffic Summary */}
+      {caseData.evidence?.uploaded && (
+        <section className="workspace-section">
+          <div className="section-header">
+            <h2>🔍 Observed Traffic Summary</h2>
+          </div>
+          <div className="section-body">
+            {forensicLoading ? (
+              <div className="loading-state">Loading traffic summary data...</div>
+            ) : trafficSummary ? (
+              <table className="details-table">
+                <tbody>
+                  <tr>
+                    <th>Time Range:</th>
+                    <td>
+                      {trafficSummary.start_time && trafficSummary.end_time ? (
+                        <>
+                          {formatOfficialDate(trafficSummary.start_time)} to {formatOfficialDate(trafficSummary.end_time)}
+                        </>
+                      ) : 'Not available'}
+                    </td>
+                  </tr>
+                  <tr>
+                    <th>Total Sessions Observed:</th>
+                    <td><strong>{trafficSummary.total_sessions || 0}</strong></td>
+                  </tr>
+                  {trafficSummary.unique_ips && (
+                    <tr>
+                      <th>Unique IPs:</th>
+                      <td>{trafficSummary.unique_ips}</td>
+                    </tr>
+                  )}
+                  {trafficSummary.protocols && (
+                    <tr>
+                      <th>Protocols:</th>
+                      <td>{Array.isArray(trafficSummary.protocols) ? trafficSummary.protocols.join(', ') : trafficSummary.protocols}</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            ) : (
+              <div className="empty-state">Traffic summary data unavailable</div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* SECTION 2: Suspected Entry Nodes (Ranked) */}
+      {caseData.evidence?.uploaded && (
+        <section className="workspace-section">
+          <div className="section-header">
+            <h2>🎯 Suspected Entry Nodes (Ranked by Confidence)</h2>
+          </div>
+          <div className="section-body">
+            {forensicLoading ? (
+              <div className="loading-state">Loading entry nodes data...</div>
+            ) : entryNodes && entryNodes.length > 0 ? (
+              <table className="details-table forensic-table">
+                <thead>
+                  <tr>
+                    <th>Rank</th>
+                    <th>Fingerprint</th>
+                    <th>Country</th>
+                    <th>Confidence Score</th>
+                    <th>Supporting Evidence</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {entryNodes.map((node, index) => (
+                    <tr key={node.fingerprint || index}>
+                      <td>#{index + 1}</td>
+                      <td><code>{(node.fingerprint || node.id || '???').substring(0, 20)}...</code></td>
+                      <td>{node.country || 'Unknown'}</td>
+                      <td>
+                        <div className="confidence-badge" style={{
+                          background: (node.confidence_score || 0) > 0.7 ? '#d4edda' : 
+                                     (node.confidence_score || 0) > 0.4 ? '#fff3cd' : '#f8d7da',
+                          color: (node.confidence_score || 0) > 0.7 ? '#155724' : 
+                                (node.confidence_score || 0) > 0.4 ? '#856404' : '#721c24'
+                        }}>
+                          {Math.round((node.confidence_score || 0) * 100)}%
+                        </div>
+                      </td>
+                      <td>{node.evidence_summary || 'Timing correlation'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <div className="empty-state">No suspected entry nodes available</div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* SECTION 3: Linked Exit Nodes */}
+      {caseData.evidence?.uploaded && (
+        <section className="workspace-section">
+          <div className="section-header">
+            <h2>🔗 Linked Exit Nodes Contributing to Confidence</h2>
+          </div>
+          <div className="section-body">
+            {forensicLoading ? (
+              <div className="loading-state">Loading exit nodes data...</div>
+            ) : exitNodes && exitNodes.length > 0 ? (
+              <table className="details-table forensic-table">
+                <thead>
+                  <tr>
+                    <th>Exit Node Fingerprint</th>
+                    <th>Country</th>
+                    <th>AS (Autonomous System)</th>
+                    <th>Link Confidence</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {exitNodes.map((node, index) => (
+                    <tr key={node.fingerprint || index}>
+                      <td><code>{(node.fingerprint || node.id || '???').substring(0, 20)}...</code></td>
+                      <td>{node.country || 'Unknown'}</td>
+                      <td>{node.as_number || 'Unknown'}</td>
+                      <td>
+                        <div className="confidence-badge" style={{
+                          background: (node.link_confidence || 0) > 0.7 ? '#d4edda' : '#fff3cd',
+                          color: (node.link_confidence || 0) > 0.7 ? '#155724' : '#856404'
+                        }}>
+                          {Math.round((node.link_confidence || 0) * 100)}%
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <div className="empty-state">No linked exit nodes available</div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* SECTION 4: Confidence Evolution */}
+      {caseData.evidence?.uploaded && (
+        <section className="workspace-section">
+          <div className="section-header">
+            <h2>📈 Confidence Evolution Over Time</h2>
+          </div>
+          <div className="section-body">
+            {forensicLoading ? (
+              <div className="loading-state">Loading confidence history...</div>
+            ) : confidenceHistory && confidenceHistory.length > 0 ? (
+              <div className="confidence-timeline">
+                {confidenceHistory.map((record, index) => (
+                  <div key={index} className="confidence-record">
+                    <div className="record-timestamp">
+                      {formatOfficialDate(record.timestamp || new Date())}
+                    </div>
+                    <div className="record-content">
+                      <p className="record-entry">{record.entry_node || 'Unknown'} → {record.exit_node || 'Unknown'}</p>
+                      <div className="record-confidence">
+                        Confidence: <strong style={{color: record.confidence > 0.7 ? '#155724' : '#856404'}}>{Math.round(record.confidence * 100)}%</strong>
+                      </div>
+                      {record.reason && <p className="record-reason">Reason: {record.reason}</p>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="empty-state">No confidence evolution data available</div>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* Investigation Progress */}
       <section className="workspace-section">

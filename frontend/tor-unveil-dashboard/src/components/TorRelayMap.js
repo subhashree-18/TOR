@@ -47,35 +47,81 @@ const WorldMapBackground = () => {
 const TorRelayMap = ({ caseId }) => {
   const [relayData, setRelayData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState('risk'); // 'risk', 'traffic', 'activity'
+  const [selectedMarker, setSelectedMarker] = useState(null);
+  const [markerTooltip, setMarkerTooltip] = useState(null);
+  const svgRef = React.useRef(null);
 
   useEffect(() => {
-    const fetchRelayData = async () => {
+    const fetchNodeData = async () => {
       try {
-        const response = await fetch(`${API_URL}/relays/map`);
-        const data = await response.json();
-        setRelayData(data || []);
+        setLoading(true);
+        
+        // Fetch real TOR node data from backend
+        const response = await fetch(`${API_URL}/api/nodes`);
+        if (response.ok) {
+          const data = await response.json();
+          const nodes = Array.isArray(data) ? data : data.nodes || [];
+          
+          // Filter out nodes without coordinates
+          const validNodes = nodes.filter(n => 
+            n.latitude !== undefined && n.longitude !== undefined &&
+            !isNaN(n.latitude) && !isNaN(n.longitude)
+          );
+          
+          setRelayData(validNodes);
+        } else {
+          console.warn("Failed to fetch node data");
+          setRelayData([]);
+        }
       } catch (error) {
         console.warn("Could not fetch relay data:", error);
+        setRelayData([]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchRelayData();
-  }, []);
+    fetchNodeData();
+    
+    // Optional: Fetch correlation data for confidence overlay
+    if (caseId) {
+      fetch(`${API_URL}/api/correlations?case_id=${encodeURIComponent(caseId)}`)
+        .catch(err => console.warn("Could not fetch correlations:", err));
+    }
+  }, [caseId]);
 
-  const getHeatmapColor = (relay) => {
-    switch (viewMode) {
-      case 'risk':
-        const riskLevel = relay.risk_score / 100;
-        return `rgba(255, ${Math.floor(255 - (riskLevel * 200))}, 0, 0.7)`;
-      case 'traffic':
-        return relay.is_exit ? 'rgba(255, 0, 0, 0.8)' : 'rgba(0, 100, 255, 0.6)';
-      case 'activity':
-        return relay.running ? 'rgba(0, 255, 0, 0.7)' : 'rgba(128, 128, 128, 0.4)';
-      default:
-        return 'rgba(0, 100, 255, 0.6)';
+  // Convert latitude/longitude to SVG coordinates
+  const latLonToSVG = (lat, lon) => {
+    // Mercator projection
+    const x = ((lon + 180) / 360) * 800;
+    const y = ((90 - lat) / 180) * 400;
+    return { x, y };
+  };
+
+  // Get node color based on type
+  const getNodeColor = (node) => {
+    if (node.is_guard) return '#2ecc71'; // Green for entry/guard nodes
+    if (node.is_exit) return '#e74c3c'; // Red for exit nodes
+    return '#3498db'; // Blue for middle nodes
+  };
+
+  // Get node size based on bandwidth
+  const getNodeSize = (node) => {
+    const bandwidth = node.bandwidth || 1;
+    const size = Math.max(2, Math.min(8, Math.log(bandwidth / 1000000) * 1.5));
+    return Math.max(2, size);
+  };
+
+  // Handle marker click to show details
+  const handleMarkerClick = (node, event) => {
+    setSelectedMarker(node);
+    // Position tooltip near cursor
+    const rect = svgRef.current?.getBoundingClientRect();
+    if (rect) {
+      setMarkerTooltip({
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top
+      });
     }
   };
 
@@ -89,39 +135,24 @@ const TorRelayMap = ({ caseId }) => {
 
   return (
     <div className="tor-relay-map-container">
-      <div className="map-controls">
-        <h3>🌍 Global TOR Relay Network</h3>
-        <div className="view-mode-selector">
-          <button 
-            className={viewMode === 'risk' ? 'active' : ''}
-            onClick={() => setViewMode('risk')}
-          >
-            Risk Heat Map
-          </button>
-          <button 
-            className={viewMode === 'traffic' ? 'active' : ''}
-            onClick={() => setViewMode('traffic')}
-          >
-            Traffic Flow
-          </button>
-          <button 
-            className={viewMode === 'activity' ? 'active' : ''}
-            onClick={() => setViewMode('activity')}
-          >
-            Activity Status
-          </button>
-        </div>
+      <div className="map-header">
+        <h3>🌍 TOR Relay Network Visualization</h3>
+        <p className="map-description">Interactive map showing entry nodes (green), exit nodes (red), and middle nodes (blue)</p>
       </div>
 
-      <div className="world-map-container">
-        <svg viewBox="0 0 800 400" className="world-map">
+      <div className="world-map-wrapper">
+        <svg 
+          ref={svgRef}
+          viewBox="0 0 800 400" 
+          className="world-map"
+        >
           {/* Ocean background */}
           <rect width="800" height="400" fill="#1a365d" />
           
           {/* Realistic world map */}
           <WorldMapBackground />
           
-          {/* Grid overlay for coordinates */}
+          {/* Grid overlay */}
           <defs>
             <pattern id="grid" width="50" height="25" patternUnits="userSpaceOnUse">
               <path d="M 50 0 L 0 0 0 25" fill="none" stroke="#2a4a6b" strokeWidth="0.5" opacity="0.4"/>
@@ -129,68 +160,126 @@ const TorRelayMap = ({ caseId }) => {
           </defs>
           <rect width="800" height="400" fill="url(#grid)" />
           
-          {/* Equator and Prime Meridian */}
-          <line x1="0" y1="200" x2="800" y2="200" stroke="#34568B" strokeWidth="1" opacity="0.6" strokeDasharray="2,2"/>
-          <line x1="400" y1="0" x2="400" y2="400" stroke="#34568B" strokeWidth="1" opacity="0.6" strokeDasharray="2,2"/>
-          
-          {/* Render relay points as heatmap */}
-          {relayData.map((relay, index) => {
-            // Convert lat/lon to SVG coordinates (simplified projection)
-            const x = ((relay.lon + 180) / 360) * 800;
-            const y = ((90 - relay.lat) / 180) * 400;
+          {/* Render relay nodes */}
+          {relayData.map((node, index) => {
+            const coords = latLonToSVG(node.latitude, node.longitude);
+            const size = getNodeSize(node);
+            const color = getNodeColor(node);
             
             return (
-              <g key={relay.fingerprint || index}>
+              <g key={node.fingerprint || index}>
                 <circle
-                  cx={x}
-                  cy={y}
-                  r={Math.max(2, Math.min(8, relay.risk_score / 10))}
-                  fill={getHeatmapColor(relay)}
-                  stroke="rgba(255,255,255,0.5)"
+                  cx={coords.x}
+                  cy={coords.y}
+                  r={size}
+                  fill={color}
+                  stroke="rgba(255,255,255,0.6)"
                   strokeWidth="1"
+                  opacity="0.85"
                   className="relay-point"
-                  title={`${relay.nickname} (${relay.country}) - Risk: ${relay.risk_score}`}
+                  onClick={(e) => handleMarkerClick(node, e)}
+                  style={{ cursor: 'pointer' }}
                 />
               </g>
             );
           })}
         </svg>
+
+        {/* Node Details Tooltip */}
+        {selectedMarker && markerTooltip && (
+          <div 
+            className="node-tooltip"
+            style={{
+              left: `${markerTooltip.x}px`,
+              top: `${markerTooltip.y}px`
+            }}
+          >
+            <div className="tooltip-header">
+              <strong>Node Details</strong>
+              <button 
+                className="tooltip-close"
+                onClick={() => setSelectedMarker(null)}
+              >
+                ✕
+              </button>
+            </div>
+            <div className="tooltip-content">
+              <div className="tooltip-row">
+                <span className="label">Type:</span>
+                <span className="value">
+                  {selectedMarker.is_guard ? '🔐 Guard (Entry)' : 
+                   selectedMarker.is_exit ? '🚪 Exit' : '🔗 Middle'}
+                </span>
+              </div>
+              <div className="tooltip-row">
+                <span className="label">Fingerprint:</span>
+                <code className="fingerprint">
+                  {(selectedMarker.fingerprint || selectedMarker.id || '???').substring(0, 16)}...
+                </code>
+              </div>
+              <div className="tooltip-row">
+                <span className="label">Country:</span>
+                <span className="value">{selectedMarker.country || 'Unknown'}</span>
+              </div>
+              <div className="tooltip-row">
+                <span className="label">Location:</span>
+                <span className="value">
+                  {selectedMarker.latitude?.toFixed(2)}, {selectedMarker.longitude?.toFixed(2)}
+                </span>
+              </div>
+              {selectedMarker.confidence_score !== undefined && (
+                <div className="tooltip-row">
+                  <span className="label">Confidence:</span>
+                  <span className="value">
+                    <strong>{Math.round(selectedMarker.confidence_score * 100)}%</strong>
+                  </span>
+                </div>
+              )}
+              {selectedMarker.bandwidth && (
+                <div className="tooltip-row">
+                  <span className="label">Bandwidth:</span>
+                  <span className="value">
+                    {(selectedMarker.bandwidth / 1000000).toFixed(1)} Mbps
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="map-legend">
         <h4>Legend</h4>
-        {viewMode === 'risk' && (
-          <div className="legend-items">
-            <div className="legend-item">
-              <div className="legend-color" style={{background: 'rgba(255, 255, 0, 0.7)'}}></div>
-              <span>Low Risk (0-30)</span>
-            </div>
-            <div className="legend-item">
-              <div className="legend-color" style={{background: 'rgba(255, 128, 0, 0.7)'}}></div>
-              <span>Medium Risk (31-70)</span>
-            </div>
-            <div className="legend-item">
-              <div className="legend-color" style={{background: 'rgba(255, 0, 0, 0.7)'}}></div>
-              <span>High Risk (71-100)</span>
-            </div>
+        <div className="legend-items">
+          <div className="legend-item">
+            <div className="legend-circle" style={{background: '#2ecc71'}}></div>
+            <span>Guard/Entry Nodes ({relayData.filter(r => r.is_guard).length})</span>
           </div>
-        )}
-        {viewMode === 'traffic' && (
-          <div className="legend-items">
-            <div className="legend-item">
-              <div className="legend-color" style={{background: 'rgba(255, 0, 0, 0.8)'}}></div>
-              <span>Exit Nodes</span>
-            </div>
-            <div className="legend-item">
-              <div className="legend-color" style={{background: 'rgba(0, 100, 255, 0.6)'}}></div>
-              <span>Guard/Middle Nodes</span>
-            </div>
+          <div className="legend-item">
+            <div className="legend-circle" style={{background: '#e74c3c'}}></div>
+            <span>Exit Nodes ({relayData.filter(r => r.is_exit).length})</span>
           </div>
-        )}
+          <div className="legend-item">
+            <div className="legend-circle" style={{background: '#3498db'}}></div>
+            <span>Middle Nodes ({relayData.filter(r => !r.is_guard && !r.is_exit).length})</span>
+          </div>
+        </div>
         <div className="map-stats">
-          <span><strong>Total Relays:</strong> {relayData.length}</span>
-          <span><strong>Exit Nodes:</strong> {relayData.filter(r => r.is_exit).length}</span>
-          <span><strong>Guard Nodes:</strong> {relayData.filter(r => r.is_guard).length}</span>
+          <div className="stat-item">
+            <span className="stat-label">Total Relays:</span>
+            <span className="stat-value">{relayData.length}</span>
+          </div>
+          <div className="stat-item">
+            <span className="stat-label">Exit Nodes:</span>
+            <span className="stat-value">{relayData.filter(r => r.is_exit).length}</span>
+          </div>
+          <div className="stat-item">
+            <span className="stat-label">Guard Nodes:</span>
+            <span className="stat-value">{relayData.filter(r => r.is_guard).length}</span>
+          </div>
+        </div>
+        <div className="map-note">
+          <small>Click on any node to view detailed information including fingerprint, location, and confidence score.</small>
         </div>
       </div>
     </div>

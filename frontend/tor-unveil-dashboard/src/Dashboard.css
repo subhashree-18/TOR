@@ -561,6 +561,200 @@
   font-weight: 700;
 }
 
+/* ===== TOR TOPOLOGY SECTION ===== */
+.tor-topology-section {
+  margin: 20px;
+  padding: 16px;
+  border: 1px solid #ccc;
+  background: #fff;
+  border-radius: 4px;
+}
+
+.section-header {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0b3c5d;
+  margin: 0 0 12px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #d9a441;
+}
+
+.topology-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.topology-card {
+  padding: 12px;
+  border: 1px solid #ddd;
+  background: #f9f9f9;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.card-label {
+  font-size: 11px;
+  color: #666;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.card-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #0b3c5d;
+}
+
+/* ===== ENTRY NODES SECTION ===== */
+.entry-nodes-section {
+  margin: 20px;
+  padding: 16px;
+  border: 1px solid #ccc;
+  background: #fff;
+  border-radius: 4px;
+}
+
+.entry-nodes-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.entry-nodes-table thead {
+  background: #f5f5f5;
+  border-bottom: 2px solid #0b3c5d;
+}
+
+.entry-nodes-table th {
+  padding: 10px;
+  text-align: left;
+  font-weight: 700;
+  color: #0b3c5d;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.3px;
+}
+
+.entry-nodes-table tbody tr {
+  border-bottom: 1px solid #eee;
+}
+
+.entry-nodes-table td {
+  padding: 10px;
+  color: #333;
+}
+
+.fingerprint {
+  font-family: monospace;
+  font-size: 10px;
+  color: #555;
+  background: #f5f5f5;
+  padding: 2px 4px;
+  border-radius: 2px;
+}
+
+.confidence-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.confidence-text {
+  min-width: 45px;
+  font-weight: 700;
+  color: #0b3c5d;
+}
+
+.confidence-bar {
+  flex: 1;
+  height: 12px;
+  background: #e0e0e0;
+  border-radius: 2px;
+  overflow: hidden;
+  min-width: 100px;
+}
+
+.confidence-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4CAF50 0%, #FFC107 50%, #F44336 100%);
+  transition: width 0.3s ease;
+}
+
+/* ===== RECENT EVENTS SECTION ===== */
+.recent-events-section {
+  margin: 20px;
+  padding: 16px;
+  border: 1px solid #ccc;
+  background: #fff;
+  border-radius: 4px;
+}
+
+.events-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.event-item {
+  padding: 12px;
+  border-left: 4px solid #0b3c5d;
+  background: #f9f9f9;
+  border-radius: 2px;
+}
+
+.event-timestamp {
+  font-size: 10px;
+  color: #999;
+  margin-bottom: 6px;
+  font-family: monospace;
+  text-transform: uppercase;
+}
+
+.event-details {
+  font-size: 12px;
+  color: #333;
+}
+
+.event-description {
+  margin: 0 0 6px 0;
+  font-weight: 600;
+}
+
+.event-confidence {
+  font-size: 11px;
+  color: #0b3c5d;
+  margin: 4px 0;
+}
+
+.event-nodes {
+  font-size: 10px;
+  color: #666;
+  font-family: monospace;
+  margin: 4px 0;
+}
+
+.loading-state {
+  padding: 12px;
+  text-align: center;
+  color: #666;
+  font-size: 12px;
+}
+
+.empty-state {
+  padding: 12px;
+  text-align: center;
+  color: #999;
+  font-size: 12px;
+  font-style: italic;
+}
+
 /* ===== PRINT ===== */
 @media print {
   .demo-banner,
