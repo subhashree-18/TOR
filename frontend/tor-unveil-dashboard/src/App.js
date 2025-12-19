@@ -443,6 +443,7 @@ function AppContent() {
               
               {/* Investigation Hub - Single Source of Truth */}
               <Route path="/investigation" element={<InvestigationPage />} />
+              <Route path="/investigation/:caseId" element={<InvestigationPage />} />
               
               {/* Protected routes with backend verification */}
               {/* Only accessible via Investigation workflow buttons */}

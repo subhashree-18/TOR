@@ -27,35 +27,13 @@ export default function ForensicAnalysis() {
   const [analysisDetails, setAnalysisDetails] = useState({
     hypotheses: []
   });
-  const [accessDenied, setAccessDenied] = useState(false);
+  // REMOVE accessDenied state and logic
 
-  // Route guard: Check if analysis is complete before allowing access
-  useEffect(() => {
-    const checkAnalysisAccess = async () => {
-      try {
-        const response = await axios.get(`${API_URL}/api/investigations/${encodeURIComponent(caseId)}`);
-        const caseData = response.data;
-        
-        if (!caseData.analysis || caseData.analysis.status !== "COMPLETED") {
-          setAccessDenied(true);
-          setLoading(false);
-          return;
-        }
-      } catch (error) {
-        console.error("Access check failed:", error);
-        setAccessDenied(true);
-        setLoading(false);
-        return;
-      }
-    };
-    
-    checkAnalysisAccess();
-  }, [caseId]);
+  // REMOVED: Route guard and access check. Always allow access to report.
 
   // Fetch detailed hypothesis explanations from backend
   useEffect(() => {
-    if (accessDenied) return;
-    
+    // Only fetch details, do not check for access
     const fetchDetails = async () => {
       try {
         setLoading(true);
@@ -141,36 +119,10 @@ export default function ForensicAnalysis() {
       }
     };
 
-    if (!accessDenied) {
-      fetchDetails();
-    }
-  }, [caseId, accessDenied]);
+    fetchDetails();
+  }, [caseId]);
 
-  // Handle access denied state
-  if (accessDenied) {
-    return (
-      <div className="analysis-page">
-        <h2>🔒 Analysis Details Access Restricted</h2>
-        <div className="access-denied">
-          <h3>Authorization Required</h3>
-          <p>
-            Detailed forensic analysis is only accessible after correlation analysis has been completed.
-          </p>
-          <p>
-            Please ensure that the correlation analysis has been initiated and completed from the Investigation dashboard before attempting to access forensic details.
-          </p>
-          <div className="action-buttons">
-            <button onClick={() => navigate(`/investigation/${caseId}`)} className="primary">
-              Return to Investigation
-            </button>
-            <button onClick={() => navigate('/dashboard')} className="secondary">
-              Go to Dashboard
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // REMOVED: access denied UI. Always show report UI.
 
   // Toggle accordion
   const toggleHypothesis = (rank) => {

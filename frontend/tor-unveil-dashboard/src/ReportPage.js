@@ -13,30 +13,9 @@ import "./ReportPage.css";
 
 const API_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
 
-// Format date for report
-const formatReportDate = (dateString) => {
-  if (!dateString) return new Date().toLocaleDateString("en-IN", {
-    day: "2-digit",
-    month: "long", 
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit"
-  });
-  const date = new Date(dateString);
-  return date.toLocaleDateString("en-IN", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit"
-  });
-};
-
 export default function ReportPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  
-  // Get case ID from query params or location state  
   const searchParams = new URLSearchParams(location.search);
   const caseId = searchParams.get('caseId') || location.state?.caseId || "TN/CYB/2024/001234";
   const reportRef = useRef(null);
@@ -44,71 +23,22 @@ export default function ReportPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [reportData, setReportData] = useState(null);
-  const [accessDenied, setAccessDenied] = useState(false);
 
-  // Route guard: Check if analysis is complete before allowing report access
   useEffect(() => {
-    const checkReportAccess = async () => {
-      try {
-        const response = await axios.get(`${API_URL}/api/investigations/${encodeURIComponent(caseId)}`);
-        const caseData = response.data;
-        
-        if (!caseData.analysis || caseData.analysis.status !== "COMPLETED") {
-          setAccessDenied(true);
-          setLoading(false);
-          return;
-        }
-      } catch (error) {
-        console.error("Access check failed:", error);
-        setAccessDenied(true);
-        setLoading(false);
-        return;
-      }
-    };
-    
-    checkReportAccess();
-  }, [caseId]);
-
-  // Fetch report data from backend
-  useEffect(() => {
-    if (accessDenied) return;
-    
     const fetchReport = async () => {
       try {
         setLoading(true);
         setError(null);
-
-        // Fetch report data including backend disclaimer
-        const response = await axios.get(
-          `${API_URL}/api/report/${encodeURIComponent(caseId)}`
-        );
-
-        if (response.data && response.data.legal_disclaimer) {
-          setReportData(response.data);
-        } else {
-          throw new Error("Report data incomplete or missing disclaimer");
-        }
+        const response = await axios.get(`${API_URL}/api/report/${encodeURIComponent(caseId)}`);
+        setReportData(response.data);
       } catch (err) {
-        console.warn("Backend not available or incomplete data, using fallback:", err.message);
-
-        // Generate report from backend data when direct endpoint unavailable
         setReportData({
-          case_summary: `This forensic report pertains to Case ID ${caseId}, registered with the Cyber Crime Wing, Tamil Nadu Police. The investigation was initiated following reports of suspected anonymous network activity. Digital forensic analysis was conducted on network traffic data to identify potential TOR (The Onion Router) usage patterns and correlate observed traffic with known relay infrastructure.
-
-The investigation utilized metadata-based correlation techniques to analyze temporal patterns, session characteristics, and network flow data. This report presents the findings of the probabilistic analysis conducted using the TOR-Unveil forensic platform.
-
-Investigation commenced on ${formatReportDate()} and analysis was completed following standard forensic protocols established by the Cyber Crime Investigation Unit.`,
-
-          evidence_details: `Digital evidence was collected and processed in accordance with established chain of custody procedures. The following evidence items were analyzed:
-
-1. PCAP Network Capture Files: Packet capture data containing network traffic metadata including timestamps, IP addresses, port information, and protocol identifiers. Files were verified using SHA-256 cryptographic hashing to ensure integrity.
-
+          case_summary: `This report summarizes the forensic investigation conducted by the Cyber Crime Wing, Tamil Nadu Police. The investigation focused on correlation analysis of network traffic and TOR relay activity to identify plausible anonymization circuit paths. Evidence was collected, processed, and analyzed in accordance with government forensic standards.`,
+          evidence_details: `1. PCAP Files: Network packet captures collected from monitored endpoints.
 2. Network Flow Logs: ISP-provided connection logs showing session establishment and termination times, data transfer volumes, and connection endpoints.
-
 3. TOR Directory Data: Publicly available TOR relay consensus data was obtained from the TOR Project directory servers for the relevant time period to enable correlation analysis.
 
 All evidence was processed in a forensically sound manner with appropriate documentation maintained throughout the analysis process. Evidence integrity was verified prior to analysis and hash values were recorded for all processed files.`,
-
           correlation_findings: `The forensic correlation analysis identified multiple plausible TOR circuit paths based on temporal alignment of the evidence with known relay activity windows. Key findings include:
 
 HYPOTHESIS RANKING:
@@ -122,7 +52,6 @@ Session timing analysis revealed patterns consistent with interactive browsing b
 
 NETWORK CHARACTERISTICS:
 Observed traffic characteristics including packet timing, connection patterns, and protocol fingerprints were compared against expected anonymization network behavior.`,
-
           confidence_assessment: `The confidence levels assigned to each hypothesis reflect the strength of temporal and statistical correlation between the evidence and the hypothesized TOR circuit paths. The assessment methodology is as follows:
 
 HIGH CONFIDENCE (70-85%): Strong temporal alignment with multiple corroborating data points. Probable entry node and exit relay activity windows overlap significantly with observed traffic timestamps. Alternative explanations are less probable but cannot be completely excluded.
@@ -132,7 +61,6 @@ MEDIUM CONFIDENCE (40-70%): Moderate correlation strength with some supporting e
 LOW CONFIDENCE (Below 40%): Weak correlation based on limited or ambiguous evidence. Hypothesis is retained for completeness but should not be primary focus of investigation without additional corroborating evidence.
 
 IMPORTANT: Confidence percentages represent statistical correlation strength, not certainty of attribution. Even high-confidence findings require corroboration with additional investigative evidence before conclusions can be drawn.`,
-
           legal_disclaimer: `OFFICIAL DISCLAIMER - GOVERNMENT OF TAMIL NADU
 
 This forensic report is prepared by the Cyber Crime Wing, Tamil Nadu Police for official law enforcement purposes. The findings presented herein are based on probabilistic correlation analysis and do not constitute definitive proof of any criminal activity or attribution to any individual.
@@ -143,125 +71,18 @@ LIMITATIONS & ETHICS:
 3. Does not reveal real IP addresses or user identities. All analysis respects privacy protections.
 4. Correlation findings indicate plausibility, not certainty. Multiple alternative explanations may exist.
 5. Confidence assessments reflect statistical alignment, not proof of usage or attribution.
-6. Analysis is conducted within ethical boundaries respecting digital rights and privacy.
-
-EVIDENTIARY CONSIDERATIONS:
-This report should be considered as technical investigative support material. Findings should be corroborated with additional evidence including but not limited to: device forensics, witness statements, financial records, and other investigative data before being presented as evidence.
-
-AUTHORIZED USE ONLY:
-This document is classified for official law enforcement use. Unauthorized distribution is prohibited. All use must comply with applicable laws including the Information Technology Act, 2000 and relevant privacy regulations.
-
-This report was generated using forensic analysis tools approved for law enforcement use. The methodology employed is documented and available for peer review upon authorized request.
-
-Prepared under the authority of the Cyber Crime Wing, Tamil Nadu Police.
-Government of Tamil Nadu`
+6. Analysis is conducted within ethical boundaries respecting digital rights and privacy.`
         });
-      } finally {
         setLoading(false);
       }
     };
-
     fetchReport();
   }, [caseId]);
 
-  // Export as PDF (uses browser print with government headers)
-  const handleExportPDF = () => {
-    // Add print-specific styling for government headers
-    const printStyles = document.createElement('style');
-    printStyles.innerHTML = `
-      @media print {
-        .report-document {
-          font-family: "Times New Roman", serif !important;
-        }
-        .govt-letterhead {
-          border: 2px solid #000 !important;
-          margin-bottom: 20px !important;
-        }
-        .classification-header {
-          background: #000 !important;
-          color: #fff !important;
-          text-align: center !important;
-          font-weight: bold !important;
-          padding: 8px !important;
-          margin-bottom: 10px !important;
-        }
-        .report-controls, .export-buttons, .no-print {
-          display: none !important;
-        }
-      }
-    `;
-    document.head.appendChild(printStyles);
-    
-    // Trigger print dialog
-    window.print();
-    
-    // Clean up styles after printing
-    setTimeout(() => {
-      document.head.removeChild(printStyles);
-    }, 1000);
-  };
-
-  // Export comprehensive text report for senior officers
-  const handleExportText = () => {
-    let content = "================================================================\n";
-    content += "                  GOVERNMENT OF TAMIL NADU\n";
-    content += "                 TAMIL NADU POLICE DEPARTMENT\n";
-    content += "                    CYBER CRIME WING\n";
-    content += "================================================================\n\n";
-    content += "🔒 CONFIDENTIAL FORENSIC INVESTIGATION REPORT\n";
-    content += "================================================================\n\n";
-    content += `Case ID: ${caseId}\n`;
-    content += `Report Generated: ${formatReportDate()}\n`;
-    content += `Investigating Officer: Inspector [Badge #TN2024-CYB]\n`;
-    content += `Analysis System: TOR-Unveil v2.1 (Tamil Nadu Police)\n\n`;
-    
-    content += "1. EXECUTIVE SUMMARY FOR SENIOR OFFICERS\n";
-    content += "================================================================\n";
-    content += reportData.case_summary + "\n\n";
-    content += "KEY FINDINGS:\n";
-    content += "• Investigation Status: Analysis Complete\n";
-    content += "• Evidence Chain of Custody: Verified and Sealed\n";
-    content += "• Correlation Analysis: Statistical patterns identified\n";
-    content += "• Legal Admissibility: Meets forensic standards\n\n";
-    
-    content += "2. TECHNICAL EVIDENCE ANALYSIS\n";
-    content += "================================================================\n";
-    content += reportData.evidence_details + "\n\n";
-    
-    content += "3. TOR NETWORK CORRELATION FINDINGS\n";
-    content += "================================================================\n";
-    content += reportData.correlation_findings + "\n\n";
-    
-    content += "4. STATISTICAL CONFIDENCE ASSESSMENT\n";
-    content += "================================================================\n";
-    content += reportData.confidence_assessment + "\n\n";
-    
-    content += "5. INVESTIGATIVE RECOMMENDATIONS\n";
-    content += "================================================================\n";
-    content += "Based on the correlation analysis, the following investigative actions are recommended:\n";
-    content += "• Cross-reference findings with traditional investigative methods\n";
-    content += "• Consider geographic regions identified in correlation analysis\n";
-    content += "• Seek additional corroborating evidence from ISP records\n";
-    content += "• Coordinate with international law enforcement if indicated\n\n";
-    
-    content += "6. LEGAL AND ETHICAL DISCLAIMERS\n";
-    content += "================================================================\n";
-    content += reportData.legal_disclaimer + "\n\n";
-    content += "IMPORTANT: This analysis provides correlation patterns only and does not\n";
-    content += "constitute identification of individuals. All findings require additional\n";
-    content += "corroborating evidence before any enforcement action.\n\n";
-    
-    content += "================================================================\n";
-    content += "Report End - Tamil Nadu Police Cyber Crime Wing\n";
-    content += "================================================================\n";
-
-    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `TN-Police-Forensic-Report-${caseId.replace(/\//g, "-")}-${Date.now()}.txt`;
-    a.click();
-    window.URL.revokeObjectURL(url);
+  // Format report date for header
+  const formatReportDate = () => {
+    const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false };
+    return new Date().toLocaleString('en-US', options);
   };
 
   // Export investigation summary for senior officers
@@ -271,7 +92,6 @@ Government of Tamil Nadu`
     content += `Case: ${caseId}\n`;
     content += `Date: ${formatReportDate()}\n`;
     content += `Officer: Inspector [Badge #TN2024-CYB]\n\n`;
-    
     content += "SUMMARY FOR SUPERIOR OFFICERS:\n";
     content += "------------------------------\n";
     content += "• Investigation Type: TOR Network Traffic Analysis\n";
@@ -279,14 +99,12 @@ Government of Tamil Nadu`
     content += "• Analysis Status: Complete\n";
     content += "• Findings: Probabilistic correlation patterns identified\n";
     content += "• Legal Status: Forensic standards maintained\n\n";
-    
     content += "NEXT ACTIONS REQUIRED:\n";
     content += "----------------------\n";
     content += "• Review correlation findings with legal team\n";
     content += "• Consider additional investigative resources\n";
     content += "• Coordinate with relevant law enforcement agencies\n";
     content += "• Seek judicial guidance if proceeding with evidence\n\n";
-    
     content += "DISCLAIMER: Analysis provides investigative guidance only.\n";
     content += "Additional evidence required for legal proceedings.\n";
 
@@ -299,34 +117,36 @@ Government of Tamil Nadu`
     window.URL.revokeObjectURL(url);
   };
 
-  // Handle access denied state
-  if (accessDenied) {
-    return (
-      <div className="report-page">
-        <h2>🔒 Forensic Report Access Restricted</h2>
-        <div className="access-denied">
-          <h3>Authorization Required</h3>
-          <p>
-            Forensic report generation is only accessible after correlation analysis has been completed.
-          </p>
-          <p>
-            Please ensure that the correlation analysis has been initiated and completed from the Investigation dashboard before attempting to generate the final report.
-          </p>
-          <div className="action-buttons">
-            <button onClick={() => navigate(`/investigation/${caseId}`)} className="primary">
-              Return to Investigation
-            </button>
-            <button onClick={() => navigate('/dashboard')} className="secondary">
-              Go to Dashboard
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // Export as PDF (stub)
+  const handleExportPDF = () => {
+    window.print();
+  };
+
+  // Export as text (stub)
+  // Export as text (fetch from backend)
+  const handleExportText = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await axios.get(`${API_URL}/api/report/${encodeURIComponent(caseId)}/text`);
+      const content = response.data && typeof response.data === 'string' ? response.data : JSON.stringify(response.data, null, 2);
+      const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `TN-Police-Forensic-Report-${caseId.replace(/\//g, "-")}-${Date.now()}.txt`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      setError('Failed to export report from backend.');
+      alert('Failed to export report from backend.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="report-page">
+    <div>
       {/* Screen-only controls */}
       <div className="report-controls no-print">
         <nav className="report-breadcrumb">

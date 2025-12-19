@@ -10,6 +10,8 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import TorRelayMap from "./components/TorRelayMap";
+import GeographicContextMap from "./components/GeographicContextMap";
+import GeoContextMap from "./components/GeoContextMap";
 import "./AnalysisPage.css";
 
 const API_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
@@ -210,6 +212,9 @@ export default function AnalysisPage() {
         and does not assert definitive attribution. Results are intended as investigative 
         intelligence only and require corroboration with additional evidence.
       </div>
+
+      {/* Geographic Context Map (Aggregated, Safe) */}
+      <GeoContextMap />
 
       {/* Correlation Method Summary */}
       <section className="analysis-section">

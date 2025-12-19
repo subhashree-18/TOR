@@ -31,7 +31,14 @@ export default function InvestigationPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
-  const caseId = searchParams.get('caseId');
+  let caseId = searchParams.get('caseId');
+  // If not in query, try to extract from path (e.g. /investigation/TN/CYB/2024/001234)
+  if (!caseId) {
+    const match = location.pathname.match(/\/investigation\/(.+)/);
+    if (match && match[1]) {
+      caseId = decodeURIComponent(match[1]);
+    }
+  }
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
