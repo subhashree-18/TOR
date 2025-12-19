@@ -18,6 +18,7 @@ import json
 from .fetcher import fetch_and_store_relays
 from .correlator import generate_candidate_paths, top_candidate_paths
 from .pcap_analyzer import analyze_pcap_file
+from .forensic_pcap import analyze_pcap_forensic, flow_evidence_to_scoring_metrics
 from .auth import router as auth_router
 from .probabilistic_paths import (
     generate_probabilistic_paths,
@@ -2020,9 +2021,14 @@ async def get_analysis_results(case_id: str):
     """
     Get analysis results for a specific investigation case
     """
+    # First, check if we have persisted analysis for this case in the DB
+    stored = db.case_analysis.find_one({"case_id": case_id})
+    if stored and stored.get("analysis"):
+        return stored["analysis"]
+
     # Debug: print the actual case_id received
-    print(f"DEBUG: Analysis requested for case_id: '{case_id}'")
-    
+    print(f"DEBUG: Analysis requested for case_id: '{case_id}' (no stored analysis found)")
+
     # Mock analysis data matching frontend expectations
     analysis_data = {
         "confidence_evolution": {
@@ -2153,9 +2159,9 @@ async def upload_evidence(file: UploadFile = File(...), caseId: str = Form(...))
     
     # Simulate file storage (in real implementation, save to secure storage)
     timestamp = datetime.now().isoformat()
-    
-    # Return upload result
-    return {
+
+    # Prepare base upload response
+    upload_result = {
         "success": True,
         "message": "Evidence uploaded and sealed successfully",
         "evidenceId": f"EVD_{caseId}_{timestamp}".replace(":", "").replace("-", ""),
@@ -2172,3 +2178,107 @@ async def upload_evidence(file: UploadFile = File(...), caseId: str = Form(...))
             "integrity_verified": True
         }
     }
+
+    # If PCAP, run forensic analysis and persist analysis results for this case
+    try:
+        if file_ext in {'.pcap', '.pcapng', '.cap'}:
+            logger.info(f"upload_evidence: Detected PCAP file for case {caseId}, running forensic analysis...")
+
+            # Parse PCAP (packet-level) and forensic evidence (flow-level)
+            pcap_parsed = analyze_pcap_file(content)
+            flow_evidence = analyze_pcap_forensic(content)
+            scoring = flow_evidence_to_scoring_metrics(flow_evidence)
+
+            # Extract unique IPs from parsed packets and attempt to map to known relays
+            unique_ips = set()
+            for pkt in pcap_parsed.get('packets', [])[:10000]:
+                if pkt.get('src_ip'):
+                    unique_ips.add(pkt.get('src_ip'))
+                if pkt.get('dst_ip'):
+                    unique_ips.add(pkt.get('dst_ip'))
+
+            relays_found = []
+            if unique_ips:
+                # Query relays collection for matching IPs
+                matches = list(db.relays.find({"ip": {"$in": list(unique_ips)}}).limit(200))
+                for r in matches:
+                    relays_found.append({
+                        "fingerprint": r.get('fingerprint'),
+                        "nickname": r.get('nickname'),
+                        "ip": r.get('ip'),
+                        "country": r.get('country'),
+                        "lat": r.get('lat'),
+                        "lon": r.get('lon'),
+                        "risk_score": r.get('risk_score', 0),
+                        "is_exit": r.get('is_exit', False),
+                        "is_guard": r.get('is_guard', False)
+                    })
+
+            # Build simple hypotheses by pairing top guard and exit candidates (heuristic)
+            guards = [r for r in relays_found if r.get('is_guard')]
+            exits = [r for r in relays_found if r.get('is_exit')]
+
+            hypotheses = []
+            max_pairs = 5
+            pair_count = 0
+            for g in guards:
+                for e in exits:
+                    if pair_count >= max_pairs:
+                        break
+                    # Evidence count heuristic: use tor_likely_flows and packet counts
+                    evidence_count = int(flow_evidence.tor_likely_flows * 10 + flow_evidence.total_packets / 10)
+                    confidence_val = float(scoring.get('pcap_tor_likelihood', 0.2))
+                    hypotheses.append({
+                        "rank": pair_count + 1,
+                        "entry_region": f"{g.get('country')} ({g.get('country')})",
+                        "exit_region": f"{e.get('country')} ({e.get('country')})",
+                        "evidence_count": evidence_count,
+                        "confidence_level": "High" if confidence_val >= 0.7 else ("Medium" if confidence_val >= 0.4 else "Low"),
+                        "explanation": {
+                            "timing_consistency": "Derived from PCAP timing correlation",
+                            "guard_persistence": "Observed in relay metadata",
+                            "evidence_strength": "Combined PCAP evidence and relay priors"
+                        }
+                    })
+                    pair_count += 1
+                if pair_count >= max_pairs:
+                    break
+
+            analysis_doc = {
+                "case_id": caseId,
+                "hypotheses": hypotheses,
+                "tor_relays": relays_found,
+                "analysis_metadata": {
+                    "case_id": caseId,
+                    "analysis_timestamp": datetime.now().isoformat(),
+                    "evidence_files_processed": [file.filename],
+                    "total_evidence_size": upload_result['fileSize'],
+                    "processing_duration": "auto",
+                    "pcap_summary": pcap_parsed.get('summary') if isinstance(pcap_parsed, dict) else {},
+                    "flow_evidence": flow_evidence.to_dict() if hasattr(flow_evidence, 'to_dict') else {}
+                }
+            }
+
+            # Persist analysis document for retrieval by /api/analysis
+            try:
+                db.case_analysis.replace_one({"case_id": caseId}, {"case_id": caseId, "analysis": analysis_doc}, upsert=True)
+                upload_result['analysis_saved'] = True
+                upload_result['analysis_summary'] = {
+                    "hypotheses_count": len(hypotheses),
+                    "relays_found": len(relays_found),
+                    "pcap_total_packets": pcap_parsed.get('total_packets', 0),
+                    "pcap_unique_ips": len(unique_ips),
+                    "scoring": scoring
+                }
+            except Exception as e:
+                logger.error(f"upload_evidence: Failed to persist analysis for case {caseId}: {e}")
+                upload_result['analysis_saved'] = False
+                upload_result['analysis_error'] = str(e)
+
+    except Exception as e:
+        logger.error(f"upload_evidence: PCAP analysis failed: {e}")
+        # Don't fail the upload; return upload result with analysis error info
+        upload_result['analysis_saved'] = False
+        upload_result['analysis_error'] = str(e)
+
+    return upload_result
