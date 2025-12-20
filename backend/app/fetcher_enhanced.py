@@ -1,3 +1,21 @@
+# backend/app/fetcher_enhanced.py
+# ⚠️ DEPRECATED: This module is no longer used
+# REASON: Functionality merged into main fetcher.py
+# STATUS: Marked for removal in v2.1
+# REPLACEMENT: Use backend/app/fetcher.py instead
+#
+# This file is retained only for historical reference.
+# All relay fetching now uses the standard fetcher.py module.
+
+raise ImportError(
+    "fetcher_enhanced is deprecated and should not be imported. "
+    "Use 'from .fetcher import fetch_and_store_relays' instead."
+)
+
+# ============================================================================
+# Original deprecated code below - DO NOT USE
+# ============================================================================
+
 # backend/app/fetcher.py
 # FEATURE 10 & 11: RELAY FETCH LIMIT INCREASE + TOR DATA COLLECTION ENHANCEMENT
 

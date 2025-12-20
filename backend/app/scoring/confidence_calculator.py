@@ -1,4 +1,44 @@
 """
+⚠️ DEPRECATED MODULE - DO NOT USE
+
+This module has been replaced by scoring_pipeline.py located at:
+  /backend/app/scoring_pipeline.py
+
+REASON FOR DEPRECATION:
+- Functionality consolidated into unified UnifiedScoringEngine
+- Simplified calculation logic for maintainability
+- Single source of truth for confidence calculation
+
+MIGRATION GUIDE:
+Instead of importing from this module:
+  from .scoring.confidence_calculator import calculate_confidence
+
+Use the new unified pipeline:
+  from .scoring_pipeline import UnifiedScoringEngine, ScoringFactors
+  
+  factors = ScoringFactors(
+      evidence_count=count,
+      timing_similarity=timing,
+      session_overlap=overlap,
+      additional_evidence_count=additional,
+      prior_uploads=prior
+  )
+  confidence = UnifiedScoringEngine.compute_confidence_level(factors)
+
+This module will be removed in v2.1.
+If this module is imported, it will raise an error to prevent accidental usage.
+"""
+
+raise ImportError(
+    "confidence_calculator is deprecated. "
+    "Use 'from .scoring_pipeline import UnifiedScoringEngine, ScoringFactors' instead. "
+    "See module docstring for migration details."
+)
+
+# ============================================================================
+# DEPRECATED CODE BELOW - RETAINED FOR REFERENCE ONLY
+# ============================================================================
+"""
 Forensic Confidence Scoring Engine for Probabilistic TOR Traffic Analysis
 
 This module translates accumulated forensic evidence into an explainable

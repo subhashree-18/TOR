@@ -34,26 +34,17 @@ from abc import ABC, abstractmethod
 import statistics
 import os
 
-from pymongo import MongoClient
 from dateutil import parser as date_parser
+from .database import get_db
 
 
 # =============================================================================
 # DATABASE CONNECTION
 # =============================================================================
 
-MONGO_URL = os.getenv("MONGO_URL", "mongodb://mongo:27017/torunveil")
-_client: Optional[MongoClient] = None
-_db = None
-
-
 def get_database():
-    """Lazy database connection with singleton pattern."""
-    global _client, _db
-    if _db is None:
-        _client = MongoClient(MONGO_URL)
-        _db = _client["torunveil"]
-    return _db
+    """Get unified database connection from database module."""
+    return get_db()
 
 
 # =============================================================================

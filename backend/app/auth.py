@@ -11,9 +11,9 @@ import re
 import os
 from dotenv import load_dotenv
 import jwt
-from pymongo import MongoClient
-from pymongo.errors import ServerSelectionTimeoutError
 import logging
+
+from .database import get_db
 
 load_dotenv()
 
@@ -25,55 +25,23 @@ logger = logging.getLogger(__name__)
 # MONGODB CONNECTION
 # ============================================================================
 
-# Global variables for lazy loading
-_mongo_client = None
-_db = None
-_otp_collection = None
-_user_collection = None
-
-def get_mongodb_client():
-    """Initialize MongoDB connection (lazy loaded)"""
-    global _mongo_client, _db, _otp_collection, _user_collection
-    
-    if _mongo_client is not None:
-        return _mongo_client
-    
-    try:
-        mongodb_url = os.getenv('MONGODB_URL', 'mongodb://torunveil-mongo:27017/tor_unveil')
-        _mongo_client = MongoClient(mongodb_url, serverSelectionTimeoutMS=5000, connectTimeoutMS=5000)
-        _mongo_client.admin.command('ping')
-        
-        _db = _mongo_client.get_database()
-        _otp_collection = _db.get_collection('otp_records')
-        _user_collection = _db.get_collection('users')
-        
-        # Create indexes for better performance
-        _otp_collection.create_index([("expires_at", 1)], expireAfterSeconds=0)
-        _otp_collection.create_index([("login_id", 1), ("mobile_number", 1)])
-        
-        logger.info("MongoDB connected successfully")
-        return _mongo_client
-    except ServerSelectionTimeoutError as e:
-        logger.error(f"MongoDB connection failed: {e}")
-        raise
-
-def get_db():
-    """Get database instance (lazy loaded)"""
-    if _db is None:
-        get_mongodb_client()
-    return _db
+def get_database():
+    """Get database instance from unified database module"""
+    return get_db()
 
 def get_otp_collection():
-    """Get OTP collection (lazy loaded)"""
-    if _otp_collection is None:
-        get_mongodb_client()
-    return _otp_collection
+    """Get OTP collection"""
+    db = get_database()
+    collection = db.get_collection('otp_records')
+    # Create indexes for better performance
+    collection.create_index([("expires_at", 1)], expireAfterSeconds=0)
+    collection.create_index([("login_id", 1), ("mobile_number", 1)])
+    return collection
 
 def get_user_collection():
-    """Get user collection (lazy loaded)"""
-    if _user_collection is None:
-        get_mongodb_client()
-    return _user_collection
+    """Get user collection"""
+    db = get_database()
+    return db.get_collection('users')
 
 # ============================================================================
 # TWILIO CONFIGURATION (FREE TIER)

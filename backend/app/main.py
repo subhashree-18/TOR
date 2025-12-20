@@ -1,7 +1,6 @@
 # backend/app/main.py
 
 from fastapi import FastAPI, HTTPException, Response
-from pymongo import MongoClient
 import os
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
@@ -15,6 +14,7 @@ import csv
 import json
 
 # Internal imports
+from .database import get_db
 from .fetcher import fetch_and_store_relays
 from .correlator import generate_candidate_paths, top_candidate_paths
 from .pcap_analyzer import analyze_pcap_file
@@ -24,6 +24,7 @@ from .probabilistic_paths import (
     generate_probabilistic_paths,
     ProbabilisticPathInference,
 )
+from .scoring_pipeline import UnifiedScoringEngine, ScoringFactors
 from .disclaimer import (
     DISCLAIMER_SHORT,
     DISCLAIMER_MEDIUM,
@@ -68,9 +69,7 @@ app.add_middleware(
 # ---------------------------------------------------------
 # DATABASE
 # ---------------------------------------------------------
-MONGO_URL = os.getenv("MONGO_URL", "mongodb://mongo:27017/torunveil")
-client = MongoClient(MONGO_URL)
-db = client["torunveil"]
+db = get_db()
 
 # ---------------------------------------------------------
 # LOGGING & MONITORING (FEATURE 13: BACKEND HARDENING)
@@ -2269,17 +2268,19 @@ async def upload_evidence(file: UploadFile = File(...), caseId: str = Form(...))
                     # Evidence count: base on packet count, decrease with rank
                     evidence_count = max(200, int(evidence_base * (1 - pair_idx * 0.15)))
                     
-                    # Confidence: high if TOR-likely, medium for generic pairs
-                    if tor_likelihood >= 0.6:
-                        confidence = "High"
-                    elif tor_likelihood >= 0.3:
-                        confidence = "Medium"
-                    else:
-                        confidence = "Medium"  # Default to medium for sample data
+                    # Calculate dynamic confidence using unified scoring pipeline
+                    timing_similarity = max(0.3, 0.9 - pair_idx * 0.15)  # Decreases with rank
+                    session_overlap = max(0.2, 0.8 - pair_idx * 0.1)      # Slight decrease with rank
                     
-                    # Variation: some high, some medium to be realistic
-                    if pair_idx > 2:
-                        confidence = "Medium"
+                    factors = ScoringFactors(
+                        evidence_count=evidence_count,
+                        timing_similarity=timing_similarity,
+                        session_overlap=session_overlap,
+                        additional_evidence_count=0,
+                        prior_uploads=0
+                    )
+                    
+                    confidence = UnifiedScoringEngine.compute_confidence_level(factors)
                     
                     hypotheses.append({
                         "rank": pair_idx + 1,

@@ -1,4 +1,46 @@
 """
+⚠️ DEPRECATED MODULE - DO NOT USE
+
+This module tracked confidence evolution over time but has been replaced by
+the unified scoring pipeline at:
+  /backend/app/scoring_pipeline.py
+
+REASON FOR DEPRECATION:
+- Confidence tracking functionality not actively used in current system
+- Unified pipeline provides all necessary scoring calculations
+- Simplified architecture reduces maintenance burden
+
+MIGRATION GUIDE:
+The new UnifiedScoringEngine provides single-call confidence computation:
+
+  from .scoring_pipeline import UnifiedScoringEngine, ScoringFactors
+  
+  factors = ScoringFactors(
+      evidence_count=count,
+      timing_similarity=timing,
+      session_overlap=overlap,
+      additional_evidence_count=additional,
+      prior_uploads=prior
+  )
+  confidence = UnifiedScoringEngine.compute_confidence_level(factors)
+
+For tracking confidence over time, store the confidence levels in MongoDB
+with timestamps rather than using this module.
+
+This module will be removed in v2.1.
+If this module is imported, it will raise an error to prevent accidental usage.
+"""
+
+raise ImportError(
+    "confidence_evolution is deprecated. "
+    "Use 'from .scoring_pipeline import UnifiedScoringEngine' instead. "
+    "See module docstring for migration details."
+)
+
+# ============================================================================
+# DEPRECATED CODE BELOW - RETAINED FOR REFERENCE ONLY
+# ============================================================================
+"""
 Confidence Evolution Tracker
 
 Tracks confidence value changes over time as new evidence is correlated.

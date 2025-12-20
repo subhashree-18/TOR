@@ -3,13 +3,14 @@
 
 import os
 import requests
-from pymongo import MongoClient, ReplaceOne
+from pymongo import ReplaceOne
 import re
 from typing import Optional, List, Dict, Any
 import logging
 from datetime import datetime
 import time
 
+from .database import get_db
 from .risk_engine import compute_risk
 from .geoip_resolver import get_geo
 
@@ -18,9 +19,7 @@ ONIONOO_SUMMARY = "https://onionoo.torproject.org/details"
 ONIONOO_TIMEOUT = 120  # seconds
 
 # MongoDB connection
-MONGO_URL = os.getenv("MONGO_URL", "mongodb://localhost:27017/torunveil")
-client = MongoClient(MONGO_URL)
-db = client["torunveil"]
+db = get_db()
 relays_col = db["relays"]
 
 # Regex to extract IPv4 even with port
