@@ -14,9 +14,8 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import apiService from "./services/apiService";
 import "./Dashboard.css";
-
-const API_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -45,38 +44,13 @@ export default function Dashboard() {
     setError(null);
     
     try {
-      const response = await fetch(`${API_URL}/api/investigations`);
-      if (response.ok) {
-        // Check if response is actually JSON before parsing
-        const contentType = response.headers.get('content-type');
-        if (contentType && contentType.includes('application/json')) {
-          const data = await response.json();
-          setCases(data.investigations || data || []);
-        } else {
-          // Response is not JSON, handle as text for debugging
-          const text = await response.text();
-          console.warn("Backend returned non-JSON response:", text);
-          throw new Error("Backend returned invalid JSON response");
-        }
-      } else {
-        // Try to get error message from response
-        let errorMessage = "Unable to retrieve case records from server";
-        try {
-          const errorText = await response.text();
-          if (errorText) {
-            console.warn("Backend error response:", errorText);
-            errorMessage += ` (${response.status}: ${response.statusText})`;
-          }
-        } catch (parseErr) {
-          // Ignore parsing errors for error responses
-        }
-        throw new Error(errorMessage);
-      }
+      const data = await apiService.getInvestigations();
+      setCases(data.investigations || data || []);
     } catch (err) {
       console.warn("Backend unavailable, showing empty state:", err.message);
       
       // Retry once after a short delay if it's the first attempt
-      if (retryCount === 0 && (err.message.includes("Failed to fetch") || err.message.includes("JSON"))) {
+      if (retryCount === 0) {
         console.log("Retrying backend connection in 2 seconds...");
         setTimeout(() => fetchCases(1), 2000);
         return;
@@ -94,27 +68,21 @@ export default function Dashboard() {
     setTopologyLoading(true);
     try {
       // Use /relays/map endpoint which returns array of relay nodes
-      const response = await fetch(`${API_URL}/relays/map`);
-      if (response.ok) {
-        const nodes = await response.json();
-        
-        // Parse the relay data and calculate statistics
-        const relayArray = Array.isArray(nodes) ? nodes : [];
-        const totalNodes = relayArray.length;
-        const guardNodes = relayArray.filter(n => n.is_guard).length;
-        const exitNodes = relayArray.filter(n => n.is_exit).length;
-        const middleNodes = totalNodes - guardNodes - exitNodes; // Nodes that are neither guard nor exit
-        
-        setTorTopology({
-          total_nodes: totalNodes,
-          guard_nodes: guardNodes,
-          exit_nodes: exitNodes,
-          middle_nodes: middleNodes
-        });
-      } else {
-        console.warn("Failed to fetch TOR topology summary");
-        setTorTopology(null);
-      }
+      const nodes = await apiService.getRelaysMap();
+      
+      // Parse the relay data and calculate statistics
+      const relayArray = Array.isArray(nodes) ? nodes : nodes.relays || [];
+      const totalNodes = relayArray.length;
+      const guardNodes = relayArray.filter(n => n.is_guard).length;
+      const exitNodes = relayArray.filter(n => n.is_exit).length;
+      const middleNodes = totalNodes - guardNodes - exitNodes; // Nodes that are neither guard nor exit
+      
+      setTorTopology({
+        total_nodes: totalNodes,
+        guard_nodes: guardNodes,
+        exit_nodes: exitNodes,
+        middle_nodes: middleNodes
+      });
     } catch (err) {
       console.warn("Backend TOR topology unavailable:", err.message);
       setTorTopology(null);
@@ -127,32 +95,26 @@ export default function Dashboard() {
   const fetchTopEntryNodes = useCallback(async () => {
     setEntryNodesLoading(true);
     try {
-      // Use /risk/top endpoint which returns top risk nodes (entry nodes)
-      const response = await fetch(`${API_URL}/risk/top`);
-      if (response.ok) {
-        const data = await response.json();
-        
-        // Extract nodes from response (could be array or wrapped in data/nodes field)
-        let nodes = [];
-        if (Array.isArray(data)) {
-          nodes = data;
-        } else if (data.data && Array.isArray(data.data)) {
-          nodes = data.data;
-        } else if (data.nodes && Array.isArray(data.nodes)) {
-          nodes = data.nodes;
-        }
-        
-        // Map risk_score to confidence_score and limit to top 5
-        const entriesWithConfidence = nodes.slice(0, 5).map(node => ({
-          ...node,
-          confidence_score: Math.min((node.risk_score || 85) / 100, 1) // Normalize risk score to 0-1
-        }));
-        
-        setTopEntryNodes(entriesWithConfidence);
-      } else {
-        console.warn("Failed to fetch top entry nodes");
-        setTopEntryNodes([]);
+      // Use /api/risk/top endpoint which returns top risk nodes (entry nodes)
+      const nodes = await apiService.getTopRiskRelays(5);
+      
+      // Extract nodes from response (could be array or wrapped in data/nodes field)
+      let nodeArray = [];
+      if (Array.isArray(nodes)) {
+        nodeArray = nodes;
+      } else if (nodes.data && Array.isArray(nodes.data)) {
+        nodeArray = nodes.data;
+      } else if (nodes.relays && Array.isArray(nodes.relays)) {
+        nodeArray = nodes.relays;
       }
+      
+      // Map risk_score to confidence_score and limit to top 5
+      const entriesWithConfidence = nodeArray.slice(0, 5).map(node => ({
+        ...node,
+        confidence_score: Math.min((node.risk_score || 85) / 100, 1) // Normalize risk score to 0-1
+      }));
+      
+      setTopEntryNodes(entriesWithConfidence);
     } catch (err) {
       console.warn("Backend entry nodes unavailable:", err.message);
       setTopEntryNodes([]);
@@ -166,23 +128,17 @@ export default function Dashboard() {
     setEventsLoading(true);
     try {
       // Use /api/timeline endpoint which returns correlation events
-      const response = await fetch(`${API_URL}/api/timeline?limit=10`);
-      if (response.ok) {
-        const data = await response.json();
-        
-        // Extract events from response
-        let events = [];
-        if (Array.isArray(data)) {
-          events = data;
-        } else if (data.events && Array.isArray(data.events)) {
-          events = data.events;
-        }
-        
-        setRecentEvents(events.slice(0, 8)); // Show last 8 events
-      } else {
-        console.warn("Failed to fetch recent events");
-        setRecentEvents([]);
+      const data = await apiService.getTimeline({ limit: 10 });
+      
+      // Extract events from response
+      let events = [];
+      if (Array.isArray(data)) {
+        events = data;
+      } else if (data.events && Array.isArray(data.events)) {
+        events = data.events;
       }
+      
+      setRecentEvents(events.slice(0, 8)); // Show last 8 events
     } catch (err) {
       console.warn("Backend recent events unavailable:", err.message);
       setRecentEvents([]);

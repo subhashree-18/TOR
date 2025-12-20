@@ -221,7 +221,7 @@ def root():
     return {"message": "Backend running successfully"}
 
 
-@app.get("/relays/fetch")
+@app.get("/api/relays/fetch")
 def fetch_relays():
     """Fetch latest TOR relay data from Onionoo and index in MongoDB.
     
@@ -277,7 +277,7 @@ def fetch_relays():
 # ---------------------------------------------------------
 # RELAYS – WITH PAGINATION AND FILTERING
 # ---------------------------------------------------------
-@app.get("/relays")
+@app.get("/api/relays")
 def get_relays(limit: int = 500, skip: int = 0, country: Optional[str] = None, is_exit: Optional[bool] = None):
     """Get TOR relays with optional filtering.
     
@@ -372,7 +372,7 @@ def get_relays(limit: int = 500, skip: int = 0, country: Optional[str] = None, i
 # ---------------------------------------------------------
 # NEW: MAP ENDPOINT
 # ---------------------------------------------------------
-@app.get("/relays/map")
+@app.get("/api/relays/map")
 def relays_map(limit: int = 2000):
     """
     Return relays with coordinates so frontend can plot them on a map.
@@ -403,7 +403,7 @@ def relays_map(limit: int = 2000):
 # ---------------------------------------------------------
 # NEW: RISK TOP-K ENDPOINT
 # ---------------------------------------------------------
-@app.get("/risk/top")
+@app.get("/api/risk/top")
 def api_risk_top(limit: int = 50):
     """
     Return top N highest-risk relays.
@@ -436,7 +436,7 @@ def api_risk_top(limit: int = 50):
 # ---------------------------------------------------------
 # NEW: THREAT INTEL / MALICIOUS RELAYS
 # ---------------------------------------------------------
-@app.get("/intel/malicious")
+@app.get("/api/intel/malicious")
 def api_malicious(limit: int = 100):
     """
     Return relays flagged as malicious by simple intel rules.
@@ -466,7 +466,7 @@ def api_malicious(limit: int = 100):
 # ---------------------------------------------------------
 # NEW: INDIA-SPECIFIC ANALYTICS
 # ---------------------------------------------------------
-@app.get("/analytics/india")
+@app.get("/api/analytics/india")
 def india_analytics():
     """Return India-focused TOR network statistics.
     
@@ -560,7 +560,7 @@ if not logger.handlers:
     logger.setLevel(logging.INFO)
 
 
-@app.post("/forensic/upload")
+@app.post("/api/forensic/upload")
 async def forensic_upload(file: UploadFile = File(...)):
     """Upload forensic data (logs, metadata, PCAP analysis) for correlation.
     
@@ -1006,7 +1006,7 @@ async def forensic_upload(file: UploadFile = File(...)):
 # ---------------------------------------------------------
 # CORRELATOR ENDPOINTS (FEATURE 13: HARDENED)
 # ---------------------------------------------------------
-@app.get("/paths/generate")
+@app.get("/api/paths/generate")
 def api_generate_paths(
     guards: int = 30,
     middles: int = 80,
@@ -1079,7 +1079,7 @@ def api_generate_paths(
         )
 
 
-@app.get("/paths/inference")
+@app.get("/api/paths/inference")
 def api_probabilistic_paths(
     guards: int = 30,
     middles: int = 80,
@@ -1240,7 +1240,7 @@ def api_probabilistic_paths(
         )
 
 
-@app.get("/paths/top")
+@app.get("/api/paths/top")
 def api_top_paths(limit: int = 100):
     """Get top candidate paths by plausibility score.
     
@@ -1291,7 +1291,7 @@ def api_top_paths(limit: int = 100):
 # ---------------------------------------------------------
 # TIMELINE ENDPOINT (existing)
 # ---------------------------------------------------------
-@app.get("/relay/{fp}/timeline")
+@app.get("/api/relay/{fp}/timeline")
 def relay_timeline(fp: str):
     r = db.relays.find_one({"fingerprint": fp}, {"_id": 0})
     if not r:
@@ -1610,7 +1610,7 @@ def build_report_pdf(path_candidate: dict) -> bytes:
     return buffer.read()
 
 
-@app.get("/export/report")
+@app.get("/api/export/report")
 def export_report(path_id: str):
     path_candidate = db.path_candidates.find_one({"id": path_id}, {"_id": 0})
     if not path_candidate:
