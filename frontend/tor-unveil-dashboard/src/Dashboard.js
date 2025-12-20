@@ -93,11 +93,24 @@ export default function Dashboard() {
   const fetchTorTopology = useCallback(async () => {
     setTopologyLoading(true);
     try {
-      // Use /relays/map endpoint which returns node topology
+      // Use /relays/map endpoint which returns array of relay nodes
       const response = await fetch(`${API_URL}/relays/map`);
       if (response.ok) {
-        const data = await response.json();
-        setTorTopology(data);
+        const nodes = await response.json();
+        
+        // Parse the relay data and calculate statistics
+        const relayArray = Array.isArray(nodes) ? nodes : [];
+        const totalNodes = relayArray.length;
+        const guardNodes = relayArray.filter(n => n.is_guard).length;
+        const exitNodes = relayArray.filter(n => n.is_exit).length;
+        const middleNodes = totalNodes - guardNodes - exitNodes; // Nodes that are neither guard nor exit
+        
+        setTorTopology({
+          total_nodes: totalNodes,
+          guard_nodes: guardNodes,
+          exit_nodes: exitNodes,
+          middle_nodes: middleNodes
+        });
       } else {
         console.warn("Failed to fetch TOR topology summary");
         setTorTopology(null);
@@ -118,7 +131,24 @@ export default function Dashboard() {
       const response = await fetch(`${API_URL}/risk/top`);
       if (response.ok) {
         const data = await response.json();
-        setTopEntryNodes(Array.isArray(data) ? data.slice(0, 3) : data.nodes?.slice(0, 3) || []);
+        
+        // Extract nodes from response (could be array or wrapped in data/nodes field)
+        let nodes = [];
+        if (Array.isArray(data)) {
+          nodes = data;
+        } else if (data.data && Array.isArray(data.data)) {
+          nodes = data.data;
+        } else if (data.nodes && Array.isArray(data.nodes)) {
+          nodes = data.nodes;
+        }
+        
+        // Map risk_score to confidence_score and limit to top 5
+        const entriesWithConfidence = nodes.slice(0, 5).map(node => ({
+          ...node,
+          confidence_score: Math.min((node.risk_score || 85) / 100, 1) // Normalize risk score to 0-1
+        }));
+        
+        setTopEntryNodes(entriesWithConfidence);
       } else {
         console.warn("Failed to fetch top entry nodes");
         setTopEntryNodes([]);
@@ -135,11 +165,20 @@ export default function Dashboard() {
   const fetchRecentEvents = useCallback(async () => {
     setEventsLoading(true);
     try {
-      // Use /api/investigations endpoint which returns recent cases/investigations
-      const response = await fetch(`${API_URL}/api/investigations`);
+      // Use /api/timeline endpoint which returns correlation events
+      const response = await fetch(`${API_URL}/api/timeline?limit=10`);
       if (response.ok) {
         const data = await response.json();
-        setRecentEvents(Array.isArray(data) ? data.slice(0, 5) : data.investigations?.slice(0, 5) || []);
+        
+        // Extract events from response
+        let events = [];
+        if (Array.isArray(data)) {
+          events = data;
+        } else if (data.events && Array.isArray(data.events)) {
+          events = data.events;
+        }
+        
+        setRecentEvents(events.slice(0, 8)); // Show last 8 events
       } else {
         console.warn("Failed to fetch recent events");
         setRecentEvents([]);
@@ -160,7 +199,7 @@ export default function Dashboard() {
     fetchTopEntryNodes();
     // Fetch recent correlation events
     fetchRecentEvents();
-  }, [fetchCases]);
+  }, [fetchCases, fetchTorTopology, fetchTopEntryNodes, fetchRecentEvents]);
 
   // Determine next recommended action based on case status
   const getNextAction = () => {

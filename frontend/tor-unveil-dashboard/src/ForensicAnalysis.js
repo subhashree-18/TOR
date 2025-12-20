@@ -48,9 +48,7 @@ export default function ForensicAnalysis() {
           setAnalysisDetails(response.data);
         }
       } catch (err) {
-        console.warn("Backend not available, using mock data:", err.message);
-
-        // Mock data for demonstration when backend unavailable
+        console.error("Failed to fetch analysis details from backend:", err.message);
         setAnalysisDetails({
           hypotheses: []
         });
@@ -77,7 +75,7 @@ export default function ForensicAnalysis() {
           timestamp: evt.timestamp,
           event_type: evt.type === 'relay' ? 'ENTRY_NODE_FIRST_SEEN' : 'EXIT_CORRELATION',
           description: evt.description || evt.label,
-          confidence: Math.random() * 0.5 + 0.5 // Mock confidence
+          confidence: evt.confidence || 0.5 // Use actual confidence from backend
         }));
         setTimelineEvents(events.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)));
       }

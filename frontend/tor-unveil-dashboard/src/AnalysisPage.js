@@ -90,90 +90,13 @@ export default function AnalysisPage() {
           setAnalysisData(response.data);
         }
       } catch (err) {
-        console.warn("Backend not available, using mock data:", err.message);
-
-        // Mock data for demonstration when backend unavailable
+        console.error("Failed to fetch analysis from backend:", err.message);
+        setError(`Unable to load analysis data from backend. Please ensure the backend service is running. Error: ${err.message}`);
+        
+        // NO MOCK DATA - Only display error if backend is unavailable
         setAnalysisData({
-          confidence_evolution: {
-            initial_confidence: "Medium",
-            current_confidence: "High", 
-            improvement_factor: "Exit node correlation increased confidence from 55% to 78%",
-            evolution_note: "Confidence improves as additional exit-node evidence is correlated."
-          },
-          hypotheses: [
-            {
-              rank: 1,
-              entry_region: "Germany (DE)",
-              exit_region: "Netherlands (NL)",
-              evidence_count: 847,
-              confidence_level: "High",
-              explanation: {
-                timing_consistency: "Strong temporal alignment observed in 87% of traffic samples",
-                guard_persistence: "Entry node maintained consistent uptime during analysis window",
-                evidence_strength: "High correlation between session timing and known Tor relay patterns"
-              }
-            },
-            {
-              rank: 2,
-              entry_region: "France (FR)",
-              exit_region: "United States (US)",
-              evidence_count: 612,
-              confidence_level: "High",
-              explanation: {
-                timing_consistency: "Moderate-to-strong temporal correlation in 72% of samples",
-                guard_persistence: "French relay showed stable operation with minimal downtime",
-                evidence_strength: "Clear session boundaries with expected latency patterns"
-              }
-            },
-            {
-              rank: 3,
-              entry_region: "United Kingdom (GB)",
-              exit_region: "Germany (DE)",
-              evidence_count: 489,
-              confidence_level: "Medium",
-              explanation: {
-                timing_consistency: "Moderate correlation with some timing gaps",
-                guard_persistence: "UK relay exhibited intermittent availability",
-                evidence_strength: "Evidence supports hypothesis but with some uncertainty"
-              }
-            },
-            {
-              rank: 4,
-              entry_region: "Switzerland (CH)",
-              exit_region: "Sweden (SE)",
-              evidence_count: 356,
-              confidence_level: "Medium",
-              explanation: {
-                timing_consistency: "Partial temporal alignment with acceptable deviation",
-                guard_persistence: "Swiss infrastructure shows privacy-focused operation",
-                evidence_strength: "Moderate evidence weight with good protocol signatures"
-              }
-            },
-            {
-              rank: 5,
-              entry_region: "Romania (RO)",
-              exit_region: "Finland (FI)",
-              evidence_count: 234,
-              confidence_level: "Medium",
-              explanation: {
-                timing_consistency: "Weak-to-moderate correlation patterns",
-                guard_persistence: "Romanian relay shows high variability",
-                evidence_strength: "Limited evidence but consistent with Tor usage"
-              }
-            },
-            {
-              rank: 6,
-              entry_region: "Canada (CA)",
-              exit_region: "Japan (JP)",
-              evidence_count: 178,
-              confidence_level: "Low",
-              explanation: {
-                timing_consistency: "Weak temporal alignment due to timezone differences",
-                guard_persistence: "Trans-Pacific path shows unusual characteristics",
-                evidence_strength: "Insufficient evidence for confident attribution"
-              }
-            }
-          ]
+          hypotheses: [],
+          confidence_evolution: {}
         });
       } finally {
         setLoading(false);
