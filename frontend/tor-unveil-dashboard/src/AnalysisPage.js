@@ -41,7 +41,7 @@ export default function AnalysisPage() {
   
   // Get case ID from query params or location state
   const searchParams = new URLSearchParams(location.search);
-  const caseId = searchParams.get('caseId') || location.state?.caseId || "TN/CYB/2024/001234";
+  const caseId = searchParams.get('caseId') || location.state?.caseId || "FINAL_DEMO_2025_12_20";
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
