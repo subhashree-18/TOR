@@ -25,6 +25,10 @@ PCAP_MAGIC_BE_NS = 0x4d3cb2a1  # Big-endian with nanoseconds
 LINK_TYPE_ETHERNET = 1
 LINK_TYPE_RAW = 7
 LINK_TYPE_LOOP = 108
+LINK_TYPE_SLL = 276  # Linux Cooked Capture
+
+# SLL (Linux Cooked Capture) header structure
+SLL_HEADER_LEN = 16  # SLL header is 16 bytes before the IP packet
 
 # IP protocol types
 IP_PROTO_TCP = 6
@@ -275,6 +279,41 @@ class PCAPAnalyzer:
                 # Parse IPv6
                 elif eth_type == ETH_TYPE_IPV6:
                     src_ip, dst_ip, protocol = self._parse_ipv6(data[offset:])
+            
+            elif self.metadata['link_type'] == LINK_TYPE_SLL:
+                # Linux Cooked Capture format: SLL header is variable length
+                # SLL2 (link type 276) format:
+                # 0-1: Protocol (BE) - e.g., 0x86dd for IPv6
+                # 2-3: Interface index (BE)
+                # 4-5: Packet type (BE)
+                # 6-7: Address length (BE)
+                # 8+: Source MAC address (padded to 8 bytes)
+                # Then: IP packet
+                
+                # For SLL2, the actual packet offset depends on address length
+                # Common case: address length = 0 or 6, so packet starts around offset 16-20
+                
+                # Try to find where the IP packet actually starts
+                # by looking for version=4 or version=6
+                
+                ip_packet_offset = None
+                
+                # Try common offsets for SLL2
+                for test_offset in [16, 20, 24]:
+                    if len(data) > test_offset:
+                        version = (data[test_offset] >> 4) & 0xF
+                        if version in [4, 6]:
+                            ip_packet_offset = test_offset
+                            break
+                
+                if ip_packet_offset is not None:
+                    offset = ip_packet_offset
+                    if len(data) > offset + 1:
+                        version = (data[offset] >> 4) & 0xF
+                        if version == 4:
+                            src_ip, dst_ip, protocol = self._parse_ipv4(data[offset:])
+                        elif version == 6:
+                            src_ip, dst_ip, protocol = self._parse_ipv6(data[offset:])
                     
             elif self.metadata['link_type'] == LINK_TYPE_RAW:
                 # Raw IP

@@ -926,3 +926,101 @@
   font-style: italic;
 }
 
+/* ========== EVENT TIMELINE STYLES ========== */
+.event-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 600px;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.event-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  background: #f9fafb;
+  border-left: 3px solid #0b3c5d;
+  border-radius: 2px;
+  font-size: 13px;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.event-item.upload {
+  border-left-color: #059669;
+  background: #ecfdf5;
+}
+
+.event-item.path {
+  border-left-color: #d97706;
+  background: #fffbeb;
+}
+
+.event-item.relay {
+  border-left-color: #6366f1;
+  background: #f0f4ff;
+}
+
+.event-time {
+  flex-shrink: 0;
+  font-family: "Courier New", monospace;
+  font-size: 11px;
+  color: #666;
+  font-weight: 600;
+  min-width: 180px;
+  text-align: right;
+}
+
+.event-badge {
+  flex-shrink: 0;
+  font-size: 18px;
+  text-align: center;
+  min-width: 32px;
+}
+
+.event-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.event-label {
+  font-weight: 600;
+  color: #0b3c5d;
+  margin-bottom: 4px;
+}
+
+.event-description {
+  color: #333;
+  line-height: 1.4;
+  word-wrap: break-word;
+  white-space: normal;
+}
+
+.event-detail {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  color: #666;
+  font-size: 11px;
+}
+
+/* Scrollbar styling */
+.event-timeline::-webkit-scrollbar {
+  width: 6px;
+}
+
+.event-timeline::-webkit-scrollbar-track {
+  background: #f0f0f0;
+  border-radius: 3px;
+}
+
+.event-timeline::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 3px;
+}
+
+.event-timeline::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
+

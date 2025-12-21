@@ -69,13 +69,18 @@ export default function Dashboard() {
     try {
       // Use /relays/map endpoint which returns array of relay nodes
       const nodes = await apiService.getRelaysMap();
+      console.log("TOR Topology API Response:", nodes);
       
       // Parse the relay data and calculate statistics
       const relayArray = Array.isArray(nodes) ? nodes : nodes.relays || [];
+      console.log("Relay Array:", relayArray.length, "nodes");
+      
       const totalNodes = relayArray.length;
       const guardNodes = relayArray.filter(n => n.is_guard).length;
       const exitNodes = relayArray.filter(n => n.is_exit).length;
       const middleNodes = totalNodes - guardNodes - exitNodes; // Nodes that are neither guard nor exit
+      
+      console.log(`Topology Stats: Total=${totalNodes}, Guards=${guardNodes}, Exits=${exitNodes}, Middle=${middleNodes}`);
       
       setTorTopology({
         total_nodes: totalNodes,
@@ -84,7 +89,7 @@ export default function Dashboard() {
         middle_nodes: middleNodes
       });
     } catch (err) {
-      console.warn("Backend TOR topology unavailable:", err.message);
+      console.error("Backend TOR topology error:", err);
       setTorTopology(null);
     } finally {
       setTopologyLoading(false);
@@ -274,6 +279,23 @@ export default function Dashboard() {
         <div className="header-right">
           <button className="btn-register" onClick={handleRegisterNewCase}>
             + Register New Case
+          </button>
+          <button 
+            className="btn-view-cases" 
+            onClick={() => navigate("/cases")}
+            style={{
+              marginLeft: "10px",
+              padding: "10px 20px",
+              backgroundColor: "#0b3c5d",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+              fontSize: "14px",
+              fontWeight: "500"
+            }}
+          >
+            📋 View Submitted Cases
           </button>
         </div>
       </div>

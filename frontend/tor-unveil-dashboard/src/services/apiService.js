@@ -236,8 +236,8 @@ class APIService {
    */
 
   // Generate PDF report
-  async generateReport(pathId) {
-    const url = `${this.baseURL}/api/export/report?path_id=${encodeURIComponent(pathId)}`;
+  async generateReport(caseId) {
+    const url = `${this.baseURL}/api/export/report-from-case?case_id=${encodeURIComponent(caseId)}`;
 
     try {
       const response = await fetch(url);

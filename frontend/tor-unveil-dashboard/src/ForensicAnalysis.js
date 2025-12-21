@@ -226,7 +226,14 @@ export default function ForensicAnalysis() {
                     <div className="header-left">
                       <span className="hypothesis-rank">Hypothesis #{hypothesis.rank}</span>
                       <span className="hypothesis-path">
-                        {hypothesis.entry_region} ??? {hypothesis.exit_region}
+                        {/* Show complete path with country, IP, and relay name - never ?? */}
+                        <span title={hypothesis.entry_node?.ip}>
+                          {(hypothesis.entry_node?.country && hypothesis.entry_node?.country !== '??') ? hypothesis.entry_node?.country : 'Unknown'} ({hypothesis.entry_node?.nickname || "Client"})
+                        </span>
+                        {' → '}
+                        <span title={hypothesis.exit_node?.ip}>
+                          {(hypothesis.exit_node?.country && hypothesis.exit_node?.country !== '??') ? hypothesis.exit_node?.country : 'Unknown'} ({hypothesis.exit_node?.nickname || "Unknown"})
+                        </span>
                       </span>
                     </div>
                     <div className="header-right">

@@ -110,9 +110,10 @@ export default function ForensicUpload() {
     try {
       const formData = new FormData();
       formData.append("file", selectedFile);
+      formData.append("caseId", caseId);
 
       const response = await axios.post(
-        `${API_URL}/forensic/upload`,
+        `${API_URL}/api/evidence/upload`,
         formData,
         {
           headers: {
@@ -198,16 +199,26 @@ export default function ForensicUpload() {
   const triggerCorrelationRecompute = async () => {
     setRecomputingCorrelation(true);
     try {
-      // Simulate correlation recomputation - no backend endpoint available
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      setCorrelationStatus({
-        status: "COMPLETED",
-        message: "TOR correlation analysis completed successfully",
-        confidence_improvements: "Entry node confidence improved by 15%"
-      });
+      // Fetch fresh analysis from backend which will generate dynamic mock data
+      console.log(`Fetching fresh analysis for case: ${caseId}`);
+      const analysisResponse = await axios.get(
+        `${API_URL}/api/analysis/${encodeURIComponent(caseId)}`,
+        { timeout: 30000 }
+      );
+      
+      if (analysisResponse.data) {
+        console.log(`Received analysis with ${analysisResponse.data.hypotheses?.length || 0} hypotheses`);
+        const hypothesesCount = analysisResponse.data.hypotheses?.length || 0;
+        
+        setCorrelationStatus({
+          status: "COMPLETED",
+          message: `TOR correlation analysis completed successfully - generated ${hypothesesCount} hypotheses`,
+          confidence_improvements: `Confidence assessment based on ${hypothesesCount} correlation paths`
+        });
+      }
     } catch (err) {
-      console.warn("Failed to trigger correlation recompute:", err.message);
-      // Set demo status if backend unavailable
+      console.warn("Failed to fetch correlation analysis:", err.message);
+      // Fall back to mock status if backend unavailable
       setCorrelationStatus({
         status: "COMPLETED",
         message: "Correlation analysis completed",

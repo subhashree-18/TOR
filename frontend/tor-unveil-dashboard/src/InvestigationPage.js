@@ -51,6 +51,7 @@ export default function InvestigationPage() {
   const [exitNodes, setExitNodes] = useState([]);
   const [confidenceHistory, setConfidenceHistory] = useState([]);
   const [forensicLoading, setForensicLoading] = useState(false);
+  const [timelineEvents, setTimelineEvents] = useState([]);
 
   // Fetch case details from backend
   useEffect(() => {
@@ -185,6 +186,22 @@ export default function InvestigationPage() {
       ]).finally(() => setForensicLoading(false));
     }
   }, [caseData]);
+
+  // Fetch timeline events for this case
+  useEffect(() => {
+    const fetchTimelineEvents = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/api/timeline?limit=20`);
+        if (response.data && response.data.events) {
+          setTimelineEvents(response.data.events);
+        }
+      } catch (err) {
+        console.warn("Failed to fetch timeline events:", err.message);
+      }
+    };
+    
+    fetchTimelineEvents();
+  }, []);
 
   // Get next action based on case state (Enhanced with more options)
   const getNextAction = () => {
@@ -444,6 +461,60 @@ export default function InvestigationPage() {
               <span>Pending</span>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Event Timeline - File Uploads, Path Correlations, Relay Activity */}
+      <section className="workspace-section">
+        <div className="section-header">
+          <h2>📅 Real-Time Event Timeline</h2>
+          <p style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>Shows file uploads and forensic events with actual timestamps</p>
+        </div>
+        <div className="section-body">
+          {timelineEvents && timelineEvents.length > 0 ? (
+            <div className="event-timeline">
+              {timelineEvents.slice(0, 15).map((event, idx) => {
+                const eventDate = new Date(event.timestamp);
+                const isFileUpload = event.label === "File Upload";
+                const isPathEvent = event.label === "Path Correlated";
+                
+                return (
+                  <div key={idx} className={`event-item ${event.type || 'other'}`}>
+                    <div className="event-time">
+                      {eventDate.toLocaleString('en-IN', {
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                      })}
+                    </div>
+                    <div className="event-badge">
+                      {isFileUpload && '📁'}
+                      {isPathEvent && '🔗'}
+                      {event.label === "Relay Last Seen" && '🔌'}
+                      {!isFileUpload && !isPathEvent && event.label === "Relay Last Seen" && '🔌'}
+                      {!isFileUpload && !isPathEvent && event.label !== "Relay Last Seen" && '•'}
+                    </div>
+                    <div className="event-content">
+                      <div className="event-label">{event.label}</div>
+                      <div className="event-description">{event.description}</div>
+                      {isFileUpload && (
+                        <div className="event-detail">
+                          <small>📊 {event.events_extracted} events extracted</small>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div style={{ padding: '20px', textAlign: 'center', color: '#999' }}>
+              <p>No timeline events yet. Upload forensic files to start tracking events.</p>
+            </div>
+          )}
         </div>
       </section>
 

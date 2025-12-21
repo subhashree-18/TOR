@@ -463,6 +463,119 @@
   background: #e8f4fc;
 }
 
+/* ========== EXPORT CONTROLS ========== */
+.export-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.format-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #f0f4f8;
+  border: 1px solid #d0d8e0;
+  border-radius: 4px;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.format-selector label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+  white-space: nowrap;
+}
+
+.format-selector select {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  background: #fff;
+  font-size: 13px;
+  font-family: "Segoe UI", Arial, sans-serif;
+  cursor: pointer;
+  color: #333;
+}
+
+.format-selector select:hover {
+  border-color: #0b3c5d;
+}
+
+.format-selector select:disabled {
+  background: #f0f0f0;
+  cursor: not-allowed;
+  color: #999;
+}
+
+.report-actions .btn-primary {
+  background: #0b3c5d;
+  color: #fff;
+  border: none;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: "Segoe UI", Arial, sans-serif;
+  border-radius: 4px;
+}
+
+.report-actions .btn-primary:hover:not(:disabled) {
+  background: #094056;
+}
+
+.report-actions .btn-primary:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.report-actions .btn-secondary {
+  background: #fff;
+  color: #0b3c5d;
+  border: 1px solid #0b3c5d;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: "Segoe UI", Arial, sans-serif;
+  border-radius: 4px;
+  margin-right: 8px;
+  margin-top: 8px;
+}
+
+.report-actions .btn-secondary:hover {
+  background: #e8f4fc;
+}
+
+.report-actions .btn-submit {
+  background: #059669;
+  color: #fff;
+  border: none;
+  padding: 12px 28px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: "Segoe UI", Arial, sans-serif;
+  border-radius: 4px;
+  margin-right: 8px;
+  margin-top: 8px;
+  transition: background-color 0.2s;
+}
+
+.report-actions .btn-submit:hover:not(:disabled) {
+  background: #047857;
+}
+
+.report-actions .btn-submit:disabled {
+  background: #6b7280;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
 /* ========== RESPONSIVE ========== */
 @media (max-width: 900px) {
   .report-document {

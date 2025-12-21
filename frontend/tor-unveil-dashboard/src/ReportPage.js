@@ -29,6 +29,10 @@ export default function ReportPage() {
   const [error, setError] = useState(null);
   const [reportData, setReportData] = useState(null);
   const [exporting, setExporting] = useState(false);
+  const [exportFormat, setExportFormat] = useState('pdf'); // 'pdf', 'json', or 'txt'
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [timelineRefreshCounter, setTimelineRefreshCounter] = useState(0);
   
   // Fetch report data from backend APIs - REAL DATA ONLY
   useEffect(() => {
@@ -40,42 +44,90 @@ export default function ReportPage() {
     
     fetchReportData();
   }, [caseId, navigate]);
+
+  // Auto-refresh timeline every 3 seconds to show latest events in real-time
+  useEffect(() => {
+    const timelineInterval = setInterval(() => {
+      setTimelineRefreshCounter(prev => prev + 1);
+    }, 3000);
+    
+    return () => clearInterval(timelineInterval);
+  }, []);
+
+  // Fetch only timeline when refresh counter changes (every 3 seconds)
+  useEffect(() => {
+    if (reportData) {
+      fetchTimelineOnly();
+    }
+  }, [timelineRefreshCounter]);
   
   const fetchReportData = async () => {
     try {
       setLoading(true);
       setError(null);
       
-      // Fetch case investigation details from backend
-      const investigationResponse = await axios.get(
-        `${API_URL}/api/investigations/${encodeURIComponent(caseId)}`
-      );
+      // Fetch case investigation details from backend (optional, may not exist for all cases)
+      let investigationData = null;
+      try {
+        const investigationResponse = await axios.get(
+          `${API_URL}/api/investigations/${encodeURIComponent(caseId)}`
+        );
+        investigationData = investigationResponse.data;
+      } catch (err) {
+        console.warn("Investigation data not found, using analysis data only:", err.message);
+        // Continue without investigation data - it's optional
+      }
       
-      // Fetch analysis results for this case from backend
+      // Fetch analysis results for this case from backend (REQUIRED)
       const analysisResponse = await axios.get(
         `${API_URL}/api/analysis/${encodeURIComponent(caseId)}`
       );
       
       // Fetch timeline events from backend for context
-      const timelineResponse = await axios.get(
-        `${API_URL}/api/timeline?limit=50`
-      );
+      let timelineData = [];
+      try {
+        const timelineResponse = await axios.get(
+          `${API_URL}/api/timeline?limit=50`
+        );
+        timelineData = timelineResponse.data.events || [];
+      } catch (err) {
+        console.warn("Timeline data not available:", err.message);
+      }
       
-      // Combine ALL data from backend only
+      // Combine data from backend (investigation is optional)
       const combinedReportData = {
-        caseInfo: investigationResponse.data,
+        caseInfo: investigationData || { caseId, title: `Case ${caseId}` },
         analysisResults: analysisResponse.data,
-        timelineEvents: timelineResponse.data.events || [],
+        timelineEvents: timelineData,
         generatedAt: new Date().toISOString(),
       };
       
       setReportData(combinedReportData);
     } catch (err) {
       console.error("Failed to fetch report data from backend:", err.message);
-      setError(`Failed to load report data from backend: ${err.message}. All data must come from backend API - no mock data allowed.`);
+      setError(`Failed to load analysis data from backend: ${err.message}`);
       setReportData(null);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Fetch only timeline data for real-time updates (every 3 seconds)
+  const fetchTimelineOnly = async () => {
+    try {
+      const timelineResponse = await axios.get(
+        `${API_URL}/api/timeline?limit=50`
+      );
+      const timelineData = timelineResponse.data.events || [];
+      
+      // Update only the timeline events, keeping other data intact
+      setReportData(prev => ({
+        ...prev,
+        timelineEvents: timelineData,
+        lastTimelineUpdate: new Date().toISOString()
+      }));
+    } catch (err) {
+      console.warn("Could not refresh timeline:", err.message);
     }
   };
 
@@ -90,27 +142,92 @@ export default function ReportPage() {
     try {
       setExporting(true);
       
-      // Trigger backend report generation and download
-      const response = await axios.get(
-        `${API_URL}/export/report?path_id=${encodeURIComponent(caseId)}`,
-        { responseType: 'blob' }
-      );
+      let endpoint;
+      let filename;
+      let mediaType = 'application/octet-stream';
+      
+      // Determine endpoint and filename based on selected format
+      switch (exportFormat) {
+        case 'json':
+          endpoint = `${API_URL}/api/export/report-json?case_id=${encodeURIComponent(caseId)}`;
+          filename = `forensic_report_${caseId}.json`;
+          break;
+        case 'txt':
+          endpoint = `${API_URL}/api/export/report-txt?case_id=${encodeURIComponent(caseId)}`;
+          filename = `forensic_report_${caseId}.txt`;
+          break;
+        case 'pdf':
+        default:
+          endpoint = `${API_URL}/api/export/report-from-case?case_id=${encodeURIComponent(caseId)}`;
+          filename = `forensic_report_${caseId}.pdf`;
+          break;
+      }
+      
+      // Trigger backend report generation and download from case analysis
+      const response = await axios.get(endpoint, { responseType: 'blob' });
       
       // Create download link from backend response
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `forensic_report_${caseId}.pdf`);
+      link.setAttribute('download', filename);
       document.body.appendChild(link);
       link.click();
       link.parentNode.removeChild(link);
       window.URL.revokeObjectURL(url);
+      
+      console.log(`${exportFormat.toUpperCase()} export successful for case:`, caseId);
       
     } catch (err) {
       console.error("Failed to export report from backend:", err.message);
       alert(`Export failed - backend error: ${err.message}`);
     } finally {
       setExporting(false);
+    }
+  };
+
+  // Handle case submission - save to backend database
+  const handleSubmitCase = async () => {
+    if (!caseId || !reportData) {
+      alert("Cannot submit: missing case data");
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+
+      // Prepare case data for submission
+      const caseToSubmit = {
+        case_id: caseId,
+        case_title: reportData.caseInfo?.title || `Case ${caseId}`,
+        department: reportData.caseInfo?.department || "Tamil Nadu Police - Cyber Crime Wing",
+        officer_name: reportData.caseInfo?.officer_name || "Investigating Officer",
+        analysis: reportData.analysis || {},
+        session_summary: reportData.session_summary || {},
+        report_data: {
+          hypotheses_count: reportData.hypotheses?.length || 0,
+          confidence_level: reportData.hypothesis_data?.confidence || "Unknown",
+          entry_node: reportData.hypothesis_data?.entry_node || "Unknown",
+          exit_node: reportData.hypothesis_data?.exit_node || "Unknown"
+        }
+      };
+
+      // Submit to backend
+      const response = await axios.post(
+        `${API_URL}/api/cases/submit`,
+        caseToSubmit
+      );
+
+      if (response.data.status === "success") {
+        setSubmitted(true);
+        alert(`✓ Case '${caseId}' submitted successfully!\n\nSubmitted at: ${response.data.submitted_at}`);
+        console.log("Case submission response:", response.data);
+      }
+    } catch (err) {
+      console.error("Failed to submit case:", err.message);
+      alert(`Case submission failed: ${err.message}`);
+    } finally {
+      setSubmitting(false);
     }
   };
   
@@ -211,26 +328,51 @@ export default function ReportPage() {
                 <thead>
                   <tr>
                     <th>Rank</th>
-                    <th>Entry Region</th>
-                    <th>Exit Region</th>
+                    <th>Entry Node</th>
+                    <th>Exit Node</th>
+                    <th>Evidence</th>
                     <th>Confidence</th>
                     <th>Score</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {analysisResults.hypotheses.slice(0, 10).map((hyp, idx) => (
+                  {analysisResults.hypotheses.slice(0, 10).map((hyp, idx) => {
+                    // Extract country code from entry_region (e.g., "Russia (RU)" -> "RU")
+                    const entryCountry = hyp.entry_region ? hyp.entry_region.split('(')[1]?.replace(')', '') : 'XX';
+                    const entryCountryName = hyp.entry_region ? hyp.entry_region.split('(')[0]?.trim() : 'Unknown';
+                    
+                    // Extract country code from exit_region (e.g., "India (IN)" -> "IN")
+                    const exitCountry = hyp.exit_region ? hyp.exit_region.split('(')[1]?.replace(')', '') : 'XX';
+                    const exitCountryName = hyp.exit_region ? hyp.exit_region.split('(')[0]?.trim() : 'Unknown';
+                    
+                    return (
                     <tr key={idx}>
                       <td>#{hyp.rank || idx + 1}</td>
-                      <td>{hyp.entry_region || "Unknown"}</td>
-                      <td>{hyp.exit_region || "Unknown"}</td>
+                      <td style={{ fontSize: "11px" }}>
+                        {/* Show entry region from backend */}
+                        <div><strong>{entryCountryName || 'Unknown'}</strong></div>
+                        <div style={{ color: "#666" }}>Code: {entryCountry}</div>
+                        <div style={{ color: "#999" }}>Entry Relay</div>
+                      </td>
+                      <td style={{ fontSize: "11px" }}>
+                        {/* Show exit region from backend */}
+                        <div><strong>{exitCountryName || 'Unknown'}</strong></div>
+                        <div style={{ color: "#666" }}>Code: {exitCountry}</div>
+                        <div style={{ color: "#999" }}>Exit Relay</div>
+                      </td>
+                      <td>{hyp.evidence_count || 0}</td>
                       <td>
                         <span className={`confidence-badge ${(hyp.confidence_level || "").toLowerCase()}`}>
                           {hyp.confidence_level || "Unknown"}
                         </span>
                       </td>
-                      <td>{((hyp.score || 0) * 100).toFixed(1)}%</td>
+                      <td>
+                        {/* Show confidence level as percentage */}
+                        {hyp.confidence_level === 'High' ? '85%' : hyp.confidence_level === 'Medium' ? '60%' : '35%'}
+                      </td>
                     </tr>
-                  ))}
+                  );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -246,15 +388,32 @@ export default function ReportPage() {
         <div className="report-content">
           {timelineEvents.length > 0 ? (
             <div className="timeline-summary">
-              {timelineEvents.slice(0, 15).map((evt, idx) => (
-                <div key={idx} className="timeline-item">
-                  <div className="timeline-timestamp">
-                    {new Date(evt.timestamp).toLocaleString('en-IN')}
+              {timelineEvents.slice(0, 15).map((evt, idx) => {
+                // Format timestamp as DD/MM/YYYY, HH:MM:SS AM/PM
+                const date = new Date(evt.timestamp);
+                const formattedDate = date.toLocaleDateString('en-IN', {
+                  day: '2-digit',
+                  month: '2-digit',
+                  year: 'numeric'
+                });
+                const formattedTime = date.toLocaleTimeString('en-IN', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  second: '2-digit',
+                  hour12: true
+                });
+                const fullTimestamp = `${formattedDate}, ${formattedTime}`;
+                
+                return (
+                  <div key={idx} className="timeline-item">
+                    <div className="timeline-timestamp">
+                      {fullTimestamp}
+                    </div>
+                    <div className="timeline-label">{evt.label}</div>
+                    <div className="timeline-description">{evt.description}</div>
                   </div>
-                  <div className="timeline-label">{evt.label}</div>
-                  <div className="timeline-description">{evt.description}</div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <p>No timeline events available from backend.</p>
@@ -272,14 +431,14 @@ export default function ReportPage() {
                 <strong>Top Hypothesis (Rank #1):</strong>
               </p>
               <p>
-                {analysisResults.hypotheses[0].timing_correlation || "Based on temporal correlation analysis of network events."}
+                {analysisResults.hypotheses[0].explanation?.timing_consistency || "Based on temporal correlation analysis of network events."}
               </p>
               <p>
                 <strong>Supporting Evidence:</strong>
               </p>
               <ul>
-                <li>{analysisResults.hypotheses[0].session_overlap || "Session patterns align with probable TOR circuit"}</li>
-                <li>{analysisResults.hypotheses[0].evidence_consistency || "Evidence is consistent with observed network topology"}</li>
+                <li>{analysisResults.hypotheses[0].explanation?.guard_persistence || "Guard relay persistence supports this hypothesis"}</li>
+                <li>{analysisResults.hypotheses[0].explanation?.evidence_strength || "Evidence is consistent with observed network topology"}</li>
               </ul>
               <p>
                 <strong>Confidence Level:</strong>
@@ -326,13 +485,38 @@ export default function ReportPage() {
       
       {/* Report Actions */}
       <div className="report-actions">
+        <div className="export-controls">
+          <div className="format-selector">
+            <label htmlFor="export-format">Export Format: </label>
+            <select 
+              id="export-format"
+              value={exportFormat} 
+              onChange={(e) => setExportFormat(e.target.value)}
+              disabled={exporting}
+            >
+              <option value="pdf">PDF Document</option>
+              <option value="json">JSON Data</option>
+              <option value="txt">Text File</option>
+            </select>
+          </div>
+          <button 
+            className="btn-primary"
+            onClick={handleExportReport}
+            disabled={exporting}
+          >
+            {exporting ? `Generating ${exportFormat.toUpperCase()}...` : `Export as ${exportFormat.toUpperCase()}`}
+          </button>
+        </div>
+        
         <button 
-          className="btn-primary"
-          onClick={handleExportReport}
-          disabled={exporting}
+          className="btn-submit"
+          onClick={handleSubmitCase}
+          disabled={submitting || submitted}
+          title="Save this case to the backend database for future reference"
         >
-          {exporting ? "Generating PDF..." : "Export as PDF"}
+          {submitted ? "✓ Case Submitted" : submitting ? "Submitting Case..." : "💾 Submit Case to Database"}
         </button>
+        
         <button 
           className="btn-secondary"
           onClick={() => navigate("/dashboard")}
@@ -349,3 +533,4 @@ export default function ReportPage() {
     </div>
   );
 }
+

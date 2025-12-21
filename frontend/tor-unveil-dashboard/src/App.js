@@ -27,6 +27,7 @@ import ReportPage from "./ReportPage";
 import InvestigationPage from "./InvestigationPage";
 import ForensicAnalysis from "./ForensicAnalysis";
 import ForensicUpload from "./ForensicUpload";
+import CasesDashboard from "./CasesDashboard";
 import PoliceLogin from "./PoliceLogin";
 import "./App.css";
 
@@ -470,6 +471,9 @@ function AppContent() {
               {/* Dashboard - Case List (Entry Point) */}
               <Route path="/" element={<Dashboard />} />
               <Route path="/dashboard" element={<Dashboard />} />
+              
+              {/* Cases Dashboard - View all submitted cases */}
+              <Route path="/cases" element={<CasesDashboard />} />
               
               {/* Investigation Hub - Single Source of Truth */}
               {/* Requires valid case_id to function */}
