@@ -1,0 +1,350 @@
+/* GeographicContextMap.css - TOR Network Geographic Visualization
+ * Tamil Nadu Police Cyber Crime Wing - Network mapping and relay visualization
+ */
+
+/* ========== MAIN CONTAINER ========== */
+.geographic-context-map {
+  width: 100%;
+}
+
+.map-section {
+  background: #ffffff;
+  border: 2px solid #0a2540;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 16px rgba(10, 37, 64, 0.12);
+}
+
+/* ========== SECTION HEADER ========== */
+.section-header {
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 3px solid #f4a900;
+}
+
+.section-header h2 {
+  margin: 0 0 4px 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #0a2540;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.section-header p {
+  margin: 0;
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* ========== MAP CONTAINER ========== */
+.map-container {
+  background: linear-gradient(135deg, #e8f4f8 0%, #f0f8fb 100%);
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ========== SVG MAP ========== */
+.world-map {
+  width: 100%;
+  height: auto;
+  min-height: 400px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(10, 37, 64, 0.08);
+}
+
+/* ========== MAP LEGEND ========== */
+.map-legend {
+  display: flex;
+  gap: 24px;
+  padding: 16px;
+  background: linear-gradient(135deg, #f0f4f8 0%, #f8fafc 100%);
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #0f172a;
+}
+
+.legend-marker {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid #0a2540;
+  flex-shrink: 0;
+}
+
+.legend-marker.entry {
+  background: #10b981;
+  border-color: #059669;
+}
+
+.legend-marker.exit {
+  background: #ef4444;
+  border-color: #dc2626;
+}
+
+.legend-marker.connection {
+  width: 20px;
+  height: 3px;
+  border-radius: 0;
+  background: linear-gradient(90deg, #f4a900, rgba(244, 169, 0, 0.3));
+  border: none;
+}
+
+/* ========== NETWORK STATISTICS ========== */
+.network-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-box {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border: 2px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 18px;
+  text-align: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 6px rgba(10, 37, 64, 0.05);
+}
+
+.stat-box:hover {
+  border-color: #0a2540;
+  box-shadow: 0 4px 12px rgba(10, 37, 64, 0.15);
+  transform: translateY(-2px);
+}
+
+.stat-box h4 {
+  margin: 0 0 10px 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #0a2540;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.stat-number {
+  margin: 0 0 6px 0;
+  font-size: 32px;
+  font-weight: 900;
+  background: linear-gradient(135deg, #0a2540 0%, #f4a900 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.stat-label {
+  margin: 0;
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* ========== RELAY DETAILS ========== */
+.relay-details {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border: 2px solid #0a2540;
+  border-radius: 8px;
+  padding: 20px;
+  overflow-x: auto;
+}
+
+.relay-details h3 {
+  margin: 0 0 18px 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #0a2540;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #f4a900;
+}
+
+/* ========== RELAY SECTIONS ========== */
+.relay-section {
+  margin-bottom: 24px;
+}
+
+.relay-section:last-child {
+  margin-bottom: 0;
+}
+
+.relay-section h4 {
+  margin: 0 0 12px 0;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 10px 14px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: #ffffff;
+}
+
+.entry-header {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border-left: 4px solid #047857;
+}
+
+.exit-header {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  border-left: 4px solid #991b1b;
+}
+
+/* ========== RELAY TABLE ========== */
+.relay-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(10, 37, 64, 0.05);
+}
+
+.relay-table thead {
+  background: linear-gradient(135deg, #f0f4f8 0%, #e8ecf1 100%);
+  border-bottom: 2px solid #cbd5e1;
+}
+
+.relay-table th {
+  padding: 12px 14px;
+  text-align: left;
+  font-weight: 700;
+  color: #0a2540;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.4px;
+  border-right: 1px solid #cbd5e1;
+}
+
+.relay-table th:last-child {
+  border-right: none;
+}
+
+.relay-table tbody tr {
+  border-bottom: 1px solid #e2e8f0;
+  transition: background 0.2s ease;
+}
+
+.relay-table tbody tr:hover {
+  background: linear-gradient(90deg, rgba(10, 37, 64, 0.03) 0%, transparent 100%);
+}
+
+.relay-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.relay-table td {
+  padding: 12px 14px;
+  color: #0f172a;
+  font-weight: 500;
+  border-right: 1px solid #f1f5f9;
+}
+
+.relay-table td:last-child {
+  border-right: none;
+}
+
+.relay-id {
+  font-family: "Consolas", monospace;
+  font-size: 11px;
+  color: #0a2540;
+  font-weight: 700;
+  background: linear-gradient(90deg, rgba(10, 37, 64, 0.05) 0%, transparent 100%);
+  padding: 12px 14px;
+}
+
+/* ========== CONFIDENCE BADGES ========== */
+.confidence-badge {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: #ffffff;
+}
+
+.confidence-badge.high {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.25);
+}
+
+.confidence-badge.exit {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.25);
+}
+
+/* ========== RESPONSIVE DESIGN ========== */
+@media (max-width: 1024px) {
+  .network-stats {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  }
+
+  .world-map {
+    min-height: 350px;
+  }
+
+  .map-legend {
+    gap: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .map-section {
+    padding: 16px;
+  }
+
+  .network-stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .stat-box {
+    padding: 14px;
+  }
+
+  .stat-number {
+    font-size: 24px;
+  }
+
+  .relay-table {
+    font-size: 11px;
+  }
+
+  .relay-table th,
+  .relay-table td {
+    padding: 10px 8px;
+  }
+
+  .world-map {
+    min-height: 280px;
+  }
+
+  .map-legend {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
+}
