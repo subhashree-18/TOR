@@ -34,6 +34,68 @@ const getConfidenceClass = (level) => {
   }
 };
 
+// Calculate regional risks from hypotheses data
+const calculateRegionalRisks = (hypotheses = []) => {
+  // Regional mapping for countries
+  const regionMap = {
+    'PL': { region: 'Europe', countries: ['PL'] },
+    'NL': { region: 'Europe', countries: ['NL'] },
+    'DE': { region: 'Europe', countries: ['DE'] },
+    'FR': { region: 'Europe', countries: ['FR'] },
+    'RU': { region: 'Europe', countries: ['RU'] },
+    'CH': { region: 'Asia', countries: ['CH'] },
+    'IN': { region: 'Asia', countries: ['IN'] },
+    'SG': { region: 'Asia', countries: ['SG'] },
+    'JP': { region: 'Asia', countries: ['JP'] },
+    'AU': { region: 'Australia/Pacific', countries: ['AU'] },
+    'NZ': { region: 'Australia/Pacific', countries: ['NZ'] },
+    'US': { region: 'Americas', countries: ['US'] },
+    'CA': { region: 'Americas', countries: ['CA'] },
+    'BR': { region: 'Americas', countries: ['BR'] }
+  };
+
+  // Aggregate data by region
+  const regionData = {};
+  
+  hypotheses.forEach(hyp => {
+    const countryCode = hyp.entry_node?.code || hyp.fingerprint?.substring(0, 2).toUpperCase();
+    const regionInfo = regionMap[countryCode];
+    
+    if (regionInfo) {
+      const region = regionInfo.region;
+      if (!regionData[region]) {
+        regionData[region] = {
+          region: region,
+          totalEvidence: 0,
+          nodeCount: 0,
+          avgConfidence: 0,
+          evidences: []
+        };
+      }
+      regionData[region].totalEvidence += hyp.evidence_count || 0;
+      regionData[region].nodeCount += 1;
+      regionData[region].avgConfidence += (hyp.correlation_metrics?.overall_correlation || 0);
+      regionData[region].evidences.push(hyp.evidence_count || 0);
+    }
+  });
+
+  // Convert to array and calculate risk scores
+  const regions = Object.values(regionData).map(data => {
+    const avgConfidence = data.evidences.length > 0 ? (data.avgConfidence / data.evidences.length) * 100 : 0;
+    const risk = Math.round(avgConfidence);
+    
+    return {
+      region: `${data.region} (${data.nodeCount} countries)`,
+      risk: Math.min(100, Math.max(0, risk)),
+      nodes: data.nodeCount,
+      color: risk >= 75 ? 'critical' : risk >= 50 ? 'high' : risk >= 25 ? 'medium' : 'low'
+    };
+  });
+
+  // Sort by risk descending
+  return regions.sort((a, b) => b.risk - a.risk);
+};
+
 export default function AnalysisPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -412,14 +474,9 @@ export default function AnalysisPage() {
 
             {/* Regional Risk Assessment */}
             <div className="regional-assessment">
-              <h4>Regional Risk Assessment:</h4>
+              <h4>Regional Risk Assessment (Dynamic):</h4>
               <div className="regions-grid">
-                {[
-                  { region: 'Europe (FR, RU)', risk: 78, nodes: 12, color: 'critical' },
-                  { region: 'Asia (IN, CH, SG)', risk: 65, nodes: 8, color: 'high' },
-                  { region: 'Australia/Pacific', risk: 42, nodes: 5, color: 'medium' },
-                  { region: 'Americas (NA, CA)', risk: 28, nodes: 4, color: 'low' }
-                ].map((item, idx) => (
+                {calculateRegionalRisks(analysisData.hypotheses).map((item, idx) => (
                   <div key={idx} className={`region-card risk-${item.color}`}>
                     <div className="region-header">
                       <h5>{item.region}</h5>

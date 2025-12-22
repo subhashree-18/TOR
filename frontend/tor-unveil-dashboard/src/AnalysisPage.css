@@ -908,7 +908,7 @@
 }
 
 .region-card {
-  padding: 14px;
+  padding: 16px;
   border: 2px solid #cbd5e1;
   border-radius: 8px;
   background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
@@ -924,44 +924,53 @@
 
 .region-card.risk-low {
   border-left: 4px solid #10b981;
+  background: linear-gradient(135deg, #f0fdf4 0%, #f1fdf5 100%);
 }
 
 .region-card.risk-medium {
   border-left: 4px solid #f59e0b;
+  background: linear-gradient(135deg, #fffbeb 0%, #fffcf2 100%);
 }
 
 .region-card.risk-high {
   border-left: 4px solid #f97316;
+  background: linear-gradient(135deg, #fff7ed 0%, #fef3f2 100%);
 }
 
 .region-card.risk-critical {
   border-left: 4px solid #ef4444;
+  background: linear-gradient(135deg, #fef2f2 0%, #fff1f1 100%);
 }
 
 .region-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #e2e8f0;
 }
 
 .region-header h5 {
   margin: 0;
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 800;
   color: #0a2540;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
 }
 
 .risk-badge {
-  padding: 4px 10px;
-  border-radius: 4px;
-  font-size: 11px;
-  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 900;
   color: #ffffff;
   text-transform: uppercase;
-  letter-spacing: 0.2px;
+  letter-spacing: 0.5px;
+  min-width: 50px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 .risk-badge.low {
@@ -983,35 +992,37 @@
 .region-stats {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-bottom: 10px;
+  gap: 12px;
+  margin-bottom: 12px;
 }
 
 .region-stats .stat {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
 
 .stat-label {
-  font-size: 10px;
+  font-size: 11px;
   color: #64748b;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.2px;
+  letter-spacing: 0.3px;
 }
 
 .stat-value {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 900;
   color: #0a2540;
+  letter-spacing: 0.2px;
 }
 
 .region-bar {
-  height: 4px;
+  height: 6px;
   background: #e2e8f0;
-  border-radius: 2px;
+  border-radius: 3px;
   overflow: hidden;
+  border: 1px solid #cbd5e1;
 }
 
 .region-bar-fill {
@@ -1019,6 +1030,7 @@
   background: linear-gradient(90deg, #0a2540 0%, #f4a900 100%);
   border-radius: 2px;
   transition: width 0.8s cubic-bezier(0.4, 0.0, 0.2, 1);
+  box-shadow: 0 0 8px rgba(244, 169, 0, 0.4);
 }
 
 /* Relay Distribution - World Map */
