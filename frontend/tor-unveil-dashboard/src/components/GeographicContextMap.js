@@ -32,8 +32,7 @@ const GeographicContextMap = ({ caseId }) => {
       connections: [
         // Primary pathways from investigation
         { from: "UNKNOWN-ENTRY-01", to: "FR-EXIT-01", strength: 68, packets: 2486, confidence: "High", route: "Unknown → France" },
-        { from: "IND-ENTRY-01", to: "CH-EXIT-01", strength: 52, packets: 210, confidence: "Medium", route: "India → China" },
-        { from: "UNKNOWN-ENTRY-01", to: "RU-EXIT-01", strength: 65, packets: 2486, confidence: "High", route: "Unknown → Russia" }
+        { from: "IND-ENTRY-01", to: "CH-EXIT-01", strength: 52, packets: 210, confidence: "Medium", route: "India → China" }
       ]
     };
     
@@ -166,7 +165,7 @@ const GeographicContextMap = ({ caseId }) => {
           </div>
           <div className="stat-box">
             <h4>Connections</h4>
-            <p className="stat-number">{relayData.connections.length}</p>
+            <p className="stat-number">2</p>
             <p className="stat-label">Probable Paths Found</p>
           </div>
           <div className="stat-box">
