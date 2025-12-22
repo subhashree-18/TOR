@@ -10,34 +10,39 @@
 }
 
 .indian-context-container.has-risk-pattern {
-  background: rgba(239, 68, 68, 0.04);
+  background: rgba(239, 68, 68, 0.06);
   border: 2px solid rgba(239, 68, 68, 0.3);
   padding: 12px;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);
 }
 
 .indian-context-container.has-indian-node {
-  background: rgba(16, 185, 129, 0.04);
+  background: rgba(5, 150, 105, 0.05);
+  border: 1px solid rgba(5, 150, 105, 0.2);
+  border-radius: 8px;
 }
 
 /* Severity Banner */
 .severity-banner {
   padding: 10px 12px;
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 12px;
   font-weight: 600;
   text-align: center;
   letter-spacing: 0.5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .severity-banner.critical {
-  background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
-  color: #fef2f2;
-  border: 1px solid #b91c1c;
+  background: linear-gradient(90deg, #dc2626 0%, #b91c1c 100%);
+  color: #ffffff;
+  border: 1px solid #991b1b;
   animation: blink 2s ease-in-out infinite;
 }
 
 @keyframes blink {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -54,18 +59,19 @@
 
 .context-badge {
   padding: 12px;
-  border-radius: 6px;
+  border-radius: 8px;
   border: 2px solid;
   border-left: 4px solid;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .context-badge:hover {
-  transform: translateX(2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transform: translateX(3px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .badge-header {
@@ -85,7 +91,8 @@
   flex-shrink: 0;
   min-width: 28px;
   height: 28px;
-  border-radius: 4px;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .badge-label {
@@ -114,99 +121,123 @@
 
 /* Severity-based styling */
 .context-badge.severity-high {
-  background: rgba(16, 185, 129, 0.1);
-  border-color: #10b981;
-  color: #a7f3d0;
+  background: rgba(5, 150, 105, 0.1);
+  border-color: #059669;
+  color: #6ee7b7;
 }
 
 .context-badge.severity-high .badge-icon {
-  background: rgba(16, 185, 129, 0.2);
-  color: #10b981;
+  background: rgba(5, 150, 105, 0.25);
+  color: #059669;
 }
 
 .context-badge.severity-medium {
   background: rgba(245, 158, 11, 0.1);
   border-color: #f59e0b;
-  color: #fcd34d;
+  color: #fde68a;
 }
 
 .context-badge.severity-medium .badge-icon {
-  background: rgba(245, 158, 11, 0.2);
+  background: rgba(245, 158, 11, 0.25);
   color: #f59e0b;
 }
 
 .context-badge.severity-critical {
-  background: rgba(239, 68, 68, 0.12);
+  background: rgba(220, 38, 38, 0.12);
   border-color: #dc2626;
   color: #fecaca;
 }
 
 .context-badge.severity-critical .badge-icon {
-  background: rgba(239, 68, 68, 0.25);
+  background: rgba(220, 38, 38, 0.3);
   color: #ef4444;
   animation: pulse 2s ease-in-out infinite;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
 }
 
 /* Indian nodes - green theme */
 .badge-indian-entry,
 .badge-indian-middle,
 .badge-indian-exit {
-  background: rgba(16, 185, 129, 0.1);
-  border-color: #10b981;
-  color: #a7f3d0;
+  background: rgba(5, 150, 105, 0.1);
+  border-color: #059669;
+  color: #6ee7b7;
 }
 
 .badge-indian-entry .badge-icon,
 .badge-indian-middle .badge-icon,
 .badge-indian-exit .badge-icon {
-  background: rgba(16, 185, 129, 0.2);
-  color: #10b981;
+  background: rgba(5, 150, 105, 0.25);
+  color: #059669;
 }
 
 /* High-risk exit - red theme */
 .badge-high-risk-exit {
-  background: rgba(239, 68, 68, 0.12);
+  background: rgba(220, 38, 38, 0.12);
   border-color: #dc2626;
   color: #fecaca;
 }
 
 .badge-high-risk-exit .badge-icon {
-  background: rgba(239, 68, 68, 0.25);
+  background: rgba(220, 38, 38, 0.3);
   color: #ef4444;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
 }
 
 /* India→Foreign fraud pattern - critical */
 .badge-india-foreign-fraud {
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(245, 158, 11, 0.12));
+  background: linear-gradient(
+    135deg,
+    rgba(220, 38, 38, 0.15),
+    rgba(245, 158, 11, 0.12)
+  );
   border: 2px dashed #dc2626;
   border-left: 4px dashed #ef4444;
   color: #fecaca;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.2);
 }
 
 .badge-india-foreign-fraud .badge-icon {
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.3), rgba(245, 158, 11, 0.2));
+  background: linear-gradient(
+    135deg,
+    rgba(220, 38, 38, 0.35),
+    rgba(245, 158, 11, 0.25)
+  );
   color: #ef4444;
   animation: pulse-intense 2s ease-in-out infinite;
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.5);
 }
 
 @keyframes pulse {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.05); opacity: 0.9; }
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.9;
+  }
 }
 
 @keyframes pulse-intense {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.15); }
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
 }
-
 
 /* Information Panel */
 .india-context-info {
-  background: linear-gradient(135deg, #1e1b4b 0%, var(--background) 100%);
-  border: 1px solid var(--accent-hover);
-  border-radius: 6px;
+  background: linear-gradient(135deg, #1e293b 0%, var(--background) 100%);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 8px;
   padding: 14px;
   margin-top: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .info-header {
@@ -215,19 +246,19 @@
   gap: 8px;
   margin-bottom: 12px;
   padding-bottom: 10px;
-  border-bottom: 1px solid rgba(6, 182, 212, 0.3);
+  border-bottom: 1px solid rgba(59, 130, 246, 0.3);
 }
 
 .info-header h4 {
   margin: 0;
   font-size: 13px;
-  color: var(--accent-hover);
+  color: #60a5fa;
   font-weight: 700;
   letter-spacing: 0.3px;
 }
 
 .info-header svg {
-  color: var(--accent-hover);
+  color: #60a5fa;
   flex-shrink: 0;
 }
 
@@ -245,7 +276,7 @@
 
 .info-section strong {
   font-size: 12px;
-  color: var(--accent-hover);
+  color: #60a5fa;
   font-weight: 700;
   letter-spacing: 0.3px;
 }
@@ -264,11 +295,12 @@
 }
 
 .info-section.pattern-alert {
-  background: rgba(239, 68, 68, 0.08);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  border-radius: 4px;
+  background: rgba(220, 38, 38, 0.1);
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  border-radius: 6px;
   padding: 8px;
   border-left: 3px solid #ef4444;
+  box-shadow: 0 1px 4px rgba(220, 38, 38, 0.15);
 }
 
 .info-section.pattern-alert strong {
@@ -276,15 +308,16 @@
 }
 
 .info-section.legal-notice {
-  background: rgba(6, 182, 212, 0.08);
-  border: 1px solid rgba(6, 182, 212, 0.3);
-  border-radius: 4px;
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 6px;
   padding: 8px;
-  border-left: 3px solid var(--accent-hover);
+  border-left: 3px solid #3b82f6;
+  box-shadow: 0 1px 4px rgba(59, 130, 246, 0.1);
 }
 
 .info-section.legal-notice strong {
-  color: var(--accent-hover);
+  color: #60a5fa;
   font-size: 11px;
 }
 
@@ -355,12 +388,14 @@
 
 /* ============= LIGHT THEME ============= */
 [data-theme="light"] .indian-context-container.has-risk-pattern {
-  background: rgba(239, 68, 68, 0.06);
-  border-color: rgba(239, 68, 68, 0.4);
+  background: rgba(220, 38, 38, 0.08);
+  border-color: rgba(220, 38, 38, 0.4);
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.1);
 }
 
 [data-theme="light"] .indian-context-container.has-indian-node {
-  background: rgba(16, 185, 129, 0.06);
+  background: rgba(5, 150, 105, 0.08);
+  border: 1px solid rgba(5, 150, 105, 0.3);
 }
 
 [data-theme="light"] .severity-banner.critical {
@@ -407,11 +442,16 @@
 
 [data-theme="light"] .india-context-info {
   background: #f8fafc;
-  border-color: #e2e8f0;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="light"] .info-header {
+  border-bottom-color: #e2e8f0;
 }
 
 [data-theme="light"] .info-header h4 {
-  color: var(--accent);
+  color: #3b82f6;
 }
 
 [data-theme="light"] .info-section strong {

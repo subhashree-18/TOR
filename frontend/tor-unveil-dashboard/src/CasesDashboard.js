@@ -67,44 +67,71 @@ export default function CasesDashboard() {
   const fetchCases = async () => {
     try {
       setRefreshing(true);
-      const response = await axios.get(`${API_URL}/api/cases`);
       
-      if (response.data.cases) {
-        // Transform and enrich case data
-        const enrichedCases = response.data.cases.map((caseItem, idx) => {
-          // Extract case type from case_id if possible
+      // Try to fetch from /api/cases endpoint first (submitted cases)
+      const casesResponse = await axios.get(`${API_URL}/api/cases`);
+      // Also fetch from /api/investigations for enriched data
+      const investigationsResponse = await axios.get(`${API_URL}/api/investigations`);
+      
+      let casesData = [];
+      
+      if (casesResponse.data.cases && casesResponse.data.cases.length > 0) {
+        // Use submitted cases as primary data
+        casesData = casesResponse.data.cases.map((caseItem) => {
+          // Find matching investigation for additional data
+          const investigation = investigationsResponse.data.investigations?.find(
+            inv => inv.caseId === caseItem.case_id
+          ) || {};
+          
+          // Extract case type
           let caseType = 'General';
-          if (caseItem.case_title) {
-            if (caseItem.case_title.toLowerCase().includes('narcotics')) caseType = 'Narcotics';
-            else if (caseItem.case_title.toLowerCase().includes('fraud')) caseType = 'Financial Fraud';
-            else if (caseItem.case_title.toLowerCase().includes('identity')) caseType = 'Identity Theft';
-            else if (caseItem.case_title.toLowerCase().includes('cyber')) caseType = 'Cyber Crime';
-          }
-
+          const title = caseItem.case_title || investigation.title || '';
+          if (title.toLowerCase().includes('narcotics')) caseType = 'Narcotics';
+          else if (title.toLowerCase().includes('fraud')) caseType = 'Financial Fraud';
+          else if (title.toLowerCase().includes('identity')) caseType = 'Identity Theft';
+          else if (title.toLowerCase().includes('cyber') || title.toLowerCase().includes('ransomware')) caseType = 'Cyber Crime';
+          else if (title.toLowerCase().includes('dark web')) caseType = 'Dark Web Crimes';
+          
           return {
-            ...caseItem,
-            case_type: caseType,
-            evidence_status: caseItem.session_summary?.total_packets ? 'Uploaded' : 'Pending',
-            analysis_status: caseItem.status === 'SUBMITTED' ? 'Completed' : 'In Progress',
-            confidence_level: caseItem.report_data?.confidence_level || 'Medium',
-            last_updated: caseItem.submitted_at,
-            unique_ips: caseItem.session_summary?.unique_ip_addresses || 0,
-            total_packets: caseItem.session_summary?.total_packets || 0,
-            protocols: caseItem.session_summary?.protocols_detected?.join(', ') || 'Unknown'
+            case_id: caseItem.case_id,
+            case_title: caseItem.case_title || investigation.title || 'Untitled Case',
+            case_type: investigation.caseType || caseType,
+            evidence_status: investigation.evidenceStatus || (caseItem.session_summary?.total_packets ? 'Uploaded' : 'Pending'),
+            analysis_status: investigation.analysisStatus || (caseItem.status === 'SUBMITTED' ? 'Completed' : 'Pending'),
+            confidence_level: investigation.confidenceLevel || 'Medium',
+            submitted_at: caseItem.submitted_at,
+            last_updated: investigation.lastActivity || caseItem.submitted_at,
+            unique_ips: caseItem.session_summary?.unique_ip_addresses || investigation.uniqueIPs || 0,
+            total_packets: caseItem.session_summary?.total_packets || investigation.totalPackets || 0,
+            protocols: caseItem.session_summary?.protocols_detected?.join(', ') || investigation.protocols || 'Unknown',
+            officer: caseItem.officer_name || investigation.assignedOfficer || 'N/A'
           };
         });
-
-        // Sort cases
-        const sorted = enrichedCases.sort((a, b) => {
-          if (sortBy === 'submitted_at') {
-            return new Date(b.submitted_at) - new Date(a.submitted_at);
-          }
-          return 0;
-        });
-
-        setCases(sorted);
-        setError(null);
+      } else if (investigationsResponse.data.investigations && investigationsResponse.data.investigations.length > 0) {
+        // Fallback to investigations data
+        casesData = investigationsResponse.data.investigations.map((inv) => ({
+          case_id: inv.caseId,
+          case_title: inv.title,
+          case_type: inv.caseType,
+          evidence_status: inv.evidenceStatus,
+          analysis_status: inv.analysisStatus,
+          confidence_level: inv.confidenceLevel,
+          submitted_at: inv.lastActivity,
+          last_updated: inv.lastActivity,
+          unique_ips: 0,
+          total_packets: 0,
+          protocols: 'Unknown',
+          officer: inv.assignedOfficer
+        }));
       }
+
+      // Sort cases by last updated (newest first)
+      const sorted = casesData.sort((a, b) => {
+        return new Date(b.last_updated || b.submitted_at) - new Date(a.last_updated || a.submitted_at);
+      });
+
+      setCases(sorted);
+      setError(null);
     } catch (err) {
       console.error("Failed to fetch cases:", err);
       setError(`Failed to load cases: ${err.message}`);
@@ -227,6 +254,7 @@ export default function CasesDashboard() {
                 <th>Confidence</th>
                 <th>Evidence</th>
                 <th>Last Updated</th>
+                <th>Officer</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -269,6 +297,9 @@ export default function CasesDashboard() {
                   </td>
                   <td className="last-updated">
                     <small>{formatDate(caseItem.last_updated)}</small>
+                  </td>
+                  <td className="officer">
+                    <small>{caseItem.officer}</small>
                   </td>
                   <td className="actions">
                     <button

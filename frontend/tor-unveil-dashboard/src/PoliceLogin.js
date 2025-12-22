@@ -1,10 +1,10 @@
 /**
  * PoliceLogin.js ??? DISCLAIMER & ACCESS PAGE
  * Tamil Nadu Police Cyber Crime Wing - TOR???Unveil
- * 
+ *
  * Purpose: Display mandatory legal disclaimer before system access
  * NOT a real authentication system - backend has no auth
- * 
+ *
  * This is a splash/disclaimer page that:
  * 1. Shows official government branding
  * 2. Displays legal disclaimer
@@ -38,7 +38,7 @@ function PoliceLogin({ onLoginSuccess }) {
     onLoginSuccess({
       loginId: officerId.trim().toUpperCase(),
       timestamp: new Date().toISOString(),
-      acknowledged: true
+      acknowledged: true,
     });
   };
 
@@ -54,8 +54,10 @@ function PoliceLogin({ onLoginSuccess }) {
             </div>
           </div>
           <div className="login-title-block">
-            <h1 className="login-title">TOR???Unveil</h1>
-            <p className="login-subtitle">Cyber Crime Wing, Tamil Nadu Police</p>
+            <h1 className="login-title">TOR UNVEIL</h1>
+            <p className="login-subtitle">
+              Cyber Crime Wing, Tamil Nadu Police
+            </p>
             <p className="login-dept">Government of Tamil Nadu</p>
           </div>
         </div>
@@ -64,26 +66,32 @@ function PoliceLogin({ onLoginSuccess }) {
         <div className="login-description">
           <h2>Forensic Intelligence System</h2>
           <p>
-            TOR???Unveil is a probabilistic analysis tool for correlating TOR network 
-            traffic with known relay infrastructure. This system provides investigative 
-            intelligence only and does not establish definitive attribution.
+            TOR Unveil is a probabilistic analysis tool for correlating TOR
+            network traffic with known relay infrastructure. This system
+            provides investigative intelligence only and does not establish
+            definitive attribution.
           </p>
         </div>
 
         {/* Mandatory Disclaimer */}
         <div className="login-disclaimer">
-          <h3>?????? MANDATORY DISCLAIMER</h3>
+          <h3>ANDATORY DISCLAIMER</h3>
           <div className="disclaimer-content">
-            <p><strong>AUTHORIZED ACCESS ONLY</strong></p>
             <p>
-              This system is restricted to authorized Tamil Nadu Police personnel 
-              for official law enforcement purposes only. Unauthorized access is 
-              prohibited and punishable under the Information Technology Act, 2000.
+              <strong>AUTHORIZED ACCESS ONLY</strong>
             </p>
-            
-            <p><strong>PROBABILISTIC ANALYSIS</strong></p>
             <p>
-              All analysis results are probabilistic hypotheses based on timing 
+              This system is restricted to authorized Tamil Nadu Police
+              personnel for official law enforcement purposes only. Unauthorized
+              access is prohibited and punishable under the Information
+              Technology Act, 2000.
+            </p>
+
+            <p>
+              <strong>PROBABILISTIC ANALYSIS</strong>
+            </p>
+            <p>
+              All analysis results are probabilistic hypotheses based on timing
               correlations and geographic inference. Results DO NOT establish:
             </p>
             <ul>
@@ -91,18 +99,21 @@ function PoliceLogin({ onLoginSuccess }) {
               <li>Exact network paths</li>
               <li>Legal proof of attribution</li>
             </ul>
-            
-            <p><strong>EVIDENTIARY LIMITATIONS</strong></p>
+
             <p>
-              Outputs from this system must be corroborated with independent 
-              forensic evidence before being presented in legal proceedings. 
-              Confidence assessments indicate statistical likelihood, not certainty.
+              <strong>EVIDENTIARY LIMITATIONS</strong>
             </p>
-            
-            <p><strong>AUDIT TRAIL</strong></p>
             <p>
-              All system access and queries are logged for audit purposes.
+              Outputs from this system must be corroborated with independent
+              forensic evidence before being presented in legal proceedings.
+              Confidence assessments indicate statistical likelihood, not
+              certainty.
             </p>
+
+            <p>
+              <strong>AUDIT TRAIL</strong>
+            </p>
+            <p>All system access and queries are logged for audit purposes.</p>
           </div>
         </div>
 
@@ -129,16 +140,16 @@ function PoliceLogin({ onLoginSuccess }) {
               onChange={(e) => setAcknowledged(e.target.checked)}
             />
             <label htmlFor="acknowledge">
-              I acknowledge that I am an authorized officer and understand that 
-              all analysis results are probabilistic and require independent 
+              I acknowledge that I am an authorized officer and understand that
+              all analysis results are probabilistic and require independent
               corroboration before legal use.
             </label>
           </div>
 
           {error && <div className="form-error">{error}</div>}
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className="btn-proceed"
             disabled={!officerId.trim() || !acknowledged}
           >
@@ -148,8 +159,12 @@ function PoliceLogin({ onLoginSuccess }) {
 
         {/* Footer */}
         <div className="login-footer">
-          <p>Cyber Crime Helpline: <strong>1930</strong></p>
-          <p>?? {new Date().getFullYear()} Tamil Nadu Police. All Rights Reserved.</p>
+          <p>
+            Cyber Crime Helpline: <strong>1930</strong>
+          </p>
+          <p>
+            © {new Date().getFullYear()} Tamil Nadu Police. All Rights Reserved.
+          </p>
         </div>
       </div>
     </div>

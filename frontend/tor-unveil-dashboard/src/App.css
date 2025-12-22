@@ -18,16 +18,55 @@
 
 /* ===== ROOT VARIABLES ===== */
 :root {
-  --tn-navy: #0b3c5d;
-  --tn-maroon: #7a1f1f;
-  --tn-gold: #d9a441;
-  --bg-main: #f5f7fa;
+  /* Enhanced Police Color Palette */
+  --tn-navy: #0a2540; /* Deeper, richer navy */
+  --tn-navy-light: #1a3a5c; /* Lighter navy for depth */
+  --tn-navy-dark: #051728; /* Darker navy for contrast */
+  --tn-maroon: #8b1e1e; /* Richer maroon */
+  --tn-maroon-dark: #6b1515; /* Darker maroon */
+  --tn-gold: #f4a900; /* Brighter, more vibrant gold */
+  --tn-gold-light: #ffc547; /* Light gold for highlights */
+  --tn-gold-glow: rgba(244, 169, 0, 0.3); /* Gold glow effect */
+
+  /* Modern Background Colors */
+  --bg-main: #f8fafc; /* Slightly cooler white */
   --bg-white: #ffffff;
-  --bg-light: #eef1f5;
-  --text-dark: #1a1a1a;
-  --text-grey: #4a4a4a;
-  --text-muted: #6b7280;
-  --border-light: #d1d5db;
+  --bg-light: #f1f5f9; /* Softer light background */
+  --bg-card: #ffffff; /* Card backgrounds */
+
+  /* Enhanced Text Colors */
+  --text-dark: #0f172a; /* Deeper black */
+  --text-grey: #475569; /* Modern grey */
+  --text-muted: #64748b; /* Softer muted */
+  --text-light: #94a3b8; /* Light text for subtle info */
+
+  /* Border & Divider Colors */
+  --border-light: #e2e8f0; /* Softer borders */
+  --border-medium: #cbd5e1; /* Medium borders */
+  --border-accent: var(--tn-gold); /* Accent borders */
+
+  /* Status Colors - More Vibrant */
+  --status-success: #10b981; /* Success green */
+  --status-warning: #f59e0b; /* Warning amber */
+  --status-danger: #ef4444; /* Danger red */
+  --status-info: #3b82f6; /* Info blue */
+
+  /* Confidence Score Colors */
+  --confidence-high: #059669; /* High confidence (80-100%) */
+  --confidence-medium: #f59e0b; /* Medium confidence (50-79%) */
+  --confidence-low: #f97316; /* Low confidence (20-49%) */
+  --confidence-very-low: #dc2626; /* Very low (0-19%) */
+
+  /* Shadow System */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.12);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);
+  --shadow-gold: 0 4px 12px var(--tn-gold-glow);
+
+  /* Hover States */
+  --hover-overlay: rgba(10, 37, 64, 0.04);
+  --active-overlay: rgba(10, 37, 64, 0.08);
 }
 
 /* ===== RESET & BASE ===== */
@@ -37,7 +76,8 @@
   padding: 0;
 }
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   height: 100%;
@@ -46,12 +86,12 @@ html, body {
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, 
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
   font-size: 14px;
-  line-height: 1.5;
+  line-height: 1.6;
   color: var(--text-dark);
-  background: var(--bg-main);
+  background: #f8fafc;
 }
 
 #root {
@@ -65,14 +105,21 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: var(--bg-main);
+  background: #f8fafc;
 }
 
 /* ===== GOVERNMENT HEADER ===== */
 .govt-header {
-  background: var(--tn-navy);
-  border-bottom: 4px solid var(--tn-maroon);
+  background: linear-gradient(
+    135deg,
+    var(--tn-navy-dark) 0%,
+    var(--tn-navy) 50%,
+    var(--tn-navy-light) 100%
+  );
+  border-bottom: 3px solid var(--tn-gold);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   flex-shrink: 0;
+  position: relative;
 }
 
 .govt-header-content {
@@ -100,7 +147,17 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: var(--tn-navy);
+  background: var(--tn-navy-dark);
+  box-shadow: 0 0 12px var(--tn-gold-glow), inset 0 0 8px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+.emblem-box::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border: 1px solid rgba(244, 169, 0, 0.3);
+  pointer-events: none;
 }
 
 .emblem-text {
@@ -108,6 +165,7 @@ body {
   font-weight: 700;
   color: var(--tn-gold);
   letter-spacing: 1px;
+  text-shadow: 0 0 8px var(--tn-gold-glow);
 }
 
 .emblem-subtext {
@@ -127,9 +185,14 @@ body {
 .govt-title {
   font-size: 20px;
   font-weight: 700;
-  color: #ffffff;
+  color: #ffffff !important;
   margin: 0;
   letter-spacing: 0.5px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  background: none !important;
+  -webkit-background-clip: initial !important;
+  -webkit-text-fill-color: #ffffff !important;
+  background-clip: initial !important;
 }
 
 .govt-subtitle {
@@ -165,7 +228,11 @@ body {
 }
 
 .govt-logout-btn {
-  background: var(--tn-maroon);
+  background: linear-gradient(
+    135deg,
+    var(--tn-maroon) 0%,
+    var(--tn-maroon-dark) 100%
+  );
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: #ffffff;
   padding: 5px 12px;
@@ -174,10 +241,14 @@ body {
   cursor: pointer;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .govt-logout-btn:hover {
-  background: #8b2424;
+  background: linear-gradient(135deg, #a02424 0%, var(--tn-maroon) 100%);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  transform: translateY(-1px);
 }
 
 .govt-date {
@@ -196,21 +267,27 @@ body {
 .govt-sidebar {
   width: 200px;
   background: var(--bg-white);
-  border-right: 2px solid var(--tn-navy);
+  border-right: 1px solid var(--border-light);
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
   overflow-y: auto;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
 }
 
 .sidebar-title {
-  background: var(--tn-navy);
+  background: linear-gradient(
+    135deg,
+    var(--tn-navy) 0%,
+    var(--tn-navy-light) 100%
+  );
   color: #ffffff;
   padding: 10px 14px;
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .sidebar-nav-list {
@@ -236,17 +313,26 @@ body {
   color: var(--text-dark);
   cursor: pointer;
   text-align: left;
+  transition: all 0.2s ease;
+  border-left: 3px solid transparent;
 }
 
 .sidebar-nav-item:hover:not(.disabled) {
   background: var(--bg-light);
+  border-left-color: var(--tn-gold-light);
+  color: var(--tn-navy);
 }
 
 .sidebar-nav-item.active {
-  background: var(--tn-navy);
-  color: #ffffff;
-  border-left: 4px solid var(--tn-gold);
-  padding-left: 10px;
+  background: linear-gradient(
+    90deg,
+    rgba(10, 37, 64, 0.08) 0%,
+    transparent 100%
+  );
+  color: var(--tn-navy);
+  border-left: 3px solid var(--tn-gold);
+  font-weight: 600;
+  box-shadow: inset 0 0 8px rgba(244, 169, 0, 0.1);
 }
 
 .sidebar-nav-item.disabled {
@@ -271,9 +357,11 @@ body {
 /* Case Info in Sidebar */
 .sidebar-case-info {
   padding: 12px 14px;
-  background: var(--bg-light);
-  border-top: 1px solid var(--border-light);
-  border-bottom: 1px solid var(--border-light);
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-top: 1px solid var(--tn-gold-light);
+  border-bottom: 1px solid var(--tn-gold-light);
+  border-left: 3px solid var(--tn-gold);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .case-info-label {
@@ -288,6 +376,10 @@ body {
   font-size: 12px;
   font-weight: 700;
   color: var(--tn-navy);
+  background: rgba(10, 37, 64, 0.05);
+  padding: 2px 6px;
+  border-radius: 3px;
+  display: inline-block;
 }
 
 /* Sidebar Section */
@@ -295,6 +387,11 @@ body {
   margin-top: auto;
   border-top: 2px solid var(--tn-navy);
   padding: 10px 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(10, 37, 64, 0.02) 100%
+  );
 }
 
 .sidebar-section-title {
@@ -335,7 +432,7 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background: var(--bg-main);
+  background: #f8fafc;
 }
 
 /* ===== PAGE CONTENT ===== */
@@ -343,15 +440,21 @@ body {
   flex: 1;
   overflow-y: auto;
   padding: 16px 20px;
-  background: var(--bg-main);
+  background: #f8fafc;
+  color: var(--text-dark);
 }
 
 /* ===== GOVERNMENT FOOTER ===== */
 .govt-footer {
-  background: var(--tn-navy);
-  border-top: 4px solid var(--tn-maroon);
+  background: linear-gradient(
+    135deg,
+    var(--tn-navy-dark) 0%,
+    var(--tn-navy) 100%
+  );
+  border-top: 3px solid var(--tn-gold);
   color: #ffffff;
   flex-shrink: 0;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .footer-content {
@@ -374,7 +477,9 @@ body {
 
 .footer-helpline {
   font-size: 12px;
-  color: var(--tn-gold);
+  color: var(--tn-gold-light);
+  font-weight: 600;
+  text-shadow: 0 0 8px var(--tn-gold-glow);
 }
 
 .footer-disclaimer {
@@ -397,19 +502,19 @@ body {
     gap: 10px;
     text-align: center;
   }
-  
+
   .govt-header-left {
     justify-content: center;
   }
-  
+
   .govt-header-right {
     align-items: center;
   }
-  
+
   .govt-sidebar {
     width: 160px;
   }
-  
+
   .footer-main {
     flex-direction: column;
     gap: 8px;
@@ -420,7 +525,7 @@ body {
   .govt-sidebar {
     display: none;
   }
-  
+
   .govt-main-content {
     width: 100%;
   }
@@ -433,15 +538,15 @@ body {
   .govt-footer {
     display: none;
   }
-  
+
   .govt-main-layout {
     display: block;
   }
-  
+
   .govt-main-content {
     overflow: visible;
   }
-  
+
   .page-content {
     padding: 0;
     overflow: visible;
@@ -450,10 +555,31 @@ body {
 
 /* ========== LEGAL & ETHICAL GUARDRAILS ========== */
 .legal-notice-banner {
-  background: linear-gradient(135deg, #7a1f1f 0%, #5a1515 100%);
-  border-bottom: 2px solid #4a1010;
+  background: linear-gradient(
+    135deg,
+    var(--tn-maroon) 0%,
+    var(--tn-maroon-dark) 100%
+  );
+  border-bottom: 2px solid rgba(244, 169, 0, 0.5);
   padding: 8px 0;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+.legal-notice-banner::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--tn-gold) 50%,
+    transparent 100%
+  );
+  opacity: 0.5;
 }
 
 .legal-notice-content {
@@ -478,17 +604,19 @@ body {
 }
 
 .legal-text strong {
-  color: #ffd700;
+  color: var(--tn-gold-light);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.3px;
+  text-shadow: 0 0 8px var(--tn-gold-glow);
 }
 
 .legal-emphasis {
-  color: #ffd700;
+  color: var(--tn-gold-light);
   font-weight: 600;
-  background: rgba(255, 215, 0, 0.1);
-  padding: 1px 4px;
-  border-radius: 2px;
+  background: rgba(244, 169, 0, 0.15);
+  padding: 2px 6px;
+  border-radius: 3px;
   margin: 0 2px;
+  border: 1px solid rgba(244, 169, 0, 0.3);
 }

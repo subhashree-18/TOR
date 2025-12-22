@@ -1,0 +1,483 @@
+/**
+ * ProbabilisticHeatmap.css
+ * 
+ * Styling for the probabilistic origin zone mapping visualization.
+ */
+
+.heatmap-wrapper {
+  width: 100%;
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 20px;
+  background: #f5f7fa;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.heatmap-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.heatmap-header h3 {
+  margin: 0 0 8px 0;
+  color: #2c3e50;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.heatmap-header p {
+  margin: 0;
+  color: #7f8c8d;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.confidence-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.confidence-badge.high {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.confidence-badge.medium {
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeeba;
+}
+
+.confidence-badge.low {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+/* Statistics */
+.heatmap-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+  padding: 0;
+}
+
+.stat-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 15px;
+  background: white;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border-left: 4px solid #3498db;
+}
+
+.stat-label {
+  color: #7f8c8d;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  color: #2c3e50;
+  font-size: 24px;
+  font-weight: 700;
+  margin-top: 8px;
+}
+
+/* Map Container */
+.heatmap-container {
+  width: 100%;
+  height: 500px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.heatmap-container.loading,
+.heatmap-container.error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #7f8c8d;
+  font-size: 16px;
+}
+
+.heatmap-container.error {
+  color: #e74c3c;
+  background: #fadbd8;
+}
+
+/* Leaflet Overrides */
+.leaflet-container {
+  background: #e1e5e8;
+}
+
+.probability-zone {
+  cursor: pointer;
+}
+
+.probability-zone:hover {
+  filter: brightness(1.1);
+}
+
+/* Zone Popup */
+.zone-popup {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  font-size: 13px;
+  color: #2c3e50;
+}
+
+.zone-popup h4 {
+  margin: 0 0 10px 0;
+  color: #2c3e50;
+  font-size: 16px;
+  font-weight: 600;
+  border-bottom: 2px solid #ecf0f1;
+  padding-bottom: 8px;
+}
+
+.zone-popup p {
+  margin: 6px 0;
+}
+
+.zone-popup strong {
+  color: #2c3e50;
+}
+
+.source-list {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0 0;
+  max-height: 100px;
+  overflow-y: auto;
+}
+
+.source-list li {
+  padding: 4px 6px;
+  background: #ecf0f1;
+  border-radius: 3px;
+  margin-bottom: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: #2c3e50;
+  word-break: break-all;
+}
+
+/* Legend */
+.heatmap-legend {
+  background: white;
+  border-radius: 6px;
+  padding: 15px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.heatmap-legend h4 {
+  margin: 0 0 15px 0;
+  color: #2c3e50;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  color: #7f8c8d;
+}
+
+.legend-color {
+  width: 30px;
+  height: 20px;
+  border-radius: 3px;
+  border: 1px solid #bdc3c7;
+}
+
+/* Zone Details Panel */
+.zone-details-panel {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 350px;
+  max-height: 600px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  padding: 20px;
+  z-index: 1000;
+  overflow-y: auto;
+  animation: slideInRight 0.3s ease-in-out;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.zone-details-panel h4 {
+  margin: 0 0 15px 0;
+  color: #2c3e50;
+  font-size: 16px;
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #ecf0f1;
+  border: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 16px;
+  color: #7f8c8d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+  background: #bdc3c7;
+  color: #2c3e50;
+}
+
+.details-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.detail-label {
+  color: #7f8c8d;
+  font-weight: 500;
+}
+
+.detail-value {
+  color: #2c3e50;
+  font-weight: 600;
+  text-align: right;
+}
+
+.detail-section {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #ecf0f1;
+}
+
+.detail-section h5 {
+  margin: 0 0 10px 0;
+  color: #2c3e50;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sources-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.sources-list li {
+  padding: 6px 8px;
+  margin-bottom: 4px;
+  background: #ecf0f1;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: #2c3e50;
+  word-break: break-all;
+  cursor: default;
+}
+
+/* Zones List Panel */
+.zones-list-panel {
+  background: white;
+  border-radius: 6px;
+  padding: 15px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.zones-list-panel h4 {
+  margin: 0 0 15px 0;
+  color: #2c3e50;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.zones-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.zone-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.zone-item:hover {
+  background: #ecf0f1;
+  border-color: #3498db;
+}
+
+.zone-item.active {
+  background: #d4edda;
+  border-color: #28a745;
+}
+
+.zone-item-color {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  border: 1px solid #bdc3c7;
+  flex-shrink: 0;
+}
+
+.zone-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.zone-item-name {
+  color: #2c3e50;
+  font-weight: 600;
+  font-size: 13px;
+  word-break: break-word;
+}
+
+.zone-item-meta {
+  color: #7f8c8d;
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.zone-item-badge {
+  color: #2c3e50;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 4px 8px;
+  background: #ecf0f1;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+/* Scrollbar Styling */
+.zones-list-panel::-webkit-scrollbar,
+.zone-details-panel::-webkit-scrollbar,
+.sources-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.zones-list-panel::-webkit-scrollbar-track,
+.zone-details-panel::-webkit-scrollbar-track,
+.sources-list::-webkit-scrollbar-track {
+  background: #ecf0f1;
+  border-radius: 3px;
+}
+
+.zones-list-panel::-webkit-scrollbar-thumb,
+.zone-details-panel::-webkit-scrollbar-thumb,
+.sources-list::-webkit-scrollbar-thumb {
+  background: #bdc3c7;
+  border-radius: 3px;
+}
+
+.zones-list-panel::-webkit-scrollbar-thumb:hover,
+.zone-details-panel::-webkit-scrollbar-thumb:hover,
+.sources-list::-webkit-scrollbar-thumb:hover {
+  background: #95a5a6;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .heatmap-wrapper {
+    padding: 15px;
+  }
+
+  .heatmap-container {
+    height: 400px;
+  }
+
+  .zone-details-panel {
+    position: static;
+    width: auto;
+    max-height: none;
+    margin-bottom: 20px;
+  }
+
+  .heatmap-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @keyframes slideInRight {
+    from {
+      transform: translateY(400px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .heatmap-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .heatmap-header p {
+    flex-direction: column;
+  }
+}

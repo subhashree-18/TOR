@@ -67,6 +67,67 @@ The system performs **probabilistic forensic correlation** using metadata and la
 - **Explainable Results** - Full audit trail of all factor calculations
 - **High Confidence Levels** - HIGH (≥0.75), MEDIUM (≥0.50), LOW (<0.50)
 
+### 🤖 **Adaptive Confidence Scoring Engine** (NEW)
+- **Machine Learning Integration** - Automatically adjusts scoring weights based on real correlation outcomes
+- **Historical Learning** - Analyzes past successful/failed correlations to improve accuracy
+- **Factor Optimization** - Dynamically weights 4 primary factors: time overlap, guard recurrence, exit behavior, session frequency
+- **Gradual Confidence Increase** - Confidence builds incrementally with consistent correlations (up to +15%)
+- **MongoDB Storage** - Persistent outcome tracking for continuous learning
+- **Weight Recalibration** - Periodic automatic adjustment (minimum 1 hour between updates)
+- **Performance Metrics** - Real-time accuracy tracking and detailed statistics
+- **Four REST APIs** - `GET /api/confidence/weights`, `GET /api/confidence/recalculate`, `POST /api/confidence/record-outcome`, `GET /api/confidence/statistics`
+- **See**: [Adaptive Confidence Scoring Documentation](./ADAPTIVE_CONFIDENCE_SCORING.md)
+
+### 🧅 **Timeline-Driven Onion Peel Visualization** (NEW)
+- **Interactive D3.js Timeline** - Visualize TOR circuit path evolution over time
+- **5-Layer Architecture** - Client → Guard → Middle → Exit → Destination nodes
+- **Concentric Circle Layout** - Color-coded layers (green/orange/blue/red/purple)
+- **Timeline Slider** - Scrub through session snapshots with millisecond precision
+- **Node Transitions Panel** - Track all relay changes with confidence scores and reasons
+- **Interactive Tooltips** - Hover over nodes to see: fingerprint, nickname, country, ASN, uptime, bandwidth
+- **Animated Glow Effects** - Visual emphasis on active nodes
+- **Responsive Design** - Works on desktop, tablet, and mobile
+- **See**: [Path Visualization Documentation](./VISUALIZATION_IMPLEMENTATION_SUMMARY.md)
+
+### 🌍 **Probabilistic Origin Zone Mapping** (NEW)
+- **Confidence-Weighted Heatmap** - Geographic zones colored by guard node origin confidence
+- **Privacy-Preserving Mapping** - Instead of exact IPs, shows likely geographic regions
+- **ASN & ISP Clustering** - Aggregate guard nodes by autonomous system and internet service provider
+- **Interactive Leaflet Map** - Zoom, pan, and explore world map with OpenStreetMap tiles
+- **Zone Details Panel** - Click zones to see: confidence %, probability, guard count, associated ASNs
+- **Color Intensity Mapping** - Red (high confidence) → Yellow (medium) → Green (low)
+- **Probability Percentages** - Shows likelihood for each origin region
+- **Zone List Sidebar** - Searchable and filterable list of all probability zones
+- **Responsive Design** - Full-width map on desktop, stacked layout on mobile
+- **See**: [Path Visualization Documentation](./VISUALIZATION_IMPLEMENTATION_SUMMARY.md)
+
+### 🛡️ **Guard Node Reputation Index (GNPI)** (NEW)
+- **Persistence Level Tracking** - LOW/MEDIUM/HIGH/CRITICAL classifications
+- **Behavioral Scoring** - Multiple metrics for guard reliability assessment:
+  - Uptime history
+  - Bandwidth consistency
+  - Geographic stability
+  - Exit node association patterns
+- **MongoDB Persistence** - 6 indexes for optimized queries
+- **Critical Guard Identification** - Flag unreliable/suspicious guards
+- **Statistics & Analytics** - Real-time guard reputation dashboard
+- **Six REST APIs** - Guard reputation endpoints with filtering and sorting
+- **See**: [GNPI System Documentation](./docs/GNPI_SYSTEM.md)
+
+### 🔬 **PCAP Forensic Analysis & TOR Session Reconstruction** (NEW)
+- **PCAP File Processing** - Extract network sessions from forensic packet captures
+- **TOR Circuit Detection** - Identify TOR protocol patterns with 4 detection methods:
+  - Cell pattern analysis (fixed 512-byte TCPIP packets)
+  - Burst traffic correlation
+  - TLS fingerprinting
+  - Packet symmetry analysis
+- **Session Fingerprinting** - SHA256-based signatures for circuit identification
+- **High-Confidence Session Extraction** - Only sessions with >70% confidence included
+- **MongoDB Storage** - Dedicated collections for sessions and metadata
+- **Statistics Dashboard** - Session count, confidence distribution, timing analysis
+- **Three REST APIs** - PCAP session endpoints with confidence filtering
+- **See**: [PCAP Forensic Documentation](./docs/PCAP_FORENSIC_ANALYSIS.md)
+
 ---
 
 ## 🎯 Unified Probabilistic Confidence Engine

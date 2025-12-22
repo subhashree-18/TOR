@@ -28,7 +28,7 @@
   --tn-authority-light: #38bdf8; /* Light Authority */
   
   /* Text Colors */
-  --tn-text-primary: #ffffff;   /* Primary text */
+  --tn-text-primary: var(--bg-white)fff;   /* Primary text */
   --tn-text-secondary: #b0b7c3; /* Secondary text */
   --tn-text-tertiary: #808a99;  /* Tertiary text */
   

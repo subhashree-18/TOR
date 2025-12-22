@@ -24,3 +24,5 @@ PyJWT==2.10.1
 python-multipart==0.0.6
 python-dateutil
 reportlab==4.2.0
+lxml==5.0.0
+pillow==11.0.0
