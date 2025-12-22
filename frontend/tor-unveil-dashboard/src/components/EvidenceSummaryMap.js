@@ -30,15 +30,27 @@ function generateRealisticTimeline() {
   
   // Helper function to format date-time as DD/MM/YYYY, HH:MM:SS am/pm
   const formatDateTime = (date) => {
-    return date.toLocaleString('en-GB', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: true
-    }).replace(',', '');
+    if (!date || !(date instanceof Date)) {
+      return 'Unknown time';
+    }
+    
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    let hour = date.getHours();
+    const minute = String(date.getMinutes()).padStart(2, '0');
+    const second = String(date.getSeconds()).padStart(2, '0');
+    const period = hour >= 12 ? 'pm' : 'am';
+    
+    if (hour > 12) {
+      hour -= 12;
+    } else if (hour === 0) {
+      hour = 12;
+    }
+    
+    const hourStr = String(hour).padStart(2, '0');
+    
+    return `${day}/${month}/${year}, ${hourStr}:${minute}:${second} ${period}`;
   };
   
   // Generate timeline events working backwards from reference time

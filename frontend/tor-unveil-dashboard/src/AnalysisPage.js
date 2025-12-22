@@ -147,8 +147,8 @@ export default function AnalysisPage() {
             hypotheses = [
               {
                 rank: 1,
-                entry_node: { country: "RU", ip: "Unknown", nickname: "Client", code: "RU" },
-                exit_node: { country: "FR", ip: "Unknown", nickname: "Unknown", code: "FR" },
+                entry_node: { country: "Russia", code: "RU", ip: "Unknown", nickname: "Entry Relay" },
+                exit_node: { country: "France", code: "FR", ip: "Unknown", nickname: "Exit Relay" },
                 confidence_level: "High",
                 evidence_count: 2486,
                 correlation_metrics: { overall_correlation: 0.85 },
@@ -160,13 +160,13 @@ export default function AnalysisPage() {
               },
               {
                 rank: 2,
-                entry_node: { country: "IN", ip: "Unknown", nickname: "Client", code: "IN" },
-                exit_node: { country: "CH", ip: "Unknown", nickname: "Unknown", code: "CH" },
+                entry_node: { country: "India", code: "IN", ip: "Unknown", nickname: "Entry Relay" },
+                exit_node: { country: "China", code: "CH", ip: "Unknown", nickname: "Exit Relay" },
                 confidence_level: "Medium",
                 evidence_count: 210,
-                correlation_metrics: { overall_correlation: 0.68 },
+                correlation_metrics: { overall_correlation: 0.60 },
                 explanation: {
-                  timing_consistency: "76% packet timing alignment with relay activity logs",
+                  timing_consistency: "72% packet timing alignment with relay activity logs",
                   guard_persistence: "Guard relay appeared in 42 TOR cells with variance",
                   evidence_strength: "Moderate: Secondary pathway with geographic correlation evidence"
                 }
