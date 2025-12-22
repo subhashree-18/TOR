@@ -555,36 +555,139 @@ export default function AnalysisPage() {
               </div>
             </div>
 
-            {/* Relay Activity Distribution */}
+            {/* Relay Activity Distribution - World Map */}
             <div className="relay-distribution">
               <h4>Investigation-Relevant Relay Distribution:</h4>
-              <div className="distribution-chart">
-                <div className="chart-item">
-                  <div className="chart-bar">
-                    <div className="bar-label">Entry Nodes</div>
-                    <div className="bar-container">
-                      <div className="bar-fill" style={{ width: '35%', background: 'linear-gradient(90deg, #10b981 0%, #059669 100%)' }}></div>
-                      <span className="bar-value">35%</span>
-                    </div>
-                  </div>
+              
+              {/* World Map Visualization */}
+              <div className="relay-world-map-container">
+                <svg className="relay-world-map" viewBox="0 0 1000 600" width="100%" height="auto">
+                  {/* Map Background */}
+                  <rect width="1000" height="600" fill="#e8f4f8" />
+                  
+                  {/* Grid */}
+                  <g opacity="0.2">
+                    {[0, 200, 400, 600, 800, 1000].map((x) => (
+                      <line key={`vgrid${x}`} x1={x} y1="0" x2={x} y2="600" stroke="#999" strokeWidth="1" />
+                    ))}
+                    {[0, 150, 300, 450, 600].map((y) => (
+                      <line key={`hgrid${y}`} x1="0" y1={y} x2="1000" y2={y} stroke="#999" strokeWidth="1" />
+                    ))}
+                  </g>
+
+                  {/* Regional Zones */}
+                  {/* Europe Region - Critical Risk */}
+                  <g opacity="0.15">
+                    <rect x="450" y="120" width="150" height="120" fill="#ef4444" rx="4" />
+                  </g>
+                  {/* Russia Region - Critical Risk */}
+                  <g opacity="0.15">
+                    <rect x="600" y="90" width="180" height="150" fill="#ef4444" rx="4" />
+                  </g>
+                  {/* Asia Region - High Risk */}
+                  <g opacity="0.15">
+                    <rect x="650" y="280" width="200" height="180" fill="#f97316" rx="4" />
+                  </g>
+                  {/* Americas Region - Low Risk */}
+                  <g opacity="0.15">
+                    <rect x="80" y="180" width="180" height="200" fill="#10b981" rx="4" />
+                  </g>
+
+                  {/* Entry Nodes (Green Circles) */}
+                  {/* North America */}
+                  <circle cx="150" cy="220" r="12" fill="#10b981" stroke="#059669" strokeWidth="3" opacity="0.85" />
+                  <title>Entry Node - North America</title>
+                  <circle cx="150" cy="220" r="20" fill="none" stroke="#10b981" strokeWidth="1" opacity="0.3" strokeDasharray="3,3" />
+                  
+                  {/* Europe */}
+                  <circle cx="500" cy="180" r="12" fill="#10b981" stroke="#059669" strokeWidth="3" opacity="0.85" />
+                  <title>Entry Node - Europe</title>
+                  <circle cx="500" cy="180" r="20" fill="none" stroke="#10b981" strokeWidth="1" opacity="0.3" strokeDasharray="3,3" />
+                  
+                  {/* India */}
+                  <circle cx="720" cy="320" r="12" fill="#10b981" stroke="#059669" strokeWidth="3" opacity="0.85" />
+                  <title>Entry Node - India</title>
+                  <circle cx="720" cy="320" r="20" fill="none" stroke="#10b981" strokeWidth="1" opacity="0.3" strokeDasharray="3,3" />
+
+                  {/* Exit Nodes (Red Circles) */}
+                  {/* France */}
+                  <circle cx="480" cy="150" r="14" fill="#ef4444" stroke="#dc2626" strokeWidth="3" opacity="0.85" />
+                  <title>Exit Node - France</title>
+                  <circle cx="480" cy="150" r="22" fill="none" stroke="#ef4444" strokeWidth="1" opacity="0.3" strokeDasharray="3,3" />
+                  
+                  {/* Russia */}
+                  <circle cx="650" cy="140" r="14" fill="#ef4444" stroke="#dc2626" strokeWidth="3" opacity="0.85" />
+                  <title>Exit Node - Russia</title>
+                  <circle cx="650" cy="140" r="22" fill="none" stroke="#ef4444" strokeWidth="1" opacity="0.3" strokeDasharray="3,3" />
+                  
+                  {/* Singapore */}
+                  <circle cx="800" cy="380" r="14" fill="#ef4444" stroke="#dc2626" strokeWidth="3" opacity="0.85" />
+                  <title>Exit Node - Singapore</title>
+                  <circle cx="800" cy="380" r="22" fill="none" stroke="#ef4444" strokeWidth="1" opacity="0.3" strokeDasharray="3,3" />
+                  
+                  {/* China */}
+                  <circle cx="780" cy="280" r="14" fill="#ef4444" stroke="#dc2626" strokeWidth="3" opacity="0.85" />
+                  <title>Exit Node - China</title>
+                  <circle cx="780" cy="280" r="22" fill="none" stroke="#ef4444" strokeWidth="1" opacity="0.3" strokeDasharray="3,3" />
+
+                  {/* Middle Relays (Orange Squares) */}
+                  {/* Central Europe */}
+                  <rect x="530" y="155" width="14" height="14" fill="#f59e0b" stroke="#d97706" strokeWidth="3" opacity="0.85" rx="2" />
+                  <title>Middle Relay - Central Europe</title>
+                  
+                  {/* Middle East */}
+                  <rect x="620" y="250" width="14" height="14" fill="#f59e0b" stroke="#d97706" strokeWidth="3" opacity="0.85" rx="2" />
+                  <title>Middle Relay - Middle East</title>
+                  
+                  {/* Southeast Asia */}
+                  <rect x="760" y="330" width="14" height="14" fill="#f59e0b" stroke="#d97706" strokeWidth="3" opacity="0.85" rx="2" />
+                  <title>Middle Relay - Southeast Asia</title>
+
+                  {/* Connection Paths (Dashed Lines) */}
+                  {/* Entry to Exit connections */}
+                  <line x1="150" y1="220" x2="480" y2="150" stroke="#f4a900" strokeWidth="2" opacity="0.6" strokeDasharray="5,5" />
+                  <line x1="500" y1="180" x2="650" y2="140" stroke="#f4a900" strokeWidth="2" opacity="0.5" strokeDasharray="5,5" />
+                  <line x1="720" y1="320" x2="780" y2="280" stroke="#f4a900" strokeWidth="2" opacity="0.6" strokeDasharray="5,5" />
+                  <line x1="720" y1="320" x2="800" y2="380" stroke="#f4a900" strokeWidth="2" opacity="0.5" strokeDasharray="5,5" />
+
+                  {/* Region Labels */}
+                  <text x="100" y="50" fontSize="14" fontWeight="700" fill="#0a2540" textAnchor="start">AMERICAS</text>
+                  <text x="450" y="50" fontSize="14" fontWeight="700" fill="#0a2540" textAnchor="start">EUROPE</text>
+                  <text x="650" y="50" fontSize="14" fontWeight="700" fill="#0a2540" textAnchor="start">ASIA</text>
+
+                  {/* Legend Markers */}
+                  <g transform="translate(50, 540)">
+                    {/* Entry Node Legend */}
+                    <circle cx="0" cy="0" r="6" fill="#10b981" stroke="#059669" strokeWidth="2" />
+                    <text x="15" y="4" fontSize="11" fill="#0a2540" fontWeight="600">Entry Nodes (35%)</text>
+                    
+                    {/* Exit Node Legend */}
+                    <circle cx="230" cy="0" r="6" fill="#ef4444" stroke="#dc2626" strokeWidth="2" />
+                    <text x="245" y="4" fontSize="11" fill="#0a2540" fontWeight="600">Exit Nodes (45%)</text>
+                    
+                    {/* Middle Relay Legend */}
+                    <rect x="460" y="-6" width="12" height="12" fill="#f59e0b" stroke="#d97706" strokeWidth="2" rx="1" />
+                    <text x="480" y="4" fontSize="11" fill="#0a2540" fontWeight="600">Middle Relays (20%)</text>
+                  </g>
+                </svg>
+              </div>
+
+              {/* Distribution Summary Stats */}
+              <div className="distribution-summary">
+                <div className="summary-stat-item">
+                  <h5>Entry Nodes</h5>
+                  <p className="percentage">35%</p>
+                  <p className="description">Guard relays protecting client identity</p>
                 </div>
-                <div className="chart-item">
-                  <div className="chart-bar">
-                    <div className="bar-label">Exit Nodes</div>
-                    <div className="bar-container">
-                      <div className="bar-fill" style={{ width: '45%', background: 'linear-gradient(90deg, #ef4444 0%, #dc2626 100%)' }}></div>
-                      <span className="bar-value">45%</span>
-                    </div>
-                  </div>
+                <div className="summary-stat-item">
+                  <h5>Exit Nodes</h5>
+                  <p className="percentage">45%</p>
+                  <p className="description">Exit points for TOR traffic egress</p>
                 </div>
-                <div className="chart-item">
-                  <div className="chart-bar">
-                    <div className="bar-label">Middle Relays</div>
-                    <div className="bar-container">
-                      <div className="bar-fill" style={{ width: '20%', background: 'linear-gradient(90deg, #f59e0b 0%, #d97706 100%)' }}></div>
-                      <span className="bar-value">20%</span>
-                    </div>
-                  </div>
+                <div className="summary-stat-item">
+                  <h5>Middle Relays</h5>
+                  <p className="percentage">20%</p>
+                  <p className="description">Intermediate routing infrastructure</p>
                 </div>
               </div>
             </div>
