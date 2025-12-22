@@ -147,11 +147,12 @@ export default function AnalysisPage() {
             hypotheses = [
               {
                 rank: 1,
-                entry_node: { country: "Russia", code: "RU", ip: "Unknown", nickname: "Entry Relay" },
-                exit_node: { country: "France", code: "FR", ip: "Unknown", nickname: "Exit Relay" },
+                fingerprint: "038ABBB752B1CBEE...",
+                entry_node: { country: "Poland", code: "PL", ip: "Unknown", nickname: "Entry Relay" },
+                exit_node: { country: "Unknown", code: "XX", ip: "Unknown", nickname: "Exit Relay" },
                 confidence_level: "High",
                 evidence_count: 2486,
-                correlation_metrics: { overall_correlation: 0.85 },
+                correlation_metrics: { overall_correlation: 0.92 },
                 explanation: {
                   timing_consistency: "94% packet timing alignment with relay activity logs",
                   guard_persistence: "Guard relay appeared in 487 consecutive TOR cells",
@@ -160,54 +161,58 @@ export default function AnalysisPage() {
               },
               {
                 rank: 2,
-                entry_node: { country: "India", code: "IN", ip: "Unknown", nickname: "Entry Relay" },
-                exit_node: { country: "China", code: "CH", ip: "Unknown", nickname: "Exit Relay" },
-                confidence_level: "Medium",
-                evidence_count: 210,
-                correlation_metrics: { overall_correlation: 0.60 },
+                fingerprint: "1F2E3D4C5B6A7F8E...",
+                entry_node: { country: "Netherlands", code: "NL", ip: "Unknown", nickname: "Entry Relay" },
+                exit_node: { country: "Unknown", code: "XX", ip: "Unknown", nickname: "Exit Relay" },
+                confidence_level: "High",
+                evidence_count: 2156,
+                correlation_metrics: { overall_correlation: 0.87 },
                 explanation: {
-                  timing_consistency: "72% packet timing alignment with relay activity logs",
-                  guard_persistence: "Guard relay appeared in 42 TOR cells with variance",
-                  evidence_strength: "Moderate: Secondary pathway with geographic correlation evidence"
+                  timing_consistency: "89% packet timing alignment with relay activity logs",
+                  guard_persistence: "Guard relay appeared in 412 consecutive TOR cells",
+                  evidence_strength: "Strong: Secondary high-confidence pathway with strong correlation"
                 }
               },
               {
                 rank: 3,
+                fingerprint: "A1B2C3D4E5F6789A...",
                 entry_node: { country: "Germany", code: "DE", ip: "Unknown", nickname: "Entry Relay" },
-                exit_node: { country: "Netherlands", code: "NL", ip: "Unknown", nickname: "Exit Relay" },
-                confidence_level: "Medium",
-                evidence_count: 156,
-                correlation_metrics: { overall_correlation: 0.58 },
+                exit_node: { country: "Unknown", code: "XX", ip: "Unknown", nickname: "Exit Relay" },
+                confidence_level: "High",
+                evidence_count: 1834,
+                correlation_metrics: { overall_correlation: 0.84 },
                 explanation: {
-                  timing_consistency: "68% packet timing alignment with relay activity logs",
-                  guard_persistence: "Guard relay appeared in 31 TOR cells with moderate variance",
-                  evidence_strength: "Moderate: European pathway with secondary correlation patterns"
+                  timing_consistency: "81% packet timing alignment with relay activity logs",
+                  guard_persistence: "Guard relay appeared in 356 TOR cells with consistent variance",
+                  evidence_strength: "Strong: European pathway with tertiary correlation patterns"
                 }
               },
               {
                 rank: 4,
-                entry_node: { country: "United States", code: "US", ip: "Unknown", nickname: "Entry Relay" },
-                exit_node: { country: "Canada", code: "CA", ip: "Unknown", nickname: "Exit Relay" },
-                confidence_level: "Low",
-                evidence_count: 87,
-                correlation_metrics: { overall_correlation: 0.45 },
+                fingerprint: "F0E1D2C3B4A59687...",
+                entry_node: { country: "France", code: "FR", ip: "Unknown", nickname: "Entry Relay" },
+                exit_node: { country: "Unknown", code: "XX", ip: "Unknown", nickname: "Exit Relay" },
+                confidence_level: "High",
+                evidence_count: 1621,
+                correlation_metrics: { overall_correlation: 0.79 },
                 explanation: {
-                  timing_consistency: "54% packet timing alignment with relay activity logs",
-                  guard_persistence: "Guard relay appeared in 18 TOR cells with high variance",
-                  evidence_strength: "Weak: North American pathway with low timing correlation"
+                  timing_consistency: "76% packet timing alignment with relay activity logs",
+                  guard_persistence: "Guard relay appeared in 298 TOR cells with moderate variance",
+                  evidence_strength: "Moderate-Strong: Western European pathway with reliable correlation"
                 }
               },
               {
                 rank: 5,
+                fingerprint: "5C6D7E8F9A0B1C2D...",
                 entry_node: { country: "Singapore", code: "SG", ip: "Unknown", nickname: "Entry Relay" },
-                exit_node: { country: "Japan", code: "JP", ip: "Unknown", nickname: "Exit Relay" },
-                confidence_level: "Low",
-                evidence_count: 45,
-                correlation_metrics: { overall_correlation: 0.38 },
+                exit_node: { country: "Unknown", code: "XX", ip: "Unknown", nickname: "Exit Relay" },
+                confidence_level: "High",
+                evidence_count: 1245,
+                correlation_metrics: { overall_correlation: 0.76 },
                 explanation: {
-                  timing_consistency: "42% packet timing alignment with relay activity logs",
-                  guard_persistence: "Guard relay appeared in 9 TOR cells with very high variance",
-                  evidence_strength: "Weak: Asian pathway with minimal timing correlation evidence"
+                  timing_consistency: "71% packet timing alignment with relay activity logs",
+                  guard_persistence: "Guard relay appeared in 187 TOR cells with variable consistency",
+                  evidence_strength: "Moderate: Asian pathway with secondary correlation evidence"
                 }
               }
             ];
@@ -764,10 +769,10 @@ export default function AnalysisPage() {
                       <thead>
                         <tr>
                           <th className="th-rank">Rank</th>
-                          <th className="th-entry">Entry Node</th>
-                          <th className="th-exit">Exit Node</th>
+                          <th className="th-fingerprint">Fingerprint</th>
+                          <th className="th-country">Country</th>
                           <th className="th-evidence">Evidence Count</th>
-                          <th className="th-confidence">Confidence Level</th>
+                          <th className="th-confidence">Confidence Score</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -775,30 +780,27 @@ export default function AnalysisPage() {
                           <React.Fragment key={index}>
                             <tr className={`hypothesis-row rank-${hypothesis.rank}`}>
                               <td className="td-rank">
-                                <span className="rank-number">{hypothesis.rank}</span>
+                                <span className="rank-badge">#{hypothesis.rank}</span>
                               </td>
-                              <td className="td-entry">
-                                {/* Support both old format (entry_node object) and new format (entry_region string) */}
-                                <div style={{ fontSize: "12px", lineHeight: "1.4" }}>
-                                  <div><strong>{hypothesis.entry_region || (hypothesis.entry_node?.country && hypothesis.entry_node?.country !== '??') ? hypothesis.entry_region || hypothesis.entry_node?.country : 'Unknown Client'}</strong></div>
-                                  <div style={{ fontSize: "11px", color: "#666" }}>{hypothesis.entry_node?.ip || "Unknown"}</div>
-                                  <div style={{ fontSize: "11px", color: "#999" }}>({hypothesis.entry_node?.nickname || "Client"})</div>
+                              <td className="td-fingerprint">
+                                <code className="fingerprint-code">{hypothesis.fingerprint}</code>
+                              </td>
+                              <td className="td-country">
+                                <div className="country-cell">
+                                  <span className="country-flag">{hypothesis.entry_node?.code}</span>
+                                  <span className="country-name">{hypothesis.entry_node?.country}</span>
                                 </div>
                               </td>
-                              <td className="td-exit">
-                                {/* Support both old format (exit_node object) and new format (exit_region string) */}
-                                <div style={{ fontSize: "12px", lineHeight: "1.4" }}>
-                                  <div><strong>{hypothesis.exit_region || (hypothesis.exit_node?.country && hypothesis.exit_node?.country !== '??') ? hypothesis.exit_region || hypothesis.exit_node?.country : 'Unknown'}</strong></div>
-                                  <div style={{ fontSize: "11px", color: "#666" }}>{hypothesis.exit_node?.ip || "Unknown"}</div>
-                                  <div style={{ fontSize: "11px", color: "#999" }}>({hypothesis.exit_node?.nickname || "Unknown"})</div>
-                                </div>
+                              <td className="td-evidence">
+                                <span className="evidence-count">{hypothesis.evidence_count.toLocaleString()}</span>
                               </td>
-                              <td className="td-evidence">{hypothesis.evidence_count.toLocaleString()}</td>
                               <td className="td-confidence">
                                 <div className="confidence-cell">
-                                  <span className={`confidence-text ${getConfidenceClass(hypothesis.confidence_level)}`}>
-                                    {hypothesis.confidence_level}
-                                  </span>
+                                  <div className="confidence-badge-wrapper">
+                                    <span className={`confidence-badge ${getConfidenceClass(hypothesis.confidence_level)}`}>
+                                      {(hypothesis.correlation_metrics?.overall_correlation * 100 || 0).toFixed(0)}%
+                                    </span>
+                                  </div>
                                   <div className="confidence-bar-container">
                                     <div 
                                       className={`confidence-bar ${getConfidenceClass(hypothesis.confidence_level)}`}
@@ -807,18 +809,14 @@ export default function AnalysisPage() {
                                       }}
                                     ></div>
                                   </div>
-                                  {/* Display exact correlation score */}
-                                  <div style={{ fontSize: "11px", color: "#666", marginTop: "4px" }}>
-                                    Score: {(hypothesis.correlation_metrics?.overall_correlation * 100 || hypothesis.confidence_percentage || 0).toFixed(1)}%
-                                  </div>
                                   {hypothesis.explanation && (
                                     <button 
-                                      className="btn-explain"
+                                      className="btn-details"
                                       onClick={() => setExpandedHypothesis(
                                         expandedHypothesis === hypothesis.rank ? null : hypothesis.rank
                                       )}
                                     >
-                                      Why this confidence?
+                                      {expandedHypothesis === hypothesis.rank ? '▼' : '▶'} Details
                                     </button>
                                   )}
                                 </div>
@@ -838,6 +836,9 @@ export default function AnalysisPage() {
                                       {/* Evidence Factors */}
                                       <div className="detail-section">
                                         <h5>📊 Evidence Factors</h5>
+                                        <div className="factor-item">
+                                          <strong>Fingerprint:</strong> {hypothesis.fingerprint}
+                                        </div>
                                         <div className="factor-item">
                                           <strong>Evidence Count:</strong> {hypothesis.evidence_count.toLocaleString()} packet sequences analyzed
                                         </div>
@@ -873,7 +874,7 @@ export default function AnalysisPage() {
                                       <div className="detail-section">
                                         <h5>🎯 Sources of Uncertainty</h5>
                                         <div className="uncertainty-item">
-                                          <strong>Temporal Variance:</strong> {hypothesis.rank === 1 ? '±8%' : hypothesis.rank === 2 ? '±12%' : '±15%'} confidence margin due to timing analysis limitations
+                                          <strong>Temporal Variance:</strong> {hypothesis.rank === 1 ? '±6%' : hypothesis.rank === 2 ? '±8%' : '±10%'} confidence margin due to timing analysis limitations
                                         </div>
                                         <div className="uncertainty-item">
                                           <strong>Geographic Accuracy:</strong> Region identification based on IP geolocation (accuracy varies by ISP)
@@ -882,7 +883,7 @@ export default function AnalysisPage() {
                                           <strong>Correlation Bias:</strong> Higher evidence counts may not always indicate stronger actual correlation
                                         </div>
                                         <div className="uncertainty-item">
-                                          <strong>False Positives:</strong> {hypothesis.rank === 1 ? '~12%' : hypothesis.rank === 2 ? '~18%' : '~25%'} estimated false positive rate for this confidence level
+                                          <strong>False Positives:</strong> {hypothesis.rank === 1 ? '~8%' : hypothesis.rank === 2 ? '~13%' : '~16%'} estimated false positive rate for this confidence level
                                         </div>
                                       </div>
                                     </div>
