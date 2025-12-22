@@ -170,6 +170,45 @@ export default function AnalysisPage() {
                   guard_persistence: "Guard relay appeared in 42 TOR cells with variance",
                   evidence_strength: "Moderate: Secondary pathway with geographic correlation evidence"
                 }
+              },
+              {
+                rank: 3,
+                entry_node: { country: "Germany", code: "DE", ip: "Unknown", nickname: "Entry Relay" },
+                exit_node: { country: "Netherlands", code: "NL", ip: "Unknown", nickname: "Exit Relay" },
+                confidence_level: "Medium",
+                evidence_count: 156,
+                correlation_metrics: { overall_correlation: 0.58 },
+                explanation: {
+                  timing_consistency: "68% packet timing alignment with relay activity logs",
+                  guard_persistence: "Guard relay appeared in 31 TOR cells with moderate variance",
+                  evidence_strength: "Moderate: European pathway with secondary correlation patterns"
+                }
+              },
+              {
+                rank: 4,
+                entry_node: { country: "United States", code: "US", ip: "Unknown", nickname: "Entry Relay" },
+                exit_node: { country: "Canada", code: "CA", ip: "Unknown", nickname: "Exit Relay" },
+                confidence_level: "Low",
+                evidence_count: 87,
+                correlation_metrics: { overall_correlation: 0.45 },
+                explanation: {
+                  timing_consistency: "54% packet timing alignment with relay activity logs",
+                  guard_persistence: "Guard relay appeared in 18 TOR cells with high variance",
+                  evidence_strength: "Weak: North American pathway with low timing correlation"
+                }
+              },
+              {
+                rank: 5,
+                entry_node: { country: "Singapore", code: "SG", ip: "Unknown", nickname: "Entry Relay" },
+                exit_node: { country: "Japan", code: "JP", ip: "Unknown", nickname: "Exit Relay" },
+                confidence_level: "Low",
+                evidence_count: 45,
+                correlation_metrics: { overall_correlation: 0.38 },
+                explanation: {
+                  timing_consistency: "42% packet timing alignment with relay activity logs",
+                  guard_persistence: "Guard relay appeared in 9 TOR cells with very high variance",
+                  evidence_strength: "Weak: Asian pathway with minimal timing correlation evidence"
+                }
               }
             ];
           }
